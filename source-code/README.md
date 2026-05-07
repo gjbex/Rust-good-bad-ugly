@@ -10,3 +10,5 @@ Examples for the training material.
 1. `hello-clap`: a simple command line application using the `clap` crate,
    intended to illustrate how to use external dependencies and handle command
    line arguments.
+1. `numerical-function`: illustrates how to define a function, loop over
+   integer values, convert types, and format output.
