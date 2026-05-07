@@ -1,0 +1,2 @@
+# Exclude lock file for demonstration purposes, don't do this for real projects
+Cargo.lock

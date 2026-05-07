@@ -1,0 +1,2 @@
+# exclude Cargo target directories
+target/

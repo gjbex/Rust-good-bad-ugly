@@ -1,0 +1,4 @@
+# Exclude TOML files for demonstration purposes, don't do this for real projects
+Cargo.toml
+# Exclude lock file for demonstration purposes, don't do this for real projects
+Cargo.lock
