@@ -6,7 +6,7 @@ application using `cargo`.
 
 ## What is it?
 
-1. `src/main.rs` is the main Rust source file. It contains a simple program that
+1. `src/main.rs`: main Rust source file. It contains a simple program that
    prints "Hello world!" to the console.
 
 
@@ -30,7 +30,7 @@ application using `cargo`.
    `target/debug` directory.  It also creates a `Cargo.lock` file that locks
    the dependencies of the project.
 
-1. Run the project:
+1. Run the application:
 
    ```bash
    cargo run
