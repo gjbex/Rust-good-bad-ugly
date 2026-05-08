@@ -1,4 +1,4 @@
-# Nutable variables
+# Mutable variables
 
 By default, variables in Rust are immutable, meaning that once a value is
 assigned to a variable, it cannot be changed. However, Rust provides a way to
