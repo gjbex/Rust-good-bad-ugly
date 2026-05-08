@@ -1,13 +1,14 @@
 # Matrices
 
-This example defines a simple matrix, it shows how to:
+This example introduces a small user-defined matrix type.  Compared to
+`../borrowing-vectors`, it shows how to:
 
-* define a structure for a matrix;
-* implement a function to create a matrix;
-* implement a function to get and set values in the matrix;
-* use a crate to define the matrix code;
-* use a module from the main file to define the matrix code;
-* create a matrix and set values in it.
+* define a `struct`;
+* keep fields private and expose accessor methods;
+* implement methods with an `impl` block;
+* store two-dimensional data in a flat `Vec<f64>`;
+* put code in a separate module file, `src/matrix.rs`;
+* use the module from `src/main.rs` with `mod matrix` and `use matrix::Matrix`.
 
 Note: this is for demonstration purposes only, for serious applications,
 consider using crates like `mdarray`, `faer` or `nalgebra` for matrix
@@ -16,7 +17,9 @@ representation and operations.
 
 ## What is it?
 
-1. `src/main.rs`: main source file for the application.
+1. `src/main.rs`: main source file for the application.  It creates a matrix,
+   fills it with values, and prints it.
+1. `src/matrix.rs`: module that defines the `Matrix` structure and its methods.
 1. `Cargo.toml`: configuration file for the Rust package manager, including the
    dependency on `clap`.
 1. `Cargo.lock`: lock file for the Rust package manager, automatically

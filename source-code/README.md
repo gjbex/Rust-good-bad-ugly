@@ -20,7 +20,9 @@ Examples for the training material.
    context in which it is used.
 1. `mutable-borrowing`: illustrates how to borrow a mutable reference to a
    variable, and the rules that govern mutable borrowing.
-1. `borrowing-vectors`: illustrates how to borrow a reference to a vector, and the rules that
-   govern borrowing.
+1. `borrowing-vectors`: illustrates how to borrow a reference to a vector, and
+   the rules that govern borrowing.
 1. `matrices`: illustrates how to define a struct, implement methods on it, and
    use it in a simple application.
+1. `error-handling`: illustrates how to handle errors using the `Option` and
+   `Result` types and the `?` operator.
