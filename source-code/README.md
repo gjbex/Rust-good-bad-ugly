@@ -15,6 +15,8 @@ Examples for the training material.
 1. `mutable-variables`: illustrates how to declare mutable variables.
 1. `basic-types`: illustrates the use of basic types: integers, floating point,
    booleans, characters, and address types.
+1. `complex-numbers`: illustration of how to use `num-complex` crate to work
+   with complex numbers.
 1. `no-double-promotion`: illustrates that double promotion does not occur in
    Rust, and that the type of a floating point literal is determined by the
    context in which it is used.
