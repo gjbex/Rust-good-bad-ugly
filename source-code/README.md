@@ -28,3 +28,5 @@ Examples for the training material.
    use it in a simple application.
 1. `error-handling`: illustrates how to handle errors using the `Option` and
    `Result` types and the `?` operator.
+1. `generic-matrix`: illustrates how to define a generic struct and constrain
+   methods with trait bounds.
