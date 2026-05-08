@@ -34,6 +34,6 @@ fn main() {
     for i in 0..nr_points {
         let x = x_min + i as f64 * delta_x;
         let result = polynomial(x, args.a, args.b, args.c);
-        println!("{} {}", x, result);
+        println!("{x} {result}");
     }
 }

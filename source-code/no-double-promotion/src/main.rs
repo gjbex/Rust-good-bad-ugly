@@ -12,5 +12,5 @@ fn main() {
     let x = 5.0;
     println!("Type of x: {}", type_name_of_val(&x));
     let result = compute_polynom(x);
-    println!("The result of the polynomial for x = {:.1} is {:.1}", x, result);
+    println!("The result of the polynomial for x = {x:.1} is {result:.1}");
 }
