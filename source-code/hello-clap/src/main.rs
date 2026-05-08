@@ -22,7 +22,7 @@ fn main() {
         if args.uppercase {
             println!("HELLO, {}!", args.name.to_uppercase());
         } else {
-            println!("Hello, {args.name}!");
+            println!("Hello, {}!", args.name);
         }
     }
 }
