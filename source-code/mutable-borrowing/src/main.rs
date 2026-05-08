@@ -7,11 +7,11 @@ fn main() {
     let mut dxdt = 0.0;
     let mut t = 0.0;
     let delta_t = 0.1;
-    println!("{:.5} {:.5}", t, x);
+    println!("{t:.5} {x:.5}");
     for _ in 0..20 {
         t += delta_t;
         rhs(x, &mut dxdt, t);
         x += dxdt * delta_t;
-        println!("{:.5} {:.5}", t, x);
+        println!("{t:.5} {x:.5}");
     }
 }
