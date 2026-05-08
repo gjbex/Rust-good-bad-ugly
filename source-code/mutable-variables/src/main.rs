@@ -34,7 +34,7 @@ fn main() {
     let delta_x = (x_max - x_min) / (nr_points as f64 - 1.0);
     for i in 0..nr_points {
         let result = polynomial(x, args.a, args.b, args.c);
-        println!("{} {}", x, result);
+        println!("{x} {result}");
         x += delta_x;
     }
 }
