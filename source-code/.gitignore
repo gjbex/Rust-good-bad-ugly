@@ -1,2 +1,8 @@
 # exclude Cargo target directories
 target/
+
+# mypy directory
+.mypy
+
+# Jupyter notebook checkpoint directories
+.ipynb_checkpoints/
