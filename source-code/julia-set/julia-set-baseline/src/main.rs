@@ -49,7 +49,7 @@ fn iterate_z_value(z: Complex64, c: Complex64, max_iterations: usize) -> usize {
     max_iterations
 }
 
-fn iterate_z_matrix(z: &mut Matrix<Complex64>, c: Complex64, max_iterations: usize) -> Matrix<usize> {
+fn iterate_z_matrix(z: &Matrix<Complex64>, c: Complex64, max_iterations: usize) -> Matrix<usize> {
     let mut result = Matrix::new(z.rows(), z.cols(), 0);
     for i in 0..z.rows() {
         for j in 0..z.cols() {
@@ -65,8 +65,8 @@ fn iterate_z_matrix(z: &mut Matrix<Complex64>, c: Complex64, max_iterations: usi
 fn main() {
     let args = Args::parse();
     let c = Complex64::new(args.c_real, args.c_imag);
-    let mut z = initialize_z(args.height, args.width);
-    let result = iterate_z_matrix(&mut z, c, args.max_iterations);
+    let z = initialize_z(args.height, args.width);
+    let result = iterate_z_matrix(&z, c, args.max_iterations);
     for i in 0..result.rows() {
         for j in 0..result.cols() {
             print!("{:3} ", result.get(i, j).expect("loop indices should be in bounds"));
