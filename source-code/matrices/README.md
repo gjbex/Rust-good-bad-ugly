@@ -6,9 +6,7 @@ This example introduces a small user-defined matrix type.  Compared to
 * define a `struct`;
 * keep fields private and expose accessor methods;
 * implement methods with an `impl` block;
-* store two-dimensional data in a flat `Vec<f64>`;
-* put code in a separate module file, `src/matrix.rs`;
-* use the module from `src/main.rs` with `mod matrix` and `use matrix::Matrix`.
+* store two-dimensional data in a flat `Vec<f64>`.
 
 Note: this is for demonstration purposes only, for serious applications,
 consider using crates like `mdarray`, `faer` or `nalgebra` for matrix
