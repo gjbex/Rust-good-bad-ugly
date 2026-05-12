@@ -12,7 +12,7 @@ The examples are ordered roughly by the training sequence in
 | Minimal Rust binary | `source-code/hello-world/src/main.rs` |
 | Cargo project layout | `source-code/hello-world/` |
 | Building and running with Cargo | `source-code/hello-world/README.md` |
-| External crates in `Cargo.toml` | `source-code/hello-clap/Cargo.toml`, `source-code/complex-numbers/Cargo.toml` |
+| External crates in `Cargo.toml` | `source-code/hello-clap/Cargo.toml`, `source-code/complex-numbers/Cargo.toml`, `source-code/random-numbers/Cargo.toml` |
 | Reproducible dependency lockfiles | `source-code/*/Cargo.lock` |
 | Release builds and benchmarking context | `source-code/julia-set/benchmark.sh` |
 
@@ -23,8 +23,9 @@ The examples are ordered roughly by the training sequence in
 | `clap::Parser` derive | `source-code/hello-clap/src/main.rs` |
 | Typed command-line argument struct | `source-code/hello-clap/src/main.rs` |
 | Argument defaults | `source-code/numerical-function/src/main.rs`, `source-code/enum-match/src/main.rs` |
-| Restricted argument values with `ValueEnum` | `source-code/enum-match/src/main.rs` |
+| Restricted argument values with `ValueEnum` | `source-code/enum-match/src/main.rs`, `source-code/random-numbers/src/main.rs` |
 | File path argument | `source-code/iterators/src/main.rs` |
+| Numeric CLI parameters for reproducible runs | `source-code/random-numbers/src/main.rs`, `source-code/julia-set/julia-set-baseline/src/main.rs` |
 
 ## Basic Language Constructs
 
@@ -53,9 +54,11 @@ The examples are ordered roughly by the training sequence in
 | Feature | Where to look |
 |---|---|
 | Defining an `enum` | `source-code/enum-match/src/main.rs` |
-| Matching on enum variants | `source-code/enum-match/src/main.rs` |
+| Matching on enum variants | `source-code/enum-match/src/main.rs`, `source-code/random-numbers/src/main.rs` |
 | Splitting code into modules with `mod` | `source-code/enum-match/src/main.rs`, `source-code/enum-match/src/simpson.rs`, `source-code/enum-match/src/gauss.rs` |
 | Passing functions or closures as arguments | `source-code/enum-match/src/simpson.rs`, `source-code/enum-match/src/gauss.rs` |
+| Enum-as-factory pattern | `source-code/random-numbers/src/main.rs` |
+| Wrapping different concrete types in one enum | `source-code/random-numbers/src/main.rs` |
 | Documentation comments | `source-code/enum-match/src/simpson.rs`, `source-code/enum-match/src/gauss.rs` |
 | Unit tests with `#[cfg(test)]` | `source-code/enum-match/src/simpson.rs`, `source-code/enum-match/src/gauss.rs` |
 | Numerical reference tests | `source-code/enum-match/src/simpson.rs`, `source-code/enum-match/src/gauss.rs` |
@@ -129,6 +132,27 @@ The examples are ordered roughly by the training sequence in
 | Deserializing rows into a struct | `source-code/iterators/src/main.rs` |
 | Reading an input path from the CLI | `source-code/iterators/src/main.rs` |
 
+## Random Numbers And Distributions
+
+| Feature | Where to look |
+|---|---|
+| Seedable random number generator | `source-code/random-numbers/src/main.rs` |
+| Reproducible named RNG algorithm with `ChaCha12Rng` | `source-code/random-numbers/src/main.rs` |
+| Uniform random values in `[0.0, 1.0)` | `source-code/random-numbers/src/main.rs` |
+| Sampling from normal distributions with `rand_distr` | `source-code/random-numbers/src/main.rs` |
+| Distribution choice parsed by `clap::ValueEnum` | `source-code/random-numbers/src/main.rs` |
+| Runtime distribution enum with a common `sample` method | `source-code/random-numbers/src/main.rs` |
+| Generic method over any RNG implementing `Rng` | `source-code/random-numbers/src/main.rs` |
+
+## Python Visualization Helpers
+
+| Feature | Where to look |
+|---|---|
+| Reading numeric output from standard input | `source-code/random-numbers/show-distribution.py`, `source-code/julia-set/view-fractal.py` |
+| Pipe Rust program output into Python visualization | `source-code/random-numbers/README.md`, `source-code/julia-set/README.md` |
+| Histogram visualization with `matplotlib` | `source-code/random-numbers/show-distribution.py` |
+| 2D image visualization with `matplotlib` and `numpy.loadtxt` | `source-code/julia-set/view-fractal.py` |
+
 ## Larger Numerical Examples
 
 | Feature | Where to look |
@@ -138,7 +162,7 @@ The examples are ordered roughly by the training sequence in
 | Dynamic multidimensional arrays with `mdarray` | `source-code/julia-set/julia-set-mdarray/` |
 | `mdarray` expression evaluation | `source-code/julia-set/julia-set-mdarray-expr-eval/` |
 | Release-build comparison with `hyperfine` | `source-code/julia-set/benchmark.sh` |
-| Plotting output with Python | `source-code/julia-set/view-plot.py` |
+| Plotting output with Python | `source-code/julia-set/view-fractal.py`, `source-code/random-numbers/show-distribution.py` |
 
 ## Gaps To Add Later
 
