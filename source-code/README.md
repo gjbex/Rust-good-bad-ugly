@@ -32,6 +32,7 @@ Examples for the training material.
    `Result` types and the `?` operator.
 1. `generic-structs`: illustrates how to define a generic struct and constrain
    methods with trait bounds.
+1. `iterators`: illustrates how to use iterators to process collections of data.
 
 
 `julia-set`: Julia set  implementations illustrating diverse aspects of Rust
