@@ -1,6 +1,6 @@
 # Julia set
 
-This directory contains various implemenations of Rust application that compute the Julia set.
+This directory contains several Rust applications that compute the Julia set.
 
 
 ## What is it?
@@ -8,9 +8,39 @@ This directory contains various implemenations of Rust application that compute 
 1. `julia-set-baseline`: baseline implementation of the Julia set, using a
    single thread, and a custom matrix implementation.
 1. `julia-set-mdarray`: implementation of the Julia set, using a single thread,
-   and the `ndarray` crate for matrix operations.
+   and the `mdarray` crate for matrix operations.
 1. `julia-set-mdarray-expr-eval`: implementation of the Julia set, using a
-   single thread, and the `ndarray` crate for matrix operations, and expression
-   evaluation for the matrix operations. evaluation.
-1. `view-plot.py`: Python script to visualize the output of the Julia set
-   applications, using `matplotlib`.
+   single thread, the `mdarray` crate for matrix operations, and expression
+   evaluation for matrix operations.
+1. `show-fractal.py`: Python script to visualize the output of the Julia set
+   applications using `matplotlib`.  It reads from standard input by default,
+   so output from the Rust applications can be piped directly into it.
+
+
+## How to use?
+
+Run one of the implementations and pipe its output to the visualization script:
+
+```bash
+cd julia-set-baseline
+cargo run --release -- --width 800 --height 600 | ../show-fractal.py
+```
+
+The same approach works for the `mdarray` implementation:
+
+```bash
+cd julia-set-mdarray
+cargo run --release -- --width 800 --height 600 | ../show-fractal.py
+```
+
+The visualization script can still read from a file:
+
+```bash
+./show-fractal.py julia-set-baseline/julia-set.txt
+```
+
+Compare all implementations with release builds using `hyperfine`:
+
+```bash
+./benchmark.sh
+```
