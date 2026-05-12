@@ -22,6 +22,8 @@ Examples for the training material.
    context in which it is used.
 1. `enum-match`: illustrates how to define an enum and use pattern matching to handle
    different variants.  Also introduces documentation and unit testing.
+1. `copy-vs-move`: illustrates the difference between moving an owned vector
+   and borrowing its contents through a slice.
 1. `mutable-borrowing`: illustrates how to borrow a mutable reference to a
    variable, and the rules that govern mutable borrowing.
 1. `borrowing-vectors`: illustrates how to borrow a reference to a vector, and
