@@ -19,7 +19,7 @@ The uniform distribution samples values in the half-open interval `[0.0, 1.0)`.
 1. `src/main.rs`: main source file for the application.  It parses the number
    of samples, seed, and distribution from the command line, constructs a
    reproducible RNG, and prints one sample per line.
-1. `show_distr.py`: small Python helper script that reads values from standard
+1. `show-distribution.py`: small Python helper script that reads values from standard
    input and displays a histogram.
 1. `Cargo.toml`: configuration file for the Rust package manager.  It specifies
    the dependencies on `clap`, `rand`, `rand_chacha`, and `rand_distr`.
@@ -50,5 +50,5 @@ cargo run -- --help
 Visualize a larger sample:
 
 ```bash
-cargo run -- --count 1000 --seed 42 --distribution normal | ./show_distr.py
+cargo run -- --count 1000 --seed 42 --distribution normal | ./show-distribution.py
 ```
