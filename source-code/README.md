@@ -26,11 +26,11 @@ Examples for the training material.
    variable, and the rules that govern mutable borrowing.
 1. `borrowing-vectors`: illustrates how to borrow a reference to a vector, and
    the rules that govern borrowing.
-1. `matrices`: illustrates how to define a struct, implement methods on it, and
-   use it in a simple application.
+1. `structs-and-methods`: illustrates how to define a struct, implement methods
+   on it, and use it in a simple application.
 1. `error-handling`: illustrates how to handle errors using the `Option` and
    `Result` types and the `?` operator.
-1. `generic-matrix`: illustrates how to define a generic struct and constrain
+1. `generic-structs`: illustrates how to define a generic struct and constrain
    methods with trait bounds.
 
 

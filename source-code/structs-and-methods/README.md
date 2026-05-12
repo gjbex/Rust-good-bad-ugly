@@ -1,4 +1,4 @@
-# Matrices
+# Structs and methods
 
 This example introduces a small user-defined matrix type.  Compared to
 `../borrowing-vectors`, it shows how to:

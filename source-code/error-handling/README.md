@@ -1,7 +1,7 @@
 # Error handling
 
 This example extends the matrix example with explicit error handling for
-out-of-bounds indexing.  Compared to `../matrices`, it shows how to:
+out-of-bounds indexing.  Compared to `../structs-and-methods`, it shows how to:
 
 * represent a value that may be absent with `Option`;
 * represent an operation that may fail with `Result`;

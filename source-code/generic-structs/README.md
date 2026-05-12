@@ -1,4 +1,4 @@
-# Generic matrix
+# Generic structs
 
 This example generalizes the checked matrix type from `../error-handling`.
 Compared to `../error-handling`, it shows how to:
