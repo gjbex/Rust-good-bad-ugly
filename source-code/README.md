@@ -20,6 +20,8 @@ Examples for the training material.
 1. `no-double-promotion`: illustrates that double promotion does not occur in
    Rust, and that the type of a floating point literal is determined by the
    context in which it is used.
+1. `enum-match`: illustrates how to define an enum and use pattern matching to handle
+   different variants.  Also introduces documentation and unit testing.
 1. `mutable-borrowing`: illustrates how to borrow a mutable reference to a
    variable, and the rules that govern mutable borrowing.
 1. `borrowing-vectors`: illustrates how to borrow a reference to a vector, and
