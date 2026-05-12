@@ -6,3 +6,6 @@ target/
 
 # Jupyter notebook checkpoint directories
 .ipynb_checkpoints/
+
+# Python cache directories
+__pycache__/
