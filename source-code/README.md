@@ -33,7 +33,8 @@ Examples for the training material.
 1. `generic-structs`: illustrates how to define a generic struct and constrain
    methods with trait bounds.
 1. `iterators`: illustrates how to use iterators to process collections of data.
-
+1. `random-numbers`: illustrates how to use the `rand` and `rand_distr` crates
+   to generate random numbers.
 
 `julia-set`: Julia set  implementations illustrating diverse aspects of Rust
 programming.
