@@ -30,7 +30,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("y values: {:?}", ys);
 
     // filter out x values larger than or equal to 10.0
-    let filtered_xs : Vec<f64> = xs
+    let filtered_xs: Vec<f64> = xs
         .iter()
         .copied()
         .filter(|x| *x >= 10.0)
@@ -54,7 +54,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("Unpacked filtered x values: {:?}", filtered_xs_unpacked);
     println!("Unpacked filtered y values: {:?}", filtered_ys_unpacked);
 
-    // copmute the cube of the x values
+    // compute the cube of the x values
     let cubed_xs: Vec<f64> = xs
         .iter()
         .copied()
@@ -63,7 +63,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("Cubed x values: {:?}", cubed_xs);
 
     // compute the sum of the y values
-    let sum_y: f64 = ys.iter().copied().sum();
+    let sum_y: f64 = ys.iter().sum();
     println!("Sum of y values: {}", sum_y);
 
     // create pairs of (i, x) values where i is the index of the x value
@@ -75,7 +75,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("Indexed x values: {:?}", indexed_xs);
 
     // print the index and x value for each x value
-    for (i, y) in ys.iter().copied().enumerate() {
+    for (i, y) in ys.iter().enumerate() {
         println!("Index: {i}, y value: {y:.1}");
     }
     Ok(())
