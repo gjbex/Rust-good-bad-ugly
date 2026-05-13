@@ -32,11 +32,15 @@ The examples are ordered roughly by the training sequence in
 | Feature | Where to look |
 |---|---|
 | `main` function | `source-code/hello-world/src/main.rs` |
-| Function definitions | `source-code/numerical-function/src/main.rs` |
+| Function definitions | `source-code/numerical-function/src/main.rs`, `source-code/control-flow/src/main.rs` |
 | Numeric literals and type conversion | `source-code/numerical-function/src/main.rs` |
-| Loops over integer ranges | `source-code/numerical-function/src/main.rs` |
-| Formatted output | `source-code/numerical-function/src/main.rs`, `source-code/basic-types/src/main.rs` |
-| Mutable bindings with `mut` | `source-code/mutable-variables/src/main.rs` |
+| Conditional execution with `if` and `else` | `source-code/control-flow/src/main.rs` |
+| `while` loops | `source-code/control-flow/src/main.rs` |
+| Simple `for` loops over integer ranges | `source-code/control-flow/src/main.rs`, `source-code/numerical-function/src/main.rs` |
+| Inclusive ranges with `..=` | `source-code/control-flow/src/main.rs` |
+| Nested `for` loops | `source-code/control-flow/src/main.rs` |
+| Formatted output | `source-code/numerical-function/src/main.rs`, `source-code/basic-types/src/main.rs`, `source-code/control-flow/src/main.rs` |
+| Mutable bindings with `mut` | `source-code/mutable-variables/src/main.rs`, `source-code/control-flow/src/main.rs` |
 | Primitive scalar types | `source-code/basic-types/src/main.rs` |
 | Type introspection for examples | `source-code/no-double-promotion/src/main.rs` |
 | Floating-point literal context and no double promotion | `source-code/no-double-promotion/src/main.rs` |

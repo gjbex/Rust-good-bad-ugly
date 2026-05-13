@@ -12,6 +12,8 @@ Examples for the training material.
    line arguments.
 1. `numerical-function`: illustrates how to define a function, loop over
    integer values, convert types, and format output.
+1. `control-flow`: illustrates conditional execution with `if` and `else`,
+   repetition with `while`, and simple `for` loops over integer ranges.
 1. `mutable-variables`: illustrates how to declare mutable variables.
 1. `basic-types`: illustrates the use of basic types: integers, floating point,
    booleans, characters, and address types.
