@@ -67,13 +67,21 @@ The examples are ordered roughly by the training sequence in
 
 | Feature | Where to look |
 |---|---|
+| `Copy` scalar assignment | `source-code/copy-vs-move/src/main.rs` |
+| Moving owned vectors by assignment | `source-code/copy-vs-move/src/main.rs` |
+| Moving owned vectors into functions | `source-code/copy-vs-move/src/main.rs` |
+| Explicit cloning of vector data | `source-code/copy-vs-move/src/main.rs` |
+| Borrowing a vector with `&Vec<T>` | `source-code/copy-vs-move/src/main.rs` |
+| Borrowed slices `&[T]` | `source-code/copy-vs-move/src/main.rs`, `source-code/borrowing-vectors/src/main.rs` |
 | Mutable references with `&mut` | `source-code/mutable-borrowing/src/main.rs` |
 | Writing through a mutable reference | `source-code/mutable-borrowing/src/main.rs` |
-| Borrowed slices `&[T]` | `source-code/borrowing-vectors/src/main.rs` |
-| Mutable slices `&mut [T]` | `source-code/borrowing-vectors/src/main.rs` |
+| Mutable slices `&mut [T]` | `source-code/copy-vs-move/src/main.rs`, `source-code/borrowing-vectors/src/main.rs` |
+| In-place mutation with `iter_mut` | `source-code/copy-vs-move/src/main.rs`, `source-code/borrowing-vectors/src/main.rs` |
 | Iterating over slices | `source-code/borrowing-vectors/src/main.rs` |
-| Borrow-checker conflict examples | `source-code/borrowing-vectors/src/main.rs` |
-| Copying scalar values out of iterators with `copied` | `source-code/iterators/src/main.rs` |
+| Borrow-checker conflict examples | `source-code/borrowing-vectors/src/main.rs`, `source-code/copy-vs-move/src/main.rs` |
+| Collected references that keep the source collection borrowed | `source-code/copy-vs-move/src/main.rs` |
+| Copying scalar values out of iterators with `copied` | `source-code/copy-vs-move/src/main.rs`, `source-code/iterators/src/main.rs` |
+| Ownership transfer through return values | `source-code/copy-vs-move/src/main.rs` |
 
 ## Structs And Methods
 
@@ -168,7 +176,6 @@ The examples are ordered roughly by the training sequence in
 
 These features are not yet covered, or are only lightly touched:
 
-- moves and ownership transfer beyond simple borrowing;
 - deeper pattern matching: `if let`, `while let`, tuple or struct destructuring;
 - defining and implementing custom traits;
 - explicit lifetime parameters;
