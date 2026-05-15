@@ -40,6 +40,8 @@ prevent or make explicit in safe code.
    `Result` types and the `?` operator.
 1. `generic-structs`: illustrates how to define a generic struct and constrain
    methods with trait bounds.
+1. `traits`: illustrates how to implement standard traits such as `Index`,
+   `IndexMut`, `Display`, and `TryFrom` for a custom type.
 1. `iterators`: illustrates how to use iterators to process collections of data.
 1. `random-numbers`: illustrates how to use the `rand` and `rand_distr` crates
    to generate random numbers.
