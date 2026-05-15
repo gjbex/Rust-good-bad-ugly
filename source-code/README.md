@@ -43,6 +43,9 @@ prevent or make explicit in safe code.
 1. `iterators`: illustrates how to use iterators to process collections of data.
 1. `random-numbers`: illustrates how to use the `rand` and `rand_distr` crates
    to generate random numbers.
+1. `hashmap-hashset`: illustrates how to use `HashMap` and `HashSet`, share
+   code between multiple binaries with a library target, and process files with
+   buffered readers and writers.
 
 `julia-set`: Julia set  implementations illustrating diverse aspects of Rust
 programming.
