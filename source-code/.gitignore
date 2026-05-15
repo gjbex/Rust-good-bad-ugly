@@ -9,3 +9,6 @@ target/
 
 # Python cache directories
 __pycache__/
+
+# CMake build directories
+build/
