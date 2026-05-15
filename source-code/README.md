@@ -5,6 +5,10 @@ Examples for the training material.
 
 ## What is it?
 
+`cpp-pitfalls`: contains small C++ programs that deliberately exhibit memory
+safety, concurrency, and numeric conversion problems Rust is designed to
+prevent or make explicit in safe code.
+
 1. `hello-world`: trivial hello world application, intended to illustrate
    tooling and the build process.
 1. `hello-clap`: a simple command line application using the `clap` crate,
