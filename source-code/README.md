@@ -28,6 +28,9 @@ prevent or make explicit in safe code.
    context in which it is used.
 1. `enum-match`: illustrates how to define an enum and use pattern matching to handle
    different variants.  Also introduces documentation and unit testing.
+1. `user-defined-trait`: builds on `enum-match` by defining a quadrature trait,
+   implementing it for multiple integration methods, and selecting a trait
+   object at run time.
 1. `copy-vs-move`: illustrates the difference between moving an owned vector
    and borrowing its contents through a slice.
 1. `mutable-borrowing`: illustrates how to borrow a mutable reference to a

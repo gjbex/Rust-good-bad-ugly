@@ -23,7 +23,7 @@ The examples are ordered roughly by the training sequence in
 | `clap::Parser` derive | `source-code/hello-clap/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
 | Typed command-line argument struct | `source-code/hello-clap/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
 | Argument defaults | `source-code/numerical-function/src/main.rs`, `source-code/enum-match/src/main.rs` |
-| Restricted argument values with `ValueEnum` | `source-code/enum-match/src/main.rs`, `source-code/random-numbers/src/main.rs` |
+| Restricted argument values with `ValueEnum` | `source-code/enum-match/src/main.rs`, `source-code/random-numbers/src/main.rs`, `source-code/user-defined-trait/src/main.rs` |
 | File path argument | `source-code/iterators/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
 | Numeric CLI parameters for reproducible runs | `source-code/random-numbers/src/main.rs`, `source-code/julia-set/julia-set-baseline/src/main.rs` |
 
@@ -59,8 +59,8 @@ The examples are ordered roughly by the training sequence in
 |---|---|
 | Defining an `enum` | `source-code/enum-match/src/main.rs` |
 | Matching on enum variants | `source-code/enum-match/src/main.rs`, `source-code/random-numbers/src/main.rs` |
-| Splitting code into modules with `mod` | `source-code/enum-match/src/main.rs`, `source-code/enum-match/src/simpson.rs`, `source-code/enum-match/src/gauss.rs` |
-| Passing functions or closures as arguments | `source-code/enum-match/src/simpson.rs`, `source-code/enum-match/src/gauss.rs` |
+| Splitting code into modules with `mod` | `source-code/enum-match/src/main.rs`, `source-code/enum-match/src/simpson.rs`, `source-code/enum-match/src/gauss.rs`, `source-code/user-defined-trait/src/main.rs` |
+| Passing functions or closures as arguments | `source-code/enum-match/src/simpson.rs`, `source-code/enum-match/src/gauss.rs`, `source-code/user-defined-trait/src/quadrature.rs` |
 | Enum-as-factory pattern | `source-code/random-numbers/src/main.rs` |
 | Wrapping different concrete types in one enum | `source-code/random-numbers/src/main.rs` |
 | Documentation comments | `source-code/enum-match/src/simpson.rs`, `source-code/enum-match/src/gauss.rs` |
@@ -114,6 +114,10 @@ The examples are ordered roughly by the training sequence in
 
 | Feature | Where to look |
 |---|---|
+| Defining a user-defined trait | `source-code/user-defined-trait/src/quadrature.rs` |
+| Implementing a user-defined trait for concrete types | `source-code/user-defined-trait/src/simpson.rs`, `source-code/user-defined-trait/src/gauss.rs` |
+| Trait objects with `dyn Trait` | `source-code/user-defined-trait/src/main.rs` |
+| Boxed trait objects | `source-code/user-defined-trait/src/main.rs` |
 | Generic structs with type parameters | `source-code/generic-structs/src/matrix.rs` |
 | Generic `impl<T>` blocks | `source-code/generic-structs/src/matrix.rs` |
 | Trait bounds on methods | `source-code/generic-structs/src/matrix.rs` |
@@ -184,7 +188,6 @@ The examples are ordered roughly by the training sequence in
 These features are not yet covered, or are only lightly touched:
 
 - deeper pattern matching: `if let`, `while let`, tuple or struct destructuring;
-- defining and implementing custom traits;
 - explicit lifetime parameters;
 - custom error enums and richer error context;
 - `lib.rs`, integration tests, and reusable library-plus-binary layout;
