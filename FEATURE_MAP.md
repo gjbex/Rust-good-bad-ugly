@@ -12,7 +12,7 @@ The examples are ordered roughly by the training sequence in
 | Minimal Rust binary | `source-code/hello-world/src/main.rs` |
 | Cargo project layout | `source-code/hello-world/` |
 | Building and running with Cargo | `source-code/hello-world/README.md` |
-| External crates in `Cargo.toml` | `source-code/hello-clap/Cargo.toml`, `source-code/complex-numbers/Cargo.toml`, `source-code/random-numbers/Cargo.toml` |
+| External crates in `Cargo.toml` | `source-code/hello-clap/Cargo.toml`, `source-code/complex-numbers/Cargo.toml`, `source-code/random-numbers/Cargo.toml`, `source-code/julia-set/julia-set-toml-config/Cargo.toml` |
 | Reproducible dependency lockfiles | `source-code/*/Cargo.lock` |
 | Release builds and benchmarking context | `source-code/julia-set/benchmark.sh` |
 
@@ -20,11 +20,11 @@ The examples are ordered roughly by the training sequence in
 
 | Feature | Where to look |
 |---|---|
-| `clap::Parser` derive | `source-code/hello-clap/src/main.rs` |
-| Typed command-line argument struct | `source-code/hello-clap/src/main.rs` |
+| `clap::Parser` derive | `source-code/hello-clap/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
+| Typed command-line argument struct | `source-code/hello-clap/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
 | Argument defaults | `source-code/numerical-function/src/main.rs`, `source-code/enum-match/src/main.rs` |
 | Restricted argument values with `ValueEnum` | `source-code/enum-match/src/main.rs`, `source-code/random-numbers/src/main.rs` |
-| File path argument | `source-code/iterators/src/main.rs` |
+| File path argument | `source-code/iterators/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
 | Numeric CLI parameters for reproducible runs | `source-code/random-numbers/src/main.rs`, `source-code/julia-set/julia-set-baseline/src/main.rs` |
 
 ## Basic Language Constructs
@@ -104,11 +104,11 @@ The examples are ordered roughly by the training sequence in
 | Feature | Where to look |
 |---|---|
 | `Option` for possibly absent values | `source-code/error-handling/src/matrix.rs` |
-| `Result` for fallible operations | `source-code/error-handling/src/matrix.rs`, `source-code/iterators/src/main.rs` |
+| `Result` for fallible operations | `source-code/error-handling/src/matrix.rs`, `source-code/iterators/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
 | Converting `Option` to `Result` with `ok_or_else` | `source-code/error-handling/src/matrix.rs` |
-| Propagating errors with `?` | `source-code/error-handling/src/matrix.rs`, `source-code/iterators/src/main.rs` |
+| Propagating errors with `?` | `source-code/error-handling/src/matrix.rs`, `source-code/iterators/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
 | Handling errors at the call site | `source-code/error-handling/src/main.rs` |
-| Returning boxed dynamic errors from `main` | `source-code/iterators/src/main.rs` |
+| Returning boxed dynamic errors from `main` | `source-code/iterators/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
 
 ## Generics And Trait Bounds
 
@@ -140,9 +140,11 @@ The examples are ordered roughly by the training sequence in
 | Feature | Where to look |
 |---|---|
 | CSV input | `source-code/iterators/src/main.rs`, `source-code/iterators/data.txt` |
-| `serde::Deserialize` derive | `source-code/iterators/src/main.rs` |
+| `serde::Deserialize` derive | `source-code/iterators/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
 | Deserializing rows into a struct | `source-code/iterators/src/main.rs` |
 | Reading an input path from the CLI | `source-code/iterators/src/main.rs` |
+| TOML configuration file for run parameters | `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/julia-set/julia-set-toml-config/julia-set.toml` |
+| Deserializing a TOML file into a typed config struct | `source-code/julia-set/julia-set-toml-config/src/main.rs` |
 
 ## Random Numbers And Distributions
 
@@ -171,6 +173,7 @@ The examples are ordered roughly by the training sequence in
 |---|---|
 | Julia set as an end-to-end numerical example | `source-code/julia-set/` |
 | Custom 2D matrix in a numerical application | `source-code/julia-set/julia-set-baseline/` |
+| Configuration-driven Julia-set runs | `source-code/julia-set/julia-set-toml-config/` |
 | Dynamic multidimensional arrays with `mdarray` | `source-code/julia-set/julia-set-mdarray/` |
 | `mdarray` expression evaluation | `source-code/julia-set/julia-set-mdarray-expr-eval/` |
 | Release-build comparison with `hyperfine` | `source-code/julia-set/benchmark.sh` |
@@ -187,6 +190,6 @@ These features are not yet covered, or are only lightly touched:
 - `lib.rs`, integration tests, and reusable library-plus-binary layout;
 - standard trait implementations such as `Display`, `Index`, and `From`;
 - hash collections such as `HashMap` and `HashSet`;
-- JSON/TOML configuration and buffered file I/O;
+- JSON data examples and broader serialization workflows;
 - data parallelism with Rayon;
 - FFI, `unsafe`, async Rust, and smart pointers.

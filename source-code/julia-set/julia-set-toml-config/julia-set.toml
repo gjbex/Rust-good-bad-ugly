@@ -1,0 +1,5 @@
+max_iterations = 1000
+width = 800
+height = 600
+c_real = -0.5125
+c_imag = 0.5213
