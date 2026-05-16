@@ -10,6 +10,7 @@ use serde::Deserialize;
 #[derive(Parser)]
 #[command(name = "Julia Set Generator", version)]
 struct Args {
+    /// Path to the configuration file (TOML format)
     config_file: PathBuf,
 }
 
