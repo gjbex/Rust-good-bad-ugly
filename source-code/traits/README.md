@@ -8,10 +8,12 @@ Compared to `../generic-structs`, it shows how to:
 * use `IndexMut` to support assignment through indexing;
 * use `Display` to define how a type is printed with `{}`;
 * use `TryFrom` to define a fallible conversion from nested vectors;
+* use `IntoIterator` to define iteration over owned and borrowed matrices;
+* use explicit lifetimes in trait implementations for borrowed iterators;
 * use an associated type, such as `type Output` or `type Error`, required by a
   trait implementation;
 * call trait-provided functionality through ordinary syntax, such as indexing,
-  assignment, `println!`, and `Matrix::try_from`.
+  assignment, `println!`, `Matrix::try_from`, and `for value in &matrix`.
 
 The indexing traits intentionally panic for out-of-bounds indices, matching the
 behavior of Rust slices.  The previous examples keep fallible `get` and `set`
@@ -25,9 +27,10 @@ representation and operations.
 ## What is it?
 
 1. `src/main.rs`: main source file for the application.  It creates matrices
-   and uses trait-based indexing, mutation, formatting, and conversion.
+   and uses trait-based indexing, mutation, formatting, conversion, and
+   iteration.
 1. `src/matrix.rs`: module that defines the generic `Matrix<T>` structure and
-   implements `Index`, `IndexMut`, `Display`, and `TryFrom`.
+   implements `Index`, `IndexMut`, `Display`, `TryFrom`, and `IntoIterator`.
 1. `Cargo.toml`: configuration file for the Rust package manager, including the
    dependency on `clap`.
 1. `Cargo.lock`: lock file for the Rust package manager, automatically

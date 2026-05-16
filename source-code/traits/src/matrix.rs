@@ -94,6 +94,33 @@ impl<T> TryFrom<Vec<Vec<T>>> for Matrix<T> {
     }
 }
 
+impl<T> IntoIterator for Matrix<T> {
+    type Item = T;
+    type IntoIter = std::vec::IntoIter<T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.data.into_iter()
+    }
+}
+
+impl<'a, T> IntoIterator for &'a Matrix<T> {
+    type Item = &'a T;
+    type IntoIter = std::slice::Iter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.data.iter()
+    }
+}
+
+impl<'a, T> IntoIterator for &'a mut Matrix<T> {
+    type Item = &'a mut T;
+    type IntoIter = std::slice::IterMut<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.data.iter_mut()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::Matrix;
@@ -128,5 +155,38 @@ mod tests {
         let result = Matrix::try_from(vec![vec![1, 2], vec![3]]);
 
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn iterates_over_borrowed_elements() {
+        let matrix =
+            Matrix::try_from(vec![vec![1, 2], vec![3, 4]]).expect("rows have the same length");
+
+        let values: Vec<_> = (&matrix).into_iter().copied().collect();
+
+        assert_eq!(values, vec![1, 2, 3, 4]);
+        assert_eq!(matrix[(0, 0)], 1);
+    }
+
+    #[test]
+    fn iterates_over_mutably_borrowed_elements() {
+        let mut matrix =
+            Matrix::try_from(vec![vec![1, 2], vec![3, 4]]).expect("rows have the same length");
+
+        for value in &mut matrix {
+            *value *= 2;
+        }
+
+        assert_eq!(matrix.to_string(), "2 4\n6 8");
+    }
+
+    #[test]
+    fn iterates_over_owned_elements() {
+        let matrix =
+            Matrix::try_from(vec![vec![1, 2], vec![3, 4]]).expect("rows have the same length");
+
+        let values: Vec<_> = matrix.into_iter().collect();
+
+        assert_eq!(values, vec![1, 2, 3, 4]);
     }
 }
