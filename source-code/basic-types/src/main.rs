@@ -17,6 +17,14 @@ fn main() {
     println!("{:.15e} <= f64 <= {:.15e}", f64::MIN, f64::MAX);
     println!("smallest positive f64: {:.15e}", f64::MIN_POSITIVE);
     println!("epsilon for f64: {:.15e}", f64::EPSILON);
+    println!("\nFloating-point constants:");
+    println!("std::f32::consts::PI: {:.7}", std::f32::consts::PI);
+    println!(
+        "std::f32::consts::FRAC_1_SQRT_2: {:.7}",
+        std::f32::consts::FRAC_1_SQRT_2
+    );
+    println!("std::f64::consts::E: {:.15}", std::f64::consts::E);
+    println!("std::f64::consts::TAU: {:.15}", std::f64::consts::TAU);
     println!("\nOther types:");
     println!("char: {} <= char <= {}", char::MIN as u32, char::MAX as u32);
     println!("bool in {{{}, {}}}", false, true);

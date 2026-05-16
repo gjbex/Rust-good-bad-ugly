@@ -16,6 +16,9 @@ prevent or make explicit in safe code.
    line arguments.
 1. `numerical-function`: illustrates how to define a function, loop over
    integer values, convert types, and format output.
+1. `math`: illustrates integer and floating-point arithmetic operators,
+   Euclidean integer division, and mathematical functions defined for
+   floating-point values.
 1. `control-flow`: illustrates conditional execution with `if` and `else`,
    repetition with `while`, and simple `for` loops over integer ranges.
 1. `mutable-variables`: illustrates how to declare mutable variables.

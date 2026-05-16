@@ -2,7 +2,8 @@
 
 This application illustrates Rust's basic types, integers, floating point
 numbers, booleans, characters and address types.  It shows also how to format
-output for floating point numbers.
+output for floating point numbers and how to use mathematical constants for
+`f32` and `f64`.
 
 
 ## What is it?

@@ -33,7 +33,13 @@ The examples are ordered roughly by the training sequence in
 |---|---|
 | `main` function | `source-code/hello-world/src/main.rs` |
 | Function definitions | `source-code/numerical-function/src/main.rs`, `source-code/control-flow/src/main.rs` |
-| Numeric literals and type conversion | `source-code/numerical-function/src/main.rs` |
+| Numeric literals and type conversion | `source-code/numerical-function/src/main.rs`, `source-code/math/src/main.rs` |
+| Integer arithmetic operators | `source-code/math/src/main.rs` |
+| Integer division and remainder | `source-code/math/src/main.rs` |
+| Euclidean integer division and remainder | `source-code/math/src/main.rs` |
+| Floating-point arithmetic operators | `source-code/math/src/main.rs` |
+| Mathematical methods on floating-point values | `source-code/math/src/main.rs` |
+| Floating-point rounding and absolute-value methods | `source-code/math/src/main.rs` |
 | Conditional execution with `if` and `else` | `source-code/control-flow/src/main.rs` |
 | `while` loops | `source-code/control-flow/src/main.rs` |
 | Simple `for` loops over integer ranges | `source-code/control-flow/src/main.rs`, `source-code/numerical-function/src/main.rs` |
@@ -42,6 +48,8 @@ The examples are ordered roughly by the training sequence in
 | Formatted output | `source-code/numerical-function/src/main.rs`, `source-code/basic-types/src/main.rs`, `source-code/control-flow/src/main.rs` |
 | Mutable bindings with `mut` | `source-code/mutable-variables/src/main.rs`, `source-code/control-flow/src/main.rs` |
 | Primitive scalar types | `source-code/basic-types/src/main.rs` |
+| Floating-point limits and precision constants | `source-code/basic-types/src/main.rs` |
+| Mathematical constants for `f32` and `f64` | `source-code/basic-types/src/main.rs` |
 | Type introspection for examples | `source-code/no-double-promotion/src/main.rs` |
 | Floating-point literal context and no double promotion | `source-code/no-double-promotion/src/main.rs` |
 
