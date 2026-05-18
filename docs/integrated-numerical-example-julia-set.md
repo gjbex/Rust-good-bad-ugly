@@ -50,6 +50,8 @@ The `source-code/julia-set` directory contains several implementations:
 - `julia-set-mdarray-expr-eval`: `mdarray` expression evaluation.
 - `julia-set-toml-config`: custom matrix type with run parameters read from
   TOML.
+- `julia-set-rayon`: custom matrix type with parallel result computation.  The
+  Rayon-specific details are discussed in the data-parallelism module.
 - `view-fractal.py`: Plotly visualization helper.
 
 All variants compute the same kind of output: for each point in a grid, count

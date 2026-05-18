@@ -277,7 +277,32 @@ Related module text:
 
 - `docs/randomness-and-reproducible-runs.md`
 
-## Module 11: Integrated Numerical Example: Julia Set
+## Module 11: Data Parallelism With Rayon
+
+Primary example:
+
+- `source-code/julia-set/julia-set-rayon`
+
+Topics:
+
+- Data parallelism.
+- Rayon parallel iterators.
+- `into_par_iter`.
+- Parallel `map` and `collect`.
+- Avoiding shared mutable state.
+- Controlling worker threads with `RAYON_NUM_THREADS`.
+- Benchmarking serial and parallel implementations.
+
+Goal:
+
+Participants should understand how to use Rayon for independent per-element
+work, and how to reason about when data parallelism is likely to help.
+
+Related module text:
+
+- `docs/data-parallelism-with-rayon.md`
+
+## Module 12: Integrated Numerical Example: Julia Set
 
 Primary example group:
 
@@ -307,7 +332,7 @@ Suggested placement:
 This module works well after the core language modules, alongside the other
 integrated numerical examples.
 
-## Module 12: Integrated Numerical Example: N-Body Simulation
+## Module 13: Integrated Numerical Example: N-Body Simulation
 
 Primary example:
 
@@ -375,8 +400,9 @@ A compact course can use this order:
 8. Error Handling.
 9. Project Organization, Libraries, And Tests.
 10. Randomness And Reproducible Runs.
-11. Integrated Numerical Example: Julia Set.
-12. Integrated Numerical Example: N-Body Simulation.
+11. Data Parallelism With Rayon.
+12. Integrated Numerical Example: Julia Set.
+13. Integrated Numerical Example: N-Body Simulation.
 
 For a shorter course, the Julia set example can be used as the main integrated
 example and the N-body simulation can be left as an additional integrated

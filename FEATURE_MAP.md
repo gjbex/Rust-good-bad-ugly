@@ -194,6 +194,7 @@ several places when they combine multiple ideas.
 | Dynamic multidimensional arrays with `mdarray` | `source-code/julia-set/julia-set-mdarray/` |
 | `mdarray` expression evaluation | `source-code/julia-set/julia-set-mdarray-expr-eval/` |
 | Configuration-driven Julia-set runs | `source-code/julia-set/julia-set-toml-config/` |
+| Data parallelism with Rayon | `source-code/julia-set/julia-set-rayon/` |
 | N-body simulation with velocity Verlet integration | `source-code/n-body-simulation/` |
 | Softened gravitational interactions | `source-code/n-body-simulation/src/system.rs` |
 
@@ -219,5 +220,4 @@ These features are not yet covered, or are only lightly touched:
 - additional standard trait implementations such as `From`, `Default`,
   `Debug`, and `PartialEq`;
 - JSON data examples and broader serialization workflows;
-- data parallelism with Rayon;
 - FFI, `unsafe`, async Rust, and smart pointers.
