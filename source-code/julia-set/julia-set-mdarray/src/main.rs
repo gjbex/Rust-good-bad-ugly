@@ -18,7 +18,7 @@ struct Args {
 }
 
 type MatrixC = DArray<Complex64, 2>;
-type MatrixCSlice<'a> = DSlice<Complex64, 2>;
+type MatrixCSlice = DSlice<Complex64, 2>;
 type MatrixI = DArray<usize, 2>;
 
 fn initialize_z(rows: usize, cols: usize) -> MatrixC {
