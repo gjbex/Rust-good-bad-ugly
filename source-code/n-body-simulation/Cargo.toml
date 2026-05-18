@@ -1,0 +1,12 @@
+[package]
+name = "n-body-simulation"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+csv = "1.4.0"
+rand = "0.10"
+rand_chacha = "0.10"
+rand_distr = "0.6"
+serde = { version = "1.0.228", features = ["derive"] }

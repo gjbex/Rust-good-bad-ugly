@@ -1,0 +1,22 @@
+[package]
+name = "hashmap-hashset"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "generate-data"
+path = "src/generate-data.rs"
+
+[[bin]]
+name = "read-errors"
+path = "src/read-errors.rs"
+
+[[bin]]
+name = "count-nucleotides"
+path = "src/count-nucleotides.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+rand = "0.10"
+rand_chacha = "0.10"
+rand_distr = "0.6"

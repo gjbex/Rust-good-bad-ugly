@@ -1,0 +1,10 @@
+name: rust_good_bad_ugly
+channels:
+  - conda-forge
+dependencies:
+  - numpy
+  - pandas
+  - plotly
+  - scipy
+
+prefix: "/home/gjb/mambaforge/envs/rust_good_bad_ugly"
