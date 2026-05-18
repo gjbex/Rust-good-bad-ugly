@@ -3,8 +3,12 @@
 import argparse
 import sys
 
-import matplotlib.pyplot as plt
 import numpy as np
+
+try:
+    import plotly.graph_objects as go
+except ModuleNotFoundError as error:
+    sys.exit(f"{error.name} is required: install it with `python3 -m pip install plotly`")
 
 
 def parse_args():
@@ -28,10 +32,18 @@ def main():
     args = parse_args()
     data = load_data(args.filename)
 
-    plt.figure(figsize=(10, 6))
-    plt.imshow(data, cmap='viridis', aspect='equal')
-    plt.colorbar(label='Iterations')
-    plt.show()
+    figure = go.Figure(
+        data=[
+            go.Heatmap(
+                z=data,
+                colorscale="Viridis",
+                colorbar={"title": "Iterations"},
+            )
+        ]
+    )
+    figure.update_yaxes(scaleanchor="x", scaleratio=1)
+    figure.update_layout(xaxis_title="x index", yaxis_title="y index")
+    figure.show()
 
 
 if __name__ == '__main__':

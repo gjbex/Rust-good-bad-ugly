@@ -26,7 +26,8 @@ It shows how to:
    softening length, and provides methods for time integration, energies,
    center of mass, and particle-state inspection.
 1. `visualize-evolution.py`: Python script that reads the evolution CSV file
-   and displays energy and center-of-mass displacement plots side by side.
+   and displays interactive Plotly energy and center-of-mass displacement plots
+   side by side.
 1. `animate-states.py`: Python script that reads the particle-state CSV file
    and creates an interactive 3D Plotly animation.
 1. `Cargo.toml`: configuration file for the Rust package manager.  It specifies
@@ -76,5 +77,5 @@ Animate the particle states:
 The Python scripts require additional Python packages:
 
 ```bash
-python3 -m pip install matplotlib pandas plotly
+python3 -m pip install pandas plotly
 ```

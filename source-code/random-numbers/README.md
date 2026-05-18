@@ -19,8 +19,8 @@ The uniform distribution samples values in the half-open interval `[0.0, 1.0)`.
 1. `src/main.rs`: main source file for the application.  It parses the number
    of samples, seed, and distribution from the command line, constructs a
    reproducible RNG, and prints one sample per line.
-1. `show-distribution.py`: small Python helper script that reads values from standard
-   input and displays a histogram.
+1. `show-distribution.py`: small Python helper script that reads values from
+   standard input and displays an interactive Plotly histogram.
 1. `Cargo.toml`: configuration file for the Rust package manager.  It specifies
    the dependencies on `clap`, `rand`, `rand_chacha`, and `rand_distr`.
 1. `Cargo.lock`: lock file for the Rust package manager, automatically

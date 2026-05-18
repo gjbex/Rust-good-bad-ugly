@@ -207,9 +207,9 @@ The examples are ordered roughly by the training sequence in
 |---|---|
 | Reading numeric output from standard input | `source-code/random-numbers/show-distribution.py`, `source-code/julia-set/view-fractal.py` |
 | Pipe Rust program output into Python visualization | `source-code/random-numbers/README.md`, `source-code/julia-set/README.md` |
-| Histogram visualization with `matplotlib` | `source-code/random-numbers/show-distribution.py` |
-| 2D image visualization with `matplotlib` and `numpy.loadtxt` | `source-code/julia-set/view-fractal.py` |
-| CSV diagnostics visualization with `matplotlib` | `source-code/n-body-simulation/visualize-evolution.py` |
+| Histogram visualization with Plotly | `source-code/random-numbers/show-distribution.py` |
+| 2D heatmap visualization with Plotly and `numpy.loadtxt` | `source-code/julia-set/view-fractal.py` |
+| CSV diagnostics visualization with Plotly | `source-code/n-body-simulation/visualize-evolution.py` |
 | Interactive 3D animation with Plotly | `source-code/n-body-simulation/animate-states.py` |
 
 ## Larger Numerical Examples

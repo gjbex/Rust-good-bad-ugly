@@ -6,9 +6,10 @@ import math
 import sys
 
 try:
-    import matplotlib.pyplot as plt
-except ModuleNotFoundError:
-    sys.exit("matplotlib is required: install it with `python3 -m pip install matplotlib`")
+    from plotly.subplots import make_subplots
+    import plotly.graph_objects as go
+except ModuleNotFoundError as error:
+    sys.exit(f"{error.name} is required: install it with `python3 -m pip install plotly`")
 
 
 def parse_args():
@@ -65,22 +66,36 @@ def main():
     )
     distances = center_of_mass_distances(center_of_mass)
 
-    _, axes = plt.subplots(nrows=1, ncols=2, figsize=(12, 5), constrained_layout=True)
-
-    axes[0].plot(steps, potential_energy, label="potential")
-    axes[0].plot(steps, kinetic_energy, label="kinetic")
-    axes[0].plot(steps, total_energy, label="total")
-    axes[0].set_xlabel("step")
-    axes[0].set_ylabel("energy")
-    axes[0].legend()
-    axes[0].grid(True, alpha=0.3)
-
-    axes[1].plot(steps, distances)
-    axes[1].set_xlabel("step")
-    axes[1].set_ylabel("center-of-mass displacement")
-    axes[1].grid(True, alpha=0.3)
-
-    plt.show()
+    figure = make_subplots(
+        rows=1,
+        cols=2,
+        subplot_titles=("Energy", "Center-of-mass displacement"),
+    )
+    figure.add_trace(
+        go.Scatter(x=steps, y=potential_energy, mode="lines", name="potential"),
+        row=1,
+        col=1,
+    )
+    figure.add_trace(
+        go.Scatter(x=steps, y=kinetic_energy, mode="lines", name="kinetic"),
+        row=1,
+        col=1,
+    )
+    figure.add_trace(
+        go.Scatter(x=steps, y=total_energy, mode="lines", name="total"),
+        row=1,
+        col=1,
+    )
+    figure.add_trace(
+        go.Scatter(x=steps, y=distances, mode="lines", name="COM displacement"),
+        row=1,
+        col=2,
+    )
+    figure.update_xaxes(title_text="step", row=1, col=1)
+    figure.update_xaxes(title_text="step", row=1, col=2)
+    figure.update_yaxes(title_text="energy", row=1, col=1)
+    figure.update_yaxes(title_text="distance", row=1, col=2)
+    figure.show()
 
 
 if __name__ == "__main__":
