@@ -42,6 +42,8 @@ prevent or make explicit in safe code.
    the rules that govern borrowing.
 1. `structs-and-methods`: illustrates how to define a struct, implement methods
    on it, and use it in a simple application.
+1. `structs-methods`: extends the structs-and-methods material with an n-body
+   simulation, command-line parameters, CSV output, and Python visualization.
 1. `error-handling`: illustrates how to handle errors using the `Option` and
    `Result` types and the `?` operator.
 1. `generic-structs`: illustrates how to define a generic struct and constrain
