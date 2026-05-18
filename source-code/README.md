@@ -60,5 +60,5 @@ programming.
 
 `n-body-simulation`: softened gravitational n-body simulation that combines
 structs, methods, random initialization, command-line parameters, CSV output,
-numerical time integration, and Python visualization.  This can serve as a
-capstone example after the smaller feature-focused examples.
+numerical time integration, and Python visualization.  This can serve as an
+integrated numerical example after the smaller feature-focused examples.
