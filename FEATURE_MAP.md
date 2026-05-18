@@ -68,6 +68,8 @@ The examples are ordered roughly by the training sequence in
 |---|---|
 | Defining an `enum` | `source-code/enum-match/src/main.rs` |
 | Matching on enum variants | `source-code/enum-match/src/main.rs`, `source-code/random-numbers/src/main.rs` |
+| Match guards | `source-code/enum-match/src/main.rs`, `source-code/hashmap-hashset/src/count-nucleotides.rs` |
+| Tuple destructuring in patterns | `source-code/iterators/src/main.rs`, `source-code/traits/src/matrix.rs`, `source-code/n-body-simulation/src/system.rs` |
 | Splitting code into modules with `mod` | `source-code/enum-match/src/main.rs`, `source-code/enum-match/src/simpson.rs`, `source-code/enum-match/src/gauss.rs`, `source-code/user-defined-trait/src/main.rs` |
 | Passing functions or closures as arguments | `source-code/enum-match/src/simpson.rs`, `source-code/enum-match/src/gauss.rs`, `source-code/user-defined-trait/src/quadrature.rs` |
 | Enum-as-factory pattern | `source-code/random-numbers/src/main.rs` |
@@ -112,6 +114,16 @@ The examples are ordered roughly by the training sequence in
 | Methods for updating and inspecting simulation state | `source-code/n-body-simulation/src/system.rs` |
 | Structure-of-arrays storage | `source-code/n-body-simulation/src/system.rs` |
 
+## Standard Trait Implementations
+
+| Feature | Where to look |
+|---|---|
+| Implementing `Index` | `source-code/traits/src/matrix.rs` |
+| Implementing `IndexMut` | `source-code/traits/src/matrix.rs` |
+| Implementing `Display` | `source-code/traits/src/matrix.rs` |
+| Implementing `TryFrom` | `source-code/traits/src/matrix.rs` |
+| Implementing `IntoIterator` for owned and borrowed values | `source-code/traits/src/matrix.rs` |
+
 ## Error Handling
 
 | Feature | Where to look |
@@ -152,6 +164,15 @@ The examples are ordered roughly by the training sequence in
 | `collect` with explicit result type | `source-code/iterators/src/main.rs` |
 | Owned values versus borrowed values in iterator results | `source-code/iterators/src/main.rs` |
 | Optional writers with `Option` and `if let` | `source-code/n-body-simulation/src/main.rs` |
+
+## Hash Collections
+
+| Feature | Where to look |
+|---|---|
+| Counting values with `HashMap` | `source-code/hashmap-hashset/src/count-nucleotides.rs` |
+| Updating counts with the entry API | `source-code/hashmap-hashset/src/count-nucleotides.rs` |
+| Collecting unique values with `HashSet` | `source-code/hashmap-hashset/src/count-nucleotides.rs` |
+| Sharing constants and helper functions from `lib.rs` | `source-code/hashmap-hashset/src/lib.rs` |
 
 ## Data I/O And Serialization
 
@@ -209,12 +230,12 @@ The examples are ordered roughly by the training sequence in
 
 These features are not yet covered, or are only lightly touched:
 
-- deeper pattern matching: `while let`, tuple or struct destructuring;
+- deeper pattern matching: `while let` and struct destructuring;
 - explicit lifetime parameters;
 - custom error enums and richer error context;
 - `lib.rs`, integration tests, and reusable library-plus-binary layout;
-- standard trait implementations such as `Display`, `Index`, and `From`;
-- hash collections such as `HashMap` and `HashSet`;
+- additional standard trait implementations such as `From`, `Default`,
+  `Debug`, and `PartialEq`;
 - JSON data examples and broader serialization workflows;
 - data parallelism with Rayon;
 - FFI, `unsafe`, async Rust, and smart pointers.
