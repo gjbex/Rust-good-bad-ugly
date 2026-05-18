@@ -1,4 +1,4 @@
-# Structs and methods
+# N-body simulation
 
 This example implements a small softened gravitational n-body simulation.  It
 is intended as a richer example of defining a struct with associated functions

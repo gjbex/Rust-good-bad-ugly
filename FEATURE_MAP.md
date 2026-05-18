@@ -12,7 +12,7 @@ The examples are ordered roughly by the training sequence in
 | Minimal Rust binary | `source-code/hello-world/src/main.rs` |
 | Cargo project layout | `source-code/hello-world/` |
 | Building and running with Cargo | `source-code/hello-world/README.md` |
-| External crates in `Cargo.toml` | `source-code/hello-clap/Cargo.toml`, `source-code/complex-numbers/Cargo.toml`, `source-code/random-numbers/Cargo.toml`, `source-code/julia-set/julia-set-toml-config/Cargo.toml`, `source-code/structs-methods/Cargo.toml` |
+| External crates in `Cargo.toml` | `source-code/hello-clap/Cargo.toml`, `source-code/complex-numbers/Cargo.toml`, `source-code/random-numbers/Cargo.toml`, `source-code/julia-set/julia-set-toml-config/Cargo.toml`, `source-code/n-body-simulation/Cargo.toml` |
 | Reproducible dependency lockfiles | `source-code/*/Cargo.lock` |
 | Release builds and benchmarking context | `source-code/julia-set/benchmark.sh` |
 
@@ -20,13 +20,13 @@ The examples are ordered roughly by the training sequence in
 
 | Feature | Where to look |
 |---|---|
-| `clap::Parser` derive | `source-code/hello-clap/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/structs-methods/src/main.rs` |
-| Typed command-line argument struct | `source-code/hello-clap/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/structs-methods/src/main.rs` |
-| Argument defaults | `source-code/numerical-function/src/main.rs`, `source-code/enum-match/src/main.rs`, `source-code/structs-methods/src/main.rs` |
+| `clap::Parser` derive | `source-code/hello-clap/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/src/main.rs` |
+| Typed command-line argument struct | `source-code/hello-clap/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/src/main.rs` |
+| Argument defaults | `source-code/numerical-function/src/main.rs`, `source-code/enum-match/src/main.rs`, `source-code/n-body-simulation/src/main.rs` |
 | Restricted argument values with `ValueEnum` | `source-code/enum-match/src/main.rs`, `source-code/random-numbers/src/main.rs`, `source-code/user-defined-trait/src/main.rs` |
 | File path argument | `source-code/iterators/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
 | Numeric CLI parameters for reproducible runs | `source-code/random-numbers/src/main.rs`, `source-code/julia-set/julia-set-baseline/src/main.rs` |
-| Optional output file arguments | `source-code/structs-methods/src/main.rs` |
+| Optional output file arguments | `source-code/n-body-simulation/src/main.rs` |
 
 ## Basic Language Constructs
 
@@ -107,10 +107,10 @@ The examples are ordered roughly by the training sequence in
 | Getter methods | `source-code/structs-and-methods/src/matrix.rs` |
 | Mutable methods | `source-code/structs-and-methods/src/matrix.rs` |
 | Flat vector storage for 2D data | `source-code/structs-and-methods/src/matrix.rs` |
-| Struct encapsulating simulation state | `source-code/structs-methods/src/system.rs` |
-| Associated constructor for a simulation state | `source-code/structs-methods/src/system.rs` |
-| Methods for updating and inspecting simulation state | `source-code/structs-methods/src/system.rs` |
-| Structure-of-arrays storage | `source-code/structs-methods/src/system.rs` |
+| Struct encapsulating simulation state | `source-code/n-body-simulation/src/system.rs` |
+| Associated constructor for a simulation state | `source-code/n-body-simulation/src/system.rs` |
+| Methods for updating and inspecting simulation state | `source-code/n-body-simulation/src/system.rs` |
+| Structure-of-arrays storage | `source-code/n-body-simulation/src/system.rs` |
 
 ## Error Handling
 
@@ -151,7 +151,7 @@ The examples are ordered roughly by the training sequence in
 | `sum` | `source-code/borrowing-vectors/src/main.rs`, `source-code/iterators/src/main.rs` |
 | `collect` with explicit result type | `source-code/iterators/src/main.rs` |
 | Owned values versus borrowed values in iterator results | `source-code/iterators/src/main.rs` |
-| Optional writers with `Option` and `if let` | `source-code/structs-methods/src/main.rs` |
+| Optional writers with `Option` and `if let` | `source-code/n-body-simulation/src/main.rs` |
 
 ## Data I/O And Serialization
 
@@ -159,10 +159,10 @@ The examples are ordered roughly by the training sequence in
 |---|---|
 | CSV input | `source-code/iterators/src/main.rs`, `source-code/iterators/data.txt` |
 | `serde::Deserialize` derive | `source-code/iterators/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
-| `serde::Serialize` derive | `source-code/structs-methods/src/main.rs` |
+| `serde::Serialize` derive | `source-code/n-body-simulation/src/main.rs` |
 | Deserializing rows into a struct | `source-code/iterators/src/main.rs` |
-| Writing CSV records | `source-code/structs-methods/src/main.rs` |
-| Serializing typed records to CSV | `source-code/structs-methods/src/main.rs` |
+| Writing CSV records | `source-code/n-body-simulation/src/main.rs` |
+| Serializing typed records to CSV | `source-code/n-body-simulation/src/main.rs` |
 | Reading an input path from the CLI | `source-code/iterators/src/main.rs` |
 | TOML configuration file for run parameters | `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/julia-set/julia-set-toml-config/julia-set.toml` |
 | Deserializing a TOML file into a typed config struct | `source-code/julia-set/julia-set-toml-config/src/main.rs` |
@@ -178,7 +178,7 @@ The examples are ordered roughly by the training sequence in
 | Distribution choice parsed by `clap::ValueEnum` | `source-code/random-numbers/src/main.rs` |
 | Runtime distribution enum with a common `sample` method | `source-code/random-numbers/src/main.rs` |
 | Generic method over any RNG implementing `Rng` | `source-code/random-numbers/src/main.rs` |
-| Random initial conditions for a simulation | `source-code/structs-methods/src/system.rs` |
+| Random initial conditions for a simulation | `source-code/n-body-simulation/src/system.rs` |
 
 ## Python Visualization Helpers
 
@@ -188,8 +188,8 @@ The examples are ordered roughly by the training sequence in
 | Pipe Rust program output into Python visualization | `source-code/random-numbers/README.md`, `source-code/julia-set/README.md` |
 | Histogram visualization with `matplotlib` | `source-code/random-numbers/show-distribution.py` |
 | 2D image visualization with `matplotlib` and `numpy.loadtxt` | `source-code/julia-set/view-fractal.py` |
-| CSV diagnostics visualization with `matplotlib` | `source-code/structs-methods/visualize-evolution.py` |
-| Interactive 3D animation with Plotly | `source-code/structs-methods/animate-states.py` |
+| CSV diagnostics visualization with `matplotlib` | `source-code/n-body-simulation/visualize-evolution.py` |
+| Interactive 3D animation with Plotly | `source-code/n-body-simulation/animate-states.py` |
 
 ## Larger Numerical Examples
 
@@ -200,8 +200,8 @@ The examples are ordered roughly by the training sequence in
 | Configuration-driven Julia-set runs | `source-code/julia-set/julia-set-toml-config/` |
 | Dynamic multidimensional arrays with `mdarray` | `source-code/julia-set/julia-set-mdarray/` |
 | `mdarray` expression evaluation | `source-code/julia-set/julia-set-mdarray-expr-eval/` |
-| N-body simulation with velocity Verlet integration | `source-code/structs-methods/` |
-| Softened gravitational interactions | `source-code/structs-methods/src/system.rs` |
+| N-body simulation with velocity Verlet integration | `source-code/n-body-simulation/` |
+| Softened gravitational interactions | `source-code/n-body-simulation/src/system.rs` |
 | Release-build comparison with `hyperfine` | `source-code/julia-set/benchmark.sh` |
 | Plotting output with Python | `source-code/julia-set/view-fractal.py`, `source-code/random-numbers/show-distribution.py` |
 
