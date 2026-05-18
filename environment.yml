@@ -6,5 +6,3 @@ dependencies:
   - pandas
   - plotly
   - scipy
-
-prefix: "/home/gjb/mambaforge/envs/rust_good_bad_ugly"
