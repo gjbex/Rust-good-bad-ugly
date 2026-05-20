@@ -40,6 +40,13 @@ jobs:
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
 
+      - name: Build landing page
+        run: |
+          mkdir -p "$RUNNER_TEMP/landing/pages"
+          sed "s#{{GITHUB_REPOSITORY}}#${GITHUB_REPOSITORY}#g" pages/index.md > "$RUNNER_TEMP/landing/pages/index.md"
+          cp mkdocs-landing.yml "$RUNNER_TEMP/landing/mkdocs.yml"
+          mkdocs build --strict --config-file "$RUNNER_TEMP/landing/mkdocs.yml" --site-dir "$PWD/_site"
+
       - name: Build learning-module site
         run: mkdocs build --strict --site-dir "$PWD/_site/learning-modules"
 
@@ -48,11 +55,6 @@ jobs:
           quarto render slides-source/rust-good-bad-ugly.qmd --to revealjs --output-dir "$RUNNER_TEMP/slides"
           mkdir -p _site/slides
           cp -R "$RUNNER_TEMP/slides/." _site/slides/
-
-      - name: Add landing page
-        run: |
-          sed "s#{{GITHUB_REPOSITORY}}#${GITHUB_REPOSITORY}#g" pages/index.html > _site/index.html
-          cp pages/styles.css _site/styles.css
 
       - name: Configure GitHub Pages
         if: github.event_name != 'pull_request'

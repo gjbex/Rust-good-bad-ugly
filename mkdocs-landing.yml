@@ -1,0 +1,17 @@
+site_name: Rust, the good, the bad, and the ugly
+site_description: Training material for Rust in scientific computing
+docs_dir: pages
+site_dir: _site
+
+theme:
+  name: readthedocs
+
+nav:
+  - Home: index.md
+
+markdown_extensions:
+  - tables
+
+validation:
+  links:
+    not_found: ignore
