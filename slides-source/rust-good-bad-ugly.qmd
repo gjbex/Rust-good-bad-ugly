@@ -44,4 +44,6 @@ execute:
 
 {{< include 13-integrated-numerical-example-n-body-simulation.qmd >}}
 
+{{< include ecosystem.qmd >}}
+
 {{< include finally.qmd >}}

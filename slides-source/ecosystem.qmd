@@ -1,0 +1,155 @@
+# Rust Scientific Computing Ecosystem
+
+::: notes
+Use this section as a pragmatic map of the ecosystem. The point is not to
+claim that Rust already matches Python, R, or Julia for scientific work, but to
+show where credible building blocks exist and where evaluation is still needed.
+:::
+
+## Section Arc
+
+- Core numerical data structures
+- Linear algebra and optimization
+- Differential equations
+- DataFrames, plotting, and data formats
+- Ecosystem checks before adoption
+
+::: notes
+Frame this as "what to look at next" after the course examples. The list is a
+starting point, not a blanket recommendation for every project.
+:::
+
+## Ecosystem Reality Check
+
+- Rust has strong systems foundations
+- Scientific libraries are uneven
+- Many crates are domain-specific building blocks
+- Some workflows still need Python, R, Julia, or C/Fortran libraries
+
+::: notes
+Keep this balanced. Rust is attractive for robust kernels, tools, services,
+pipelines, and reusable components. It is not yet the shortest path for every
+interactive analysis workflow.
+:::
+
+## Arrays And Complex Numbers
+
+- [`ndarray`](https://docs.rs/ndarray/latest/ndarray/): N-dimensional arrays
+- [`num-complex`](https://docs.rs/num-complex/latest/num_complex/): complex scalar types
+- [`ndarray-linalg`](https://docs.rs/ndarray-linalg/latest/ndarray_linalg/): linear algebra extension traits
+
+::: notes
+Point out that `ndarray-linalg` depends on BLAS/LAPACK backend choices. That
+is powerful, but it adds build and deployment decisions that trainees should
+expect in real projects.
+:::
+
+## Linear Algebra Choices
+
+- [`nalgebra`](https://docs.rs/nalgebra/latest/nalgebra/): matrices, vectors, geometry
+- [`faer`](https://docs.rs/faer/latest/faer/): dense linear algebra in Rust
+- [`ndarray-linalg`](https://docs.rs/ndarray-linalg/latest/ndarray_linalg/): `ndarray` plus LAPACK-style operations
+
+::: notes
+Distinguish data containers from numerical kernels. The best choice depends on
+array shape, dynamic versus static dimensions, dependencies, and deployment
+constraints.
+:::
+
+## Optimization
+
+[`argmin`](https://docs.rs/argmin/latest/argmin/): numerical optimization framework
+
+- Useful for fitting, calibration, and inverse problems
+- Check available solvers, derivatives, constraints, and maintenance status
+
+::: notes
+Avoid overselling. Optimization APIs become project-critical quickly, so solver
+coverage and diagnostics matter as much as the crate existing.
+:::
+
+## Differential Equations
+
+- [`diffsol`](https://docs.rs/diffsol/latest/diffsol/): ODE and DAE solving
+- [`differential-equations`](https://docs.rs/differential-equations/latest/differential_equations/): ODE, DDE, and SDE initial-value problems
+- [`ode_solvers`](https://docs.rs/ode_solvers/latest/ode_solvers/): ODE solver building block
+
+::: notes
+This is an area to evaluate carefully for each model. Look at stiffness,
+events, dense output, Jacobians, error control, and whether the solver family
+matches the scientific problem.
+:::
+
+## DataFrames And Analysis
+
+[`polars`](https://docs.rs/polars/latest/polars/): DataFrame and query engine
+
+- Lazy queries can optimize larger analysis pipelines
+- Good fit for structured tabular data and columnar formats
+
+::: notes
+Mention that Polars is a Rust project with APIs in other languages as well.
+For many teams, Rust may be the engine even when analysts use Python or R.
+:::
+
+## Visualization
+
+[`plotly`](https://docs.rs/plotly/latest/plotly/): interactive plots from Rust
+
+- HTML output works well for reports and lightweight inspection
+- Publication plotting may still be easier in Python, R, or Julia
+
+::: notes
+This keeps visualization expectations realistic. Rust can produce plots, but
+the surrounding scientific plotting ecosystem is less broad than Python's or
+R's.
+:::
+
+## Columnar Data Formats
+
+- [`arrow`](https://docs.rs/arrow/latest/arrow/): Apache Arrow memory model
+- [`parquet`](https://docs.rs/parquet/latest/parquet/): Apache Parquet files
+- [`polars`](https://docs.rs/polars/latest/polars/): DataFrame workflows on top of Arrow-style data
+
+::: notes
+Connect this to scientific pipelines: typed schemas, columnar data, and
+interoperability with Python, R, Spark, DuckDB, and other tools.
+:::
+
+## HDF5
+
+[`hdf5`](https://docs.rs/hdf5/latest/hdf5/): HDF5 access from Rust
+
+- Useful when existing instruments or simulations already produce HDF5
+- Check native-library availability on clusters and CI systems
+
+::: notes
+HDF5 is often an operational dependency question, not only a programming API
+question. The system library and deployment environment matter.
+:::
+
+## Adoption Checklist
+
+- Does the crate cover the required numerical method?
+- Are examples and documentation sufficient?
+- Are releases recent enough for your project risk?
+- Does it compose with the data structures you use?
+- Can it build on your target cluster or platform?
+
+::: notes
+This is the practical closing message: adopt crates deliberately. Scientific
+software choices need correctness, maintainability, and deployment checks.
+:::
+
+## Typical Rust Roles
+
+- Reliable command-line tools
+- Fast data conversion and validation
+- Reproducible simulation kernels
+- Parallel batch computations
+- Libraries embedded in larger Python, R, or Julia workflows
+
+::: notes
+End by connecting the ecosystem back to the course's central question. Rust
+does not have to replace every tool to be useful in scientific computing.
+:::
