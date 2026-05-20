@@ -1,11 +1,5 @@
 # Module 9: Project Organization, Libraries, And Tests
 
-- Library and binary targets
-- Shared code in `src/lib.rs`
-- Multiple executables in one package
-- Unit tests close to the code
-- Numerical checks with tolerances
-
 ::: notes
 This module explains how examples grow without becoming one large `main.rs`.
 Keep the motivation pragmatic: reuse, clarity, and testability.

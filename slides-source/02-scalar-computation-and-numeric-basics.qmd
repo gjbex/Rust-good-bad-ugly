@@ -1,11 +1,5 @@
 # Module 2: Scalar Computation And Numeric Basics
 
-- Concrete scalar types
-- Integer and floating-point arithmetic
-- Explicit numeric conversions
-- Floating-point methods and constants
-- Complex numbers through `num-complex`
-
 ::: notes
 This is the first module where Rust's explicitness matters directly for
 numerical work. Keep the visible slides focused on what learners should inspect

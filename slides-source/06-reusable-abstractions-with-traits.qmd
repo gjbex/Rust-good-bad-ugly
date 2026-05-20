@@ -1,11 +1,5 @@
 # Module 6: Reusable Abstractions With Traits
 
-- Standard traits for familiar behavior
-- User-defined traits for domain behavior
-- Trait bounds on generic code
-- Associated types in trait contracts
-- Static and dynamic dispatch
-
 ::: notes
 Present traits as Rust's way to express shared behavior. Avoid starting with
 inheritance comparisons unless the room asks for them.

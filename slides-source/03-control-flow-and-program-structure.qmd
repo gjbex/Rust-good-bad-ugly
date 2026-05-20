@@ -1,11 +1,5 @@
 # Module 3: Control Flow And Program Structure
 
-- Branches and loops
-- Functions and return values
-- Blocks and expressions
-- Tuples, enums, and `match`
-- Source modules
-
 ::: notes
 Connect control flow to small numerical functions, not abstract syntax. This is
 where learners start shaping repeated computations.

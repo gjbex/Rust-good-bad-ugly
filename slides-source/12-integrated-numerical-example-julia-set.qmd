@@ -1,11 +1,5 @@
 # Module 12: Integrated Numerical Example: Julia Set
 
-- Complex arithmetic
-- Grid-to-plane mapping
-- Matrix-level iteration
-- Multiple implementation variants
-- Output and visualization
-
 ::: notes
 This is an integration module. Revisit earlier concepts only where they appear
 naturally in the numerical program.

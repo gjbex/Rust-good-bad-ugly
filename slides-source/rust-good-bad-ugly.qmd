@@ -4,6 +4,7 @@ author: "Geert Jan Bex"
 format:
   revealjs:
     theme: simple
+    css: styles.css
     slide-number: true
     chalkboard: true
     preview-links: auto

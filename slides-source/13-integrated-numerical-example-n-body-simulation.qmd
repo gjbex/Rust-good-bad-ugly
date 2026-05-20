@@ -1,11 +1,5 @@
 # Module 13: Integrated Numerical Example: N-Body Simulation
 
-- Simulation state
-- Random initialization
-- Time integration
-- Diagnostics
-- CSV output and visualization
-
 ::: notes
 Frame this as a small but realistic scientific application. It combines CLI
 parameters, domain types, methods, output, and analysis.

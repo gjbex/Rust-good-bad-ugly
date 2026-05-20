@@ -1,11 +1,5 @@
 # Module 10: Randomness And Reproducible Runs
 
-- Explicit seeds
-- Named random number generators
-- Distribution choices
-- Generated data as text
-- Visualization through a pipeline
-
 ::: notes
 This is the first module where reproducibility is the central concept. Make the
 seed and the exact command visible as part of the experiment.

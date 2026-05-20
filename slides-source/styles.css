@@ -1,0 +1,9 @@
+.reveal .slides section > h1:first-child,
+.reveal .slides section > h2:first-child {
+  margin-bottom: 0.85em;
+}
+
+.reveal .slides section > h1:first-child + *,
+.reveal .slides section > h2:first-child + * {
+  margin-top: 0;
+}

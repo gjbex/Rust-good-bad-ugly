@@ -1,9 +1,5 @@
 # Introduction
 
-- Why Rust for scientific computing?
-- How the learning modules fit together
-- How the examples and terminal work fit together
-
 ::: notes
 This is the opening section after the title slide. Keep it as orientation, not
 as a full course abstract.

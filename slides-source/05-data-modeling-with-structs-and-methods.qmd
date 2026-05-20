@@ -1,11 +1,5 @@
 # Module 5: Data Modeling With Structs And Methods
 
-- Domain data as structs
-- Behavior in `impl` blocks
-- Associated functions
-- Encapsulation through private fields
-- Generic structs where useful
-
 ::: notes
 Use scientific domain language here: matrices, particles, parameters, and
 diagnostics. Structs should feel like modeling tools.

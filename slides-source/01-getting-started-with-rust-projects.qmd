@@ -1,10 +1,5 @@
 # Module 1: Getting Started With Rust Projects
 
-- Project layout
-- Cargo workflow
-- Compiler diagnostics
-- First command-line tool
-
 ::: notes
 This starts the hands-on part of the course. Move quickly from slides to the
 terminal.

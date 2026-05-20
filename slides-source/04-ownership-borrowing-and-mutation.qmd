@@ -1,11 +1,5 @@
 # Module 4: Ownership, Borrowing, And Mutation
 
-- Immutable bindings by default
-- Move semantics and `Copy`
-- Shared and mutable references
-- Slices for borrowed sequences
-- Function signatures that communicate ownership
-
 ::: notes
 Treat this as a mental-model module. The goal is predicting why the compiler
 accepts or rejects a program, not memorizing slogans.

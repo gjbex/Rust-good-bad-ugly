@@ -1,11 +1,5 @@
 # Module 11: Data Parallelism With Rayon
 
-- Independent per-element work
-- Parallel iterators
-- `map` and `collect`
-- Avoiding shared mutable state
-- Thread counts and benchmarks
-
 ::: notes
 Rayon should feel like a controlled extension of iterator-based code, not a
 generic concurrency module.

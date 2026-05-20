@@ -1,11 +1,5 @@
 # Module 7: Collections, Iterators, And Text Data
 
-- Vectors for homogeneous data
-- Iterator pipelines for transformations
-- Reductions and indexed iteration
-- Hash maps and sets
-- Buffered text input and output
-
 ::: notes
 This is the bridge from small scalar examples to data-processing programs.
 Keep examples concrete: rows, columns, counts, filters, and reductions.

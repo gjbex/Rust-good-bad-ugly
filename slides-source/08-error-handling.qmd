@@ -1,11 +1,5 @@
 # Module 8: Error Handling
 
-- `Option<T>` for missing values
-- `Result<T, E>` for recoverable failure
-- `map`, `ok_or_else`, and `?`
-- `expect` for violated assumptions
-- Fallible command-line programs
-
 ::: notes
 Tie this to scientific applications that read inputs, parse files, validate
 configuration, and write outputs. Failure is normal and should be represented.
