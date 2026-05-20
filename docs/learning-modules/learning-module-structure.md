@@ -31,7 +31,7 @@ Rust binary project.
 
 Related module text:
 
-- `docs/getting-started-with-rust-projects.md`
+- `docs/learning-modules/getting-started-with-rust-projects.md`
 
 ## Module 2: Scalar Computation And Numeric Basics
 
@@ -61,7 +61,7 @@ write small numerical expressions without relying on implicit conversions.
 
 Related module text:
 
-- `docs/scalar-computation-and-numeric-basics.md`
+- `docs/learning-modules/scalar-computation-and-numeric-basics.md`
 
 ## Module 3: Control Flow And Program Structure
 
@@ -89,7 +89,7 @@ and factor repeated work into functions.
 
 Related module text:
 
-- `docs/control-flow-and-program-structure.md`
+- `docs/learning-modules/control-flow-and-program-structure.md`
 
 ## Module 4: Ownership, Borrowing, And Mutation
 
@@ -117,7 +117,7 @@ before moving on to larger data structures.
 
 Related module text:
 
-- `docs/ownership-borrowing-and-mutation.md`
+- `docs/learning-modules/ownership-borrowing-and-mutation.md`
 
 Optional contrast:
 
@@ -149,7 +149,7 @@ those types using methods.
 
 Related module text:
 
-- `docs/data-modeling-with-structs-and-methods.md`
+- `docs/learning-modules/data-modeling-with-structs-and-methods.md`
 
 ## Module 6: Reusable Abstractions With Traits
 
@@ -176,7 +176,7 @@ classical inheritance.
 
 Related module text:
 
-- `docs/reusable-abstractions-with-traits.md`
+- `docs/learning-modules/reusable-abstractions-with-traits.md`
 
 ## Module 7: Collections, Iterators, And Text Data
 
@@ -201,7 +201,7 @@ idiomatic iterator-based Rust.
 
 Related module text:
 
-- `docs/collections-iterators-and-text-data.md`
+- `docs/learning-modules/collections-iterators-and-text-data.md`
 
 ## Module 8: Error Handling
 
@@ -224,7 +224,7 @@ missing values and recoverable errors explicitly.
 
 Related module text:
 
-- `docs/error-handling.md`
+- `docs/learning-modules/error-handling.md`
 
 ## Module 9: Project Organization, Libraries, And Tests
 
@@ -252,7 +252,7 @@ larger.
 
 Related module text:
 
-- `docs/project-organization-libraries-and-tests.md`
+- `docs/learning-modules/project-organization-libraries-and-tests.md`
 
 ## Module 10: Randomness And Reproducible Runs
 
@@ -275,7 +275,7 @@ and why explicit seeds matter for scientific examples.
 
 Related module text:
 
-- `docs/randomness-and-reproducible-runs.md`
+- `docs/learning-modules/randomness-and-reproducible-runs.md`
 
 ## Module 11: Data Parallelism With Rayon
 
@@ -300,7 +300,7 @@ work, and how to reason about when data parallelism is likely to help.
 
 Related module text:
 
-- `docs/data-parallelism-with-rayon.md`
+- `docs/learning-modules/data-parallelism-with-rayon.md`
 
 ## Module 12: Integrated Numerical Example: Julia Set
 
@@ -325,7 +325,7 @@ scientific-computing example.
 
 Related module text:
 
-- `docs/integrated-numerical-example-julia-set.md`
+- `docs/learning-modules/integrated-numerical-example-julia-set.md`
 
 Suggested placement:
 
@@ -356,7 +356,7 @@ many of the earlier concepts in one place.
 
 Related module text:
 
-- `docs/integrated-numerical-example-n-body-simulation.md`
+- `docs/learning-modules/integrated-numerical-example-n-body-simulation.md`
 
 Suggested placement:
 

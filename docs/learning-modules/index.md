@@ -1,0 +1,27 @@
+# Rust Learning Modules
+
+These learning modules support the training session *Rust, the good, the bad,
+and the ugly*. They introduce Rust from the perspective of scientific and
+technical computing.
+
+The modules are written as reading material. The slide deck in
+`slides-source/` is the teaching aid for in-person delivery.
+
+## Learning Path
+
+1. [Getting Started With Rust Projects](getting-started-with-rust-projects.md)
+2. [Scalar Computation And Numeric Basics](scalar-computation-and-numeric-basics.md)
+3. [Control Flow And Program Structure](control-flow-and-program-structure.md)
+4. [Ownership, Borrowing, And Mutation](ownership-borrowing-and-mutation.md)
+5. [Data Modeling With Structs And Methods](data-modeling-with-structs-and-methods.md)
+6. [Reusable Abstractions With Traits](reusable-abstractions-with-traits.md)
+7. [Collections, Iterators, And Text Data](collections-iterators-and-text-data.md)
+8. [Error Handling](error-handling.md)
+9. [Project Organization, Libraries, And Tests](project-organization-libraries-and-tests.md)
+10. [Randomness And Reproducible Runs](randomness-and-reproducible-runs.md)
+11. [Data Parallelism With Rayon](data-parallelism-with-rayon.md)
+12. [Integrated Numerical Example: Julia Set](integrated-numerical-example-julia-set.md)
+13. [Integrated Numerical Example: N-Body Simulation](integrated-numerical-example-n-body-simulation.md)
+
+The [module structure](learning-module-structure.md) page gives an overview of
+the intended sequence and the source-code examples used in each module.

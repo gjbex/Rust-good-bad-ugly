@@ -1,0 +1,5 @@
+# MkDocs build output
+site/
+
+# Local GitHub Pages build output
+_site/

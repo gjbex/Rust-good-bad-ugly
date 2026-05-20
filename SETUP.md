@@ -9,6 +9,7 @@ The setup has two parts:
 - Rust tooling, installed with `rustup`.
 - Python packages for visualization, installed in a `mamba` environment from
   `environment.yml`.
+- MkDocs for building the learning-module website.
 
 ## Rust Toolchain With `rustup`
 
@@ -125,6 +126,7 @@ Check that the Python packages are available:
 
 ```bash
 python -c "import numpy, pandas, plotly, scipy; print('Python environment OK')"
+mkdocs --version
 ```
 
 ## Updating The Environment
@@ -161,9 +163,28 @@ cargo run -- --steps 200 --save-evolution evolution.csv
 ../visualize-evolution.py evolution.csv
 ```
 
+## Building The Learning-Module Site
+
+The learning modules in `docs/learning-modules` are configured as an MkDocs
+site. From the repository root, build the static site with:
+
+```bash
+mkdocs build
+```
+
+Preview the site locally with:
+
+```bash
+mkdocs serve
+```
+
+The GitHub Pages workflow builds this site under `/learning-modules/` and the
+Quarto slide deck under `/slides/`, with a landing page linking to both.
+
 ## Useful References
 
 - Rust installation: <https://www.rust-lang.org/tools/install/>
 - rustup: <https://rustup.rs/>
+- MkDocs: <https://www.mkdocs.org/>
 - Mamba installation: <https://mamba.readthedocs.io/en/stable/installation/mamba-installation.html>
 - Miniforge releases: <https://github.com/conda-forge/miniforge/releases>

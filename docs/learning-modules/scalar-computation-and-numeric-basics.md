@@ -2,7 +2,7 @@
 
 This module introduces Rust's scalar types and the numeric operations that are
 most relevant for small scientific and technical programs. It builds on the
-project workflow from `docs/getting-started-with-rust-projects.md`: each
+project workflow from `docs/learning-modules/getting-started-with-rust-projects.md`: each
 example is a small Cargo project that can be built, run, inspected, and
 modified.
 

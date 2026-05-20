@@ -3,7 +3,7 @@
 This module introduces the basic building blocks used to organize Rust
 programs: branches, loops, functions, enums, pattern matching, source modules,
 and reusable computations. It builds on the scalar values and numeric expressions from
-`docs/scalar-computation-and-numeric-basics.md`.
+`docs/learning-modules/scalar-computation-and-numeric-basics.md`.
 
 The goal is to move from straight-line programs to programs that make choices,
 repeat work, name reusable computations, and select behavior from a small set

@@ -2,6 +2,7 @@ name: rust_good_bad_ugly
 channels:
   - conda-forge
 dependencies:
+  - mkdocs
   - numpy
   - pandas
   - plotly
