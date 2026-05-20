@@ -1,6 +1,6 @@
 # Julia set
 
-This directory contains several Rust applications that compute the Julia set.
+This directory contains several applications that compute the Julia set.
 
 
 ## What is it?
@@ -18,9 +18,12 @@ This directory contains several Rust applications that compute the Julia set.
 1. `julia-set-rayon`: implementation of the Julia set using the custom matrix
    implementation from the baseline and Rayon to compute the result matrix in
    parallel.
+1. `julia-set-cpp`: C++ implementation of the Julia set using a custom matrix
+   implementation and the same command-line arguments and output format as the
+   baseline.
 1. `view-fractal.py`: Python script to visualize the output of the Julia set
    applications using Plotly.  It reads from standard input by default, so
-   output from the Rust applications can be piped directly into it.
+   output from the Julia set applications can be piped directly into it.
 
 
 ## How to use?
@@ -55,6 +58,15 @@ cd julia-set-toml-config
 cargo run --release -- julia-set.toml | ../view-fractal.py
 ```
 
+The C++ implementation uses CMake:
+
+```bash
+cd julia-set-cpp
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+./build/julia-set-cpp --width 800 --height 600 | ../view-fractal.py
+```
+
 The visualization script can still read from a file:
 
 ```bash
@@ -65,4 +77,16 @@ Compare all implementations with release builds using `hyperfine`:
 
 ```bash
 ./benchmark.sh
+```
+
+Exclude the Rayon implementation when comparing the serial variants:
+
+```bash
+./benchmark.sh --exclude-rayon
+```
+
+Compare only the Rust baseline and C++ implementation:
+
+```bash
+./benchmark-rust-cpp.sh
 ```

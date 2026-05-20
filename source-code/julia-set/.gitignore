@@ -1,2 +1,3 @@
 # Ignore benchmark results
 benchmark-results.json
+benchmark-rust-cpp-results.json
