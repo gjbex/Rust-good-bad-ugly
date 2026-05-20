@@ -336,7 +336,7 @@ integrated numerical examples.
 
 Primary example:
 
-- `source-code/n-body-simulation`
+- `source-code/n-body-simulation/rust`
 
 Topics:
 

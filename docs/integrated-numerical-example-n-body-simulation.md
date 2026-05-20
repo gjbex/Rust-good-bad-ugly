@@ -38,7 +38,7 @@ Participants should already be comfortable with:
 
 The example used in this module is:
 
-- `source-code/n-body-simulation`
+- `source-code/n-body-simulation/rust`
 
 ## What The Simulation Does
 
@@ -58,7 +58,7 @@ number of time steps. Optionally, the program writes CSV files containing:
 Run the default simulation with:
 
 ```bash
-cd source-code/n-body-simulation
+cd source-code/n-body-simulation/rust
 cargo run
 ```
 
@@ -364,7 +364,7 @@ cargo run -- --steps 200 --save-evolution evolution.csv
 Visualize energy and center-of-mass displacement with:
 
 ```bash
-./visualize-evolution.py evolution.csv
+../visualize-evolution.py evolution.csv
 ```
 
 Save particle states with:
@@ -376,7 +376,7 @@ cargo run -- --steps 200 --save-states states.csv
 Animate the particle states with:
 
 ```bash
-./animate-states.py states.csv --output animation.html
+../animate-states.py states.csv --output animation.html
 ```
 
 The Python scripts use Plotly, and the animation script also uses pandas:
@@ -392,7 +392,7 @@ Use this sequence as a practical lab.
 1. Run the default simulation:
 
    ```bash
-   cd source-code/n-body-simulation
+   cd source-code/n-body-simulation/rust
    cargo run
    ```
 
@@ -405,7 +405,7 @@ Use this sequence as a practical lab.
 3. Visualize the diagnostics:
 
    ```bash
-   ./visualize-evolution.py evolution.csv
+   ../visualize-evolution.py evolution.csv
    ```
 
 4. Run the same command with a smaller `--delta-time` and compare total-energy
@@ -417,10 +417,10 @@ Use this sequence as a practical lab.
 
    ```bash
    cargo run -- --steps 100 --save-states states.csv
-   ./animate-states.py states.csv --output animation.html
+   ../animate-states.py states.csv --output animation.html
    ```
 
-7. Inspect `src/system.rs` and identify which methods only read the system and
+7. Inspect `rust/src/system.rs` and identify which methods only read the system and
    which method mutates it.
 
 8. Change the default softening length on the command line and compare the

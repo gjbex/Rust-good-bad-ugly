@@ -35,7 +35,7 @@ mechanics.
 ## Terminal: Default Simulation
 
 ```{.bash}
-cd source-code/n-body-simulation
+cd source-code/n-body-simulation/rust
 cargo run
 ```
 
@@ -361,7 +361,7 @@ This connects borrowing, `Option`, and I/O.
 
 ```{.bash}
 cargo run -- --steps 200 --save-evolution evolution.csv
-./visualize-evolution.py evolution.csv
+../visualize-evolution.py evolution.csv
 ```
 
 - Save energy and center-of-mass diagnostics
@@ -377,7 +377,7 @@ available.
 
 ```{.bash}
 cargo run -- --steps 100 --save-states states.csv
-./animate-states.py states.csv --output animation.html
+../animate-states.py states.csv --output animation.html
 ```
 
 - Save per-particle state over time

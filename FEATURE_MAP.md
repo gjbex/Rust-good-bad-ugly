@@ -11,8 +11,8 @@ several places when they combine multiple ideas.
 | Minimal Rust binary | `source-code/hello-world/src/main.rs` |
 | Cargo project layout | `source-code/hello-world/` |
 | Building and running with Cargo | `source-code/hello-world/README.md` |
-| External crates in `Cargo.toml` | `source-code/hello-clap/Cargo.toml`, `source-code/complex-numbers/Cargo.toml`, `source-code/random-numbers/Cargo.toml`, `source-code/smart-pointers/Cargo.toml`, `source-code/julia-set/julia-set-toml-config/Cargo.toml`, `source-code/n-body-simulation/Cargo.toml` |
-| Reproducible dependency lockfiles | `source-code/*/Cargo.lock` |
+| External crates in `Cargo.toml` | `source-code/hello-clap/Cargo.toml`, `source-code/complex-numbers/Cargo.toml`, `source-code/random-numbers/Cargo.toml`, `source-code/smart-pointers/Cargo.toml`, `source-code/julia-set/julia-set-toml-config/Cargo.toml`, `source-code/n-body-simulation/rust/Cargo.toml` |
+| Reproducible dependency lockfiles | `source-code/*/Cargo.lock`, `source-code/julia-set/*/Cargo.lock`, `source-code/n-body-simulation/rust/Cargo.lock` |
 | Multiple binaries in one package | `source-code/hashmap-hashset/src/generate-data.rs`, `source-code/hashmap-hashset/src/count-nucleotides.rs`, `source-code/hashmap-hashset/src/read-errors.rs` |
 | Shared package code in `lib.rs` | `source-code/smart-pointers/src/lib.rs`, `source-code/hashmap-hashset/src/lib.rs` |
 | Release builds and benchmarking context | `source-code/julia-set/benchmark.sh` |
@@ -21,13 +21,13 @@ several places when they combine multiple ideas.
 
 | Feature | Where to look |
 |---|---|
-| `clap::Parser` derive | `source-code/hello-clap/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/src/main.rs` |
-| Typed command-line argument struct | `source-code/hello-clap/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/src/main.rs` |
-| Argument defaults | `source-code/numerical-function/src/main.rs`, `source-code/enum-match/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/n-body-simulation/src/main.rs` |
+| `clap::Parser` derive | `source-code/hello-clap/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
+| Typed command-line argument struct | `source-code/hello-clap/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
+| Argument defaults | `source-code/numerical-function/src/main.rs`, `source-code/enum-match/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
 | Restricted argument values with `ValueEnum` | `source-code/enum-match/src/main.rs`, `source-code/random-numbers/src/main.rs`, `source-code/user-defined-trait/src/main.rs` |
-| File path arguments | `source-code/iterators/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/src/main.rs` |
-| Numeric parameters for reproducible runs | `source-code/random-numbers/src/main.rs`, `source-code/julia-set/julia-set-baseline/src/main.rs`, `source-code/n-body-simulation/src/main.rs` |
-| Optional output file arguments | `source-code/n-body-simulation/src/main.rs` |
+| File path arguments | `source-code/iterators/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
+| Numeric parameters for reproducible runs | `source-code/random-numbers/src/main.rs`, `source-code/julia-set/julia-set-baseline/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
+| Optional output file arguments | `source-code/n-body-simulation/rust/src/main.rs` |
 
 ## Scalar Types And Arithmetic
 
@@ -64,8 +64,8 @@ several places when they combine multiple ideas.
 | Defining an `enum` | `source-code/enum-match/src/main.rs` |
 | Matching on enum variants | `source-code/enum-match/src/main.rs`, `source-code/random-numbers/src/main.rs` |
 | Match guards | `source-code/enum-match/src/main.rs`, `source-code/hashmap-hashset/src/count-nucleotides.rs` |
-| Tuple destructuring in patterns | `source-code/iterators/src/main.rs`, `source-code/traits/src/matrix.rs`, `source-code/n-body-simulation/src/system.rs` |
-| Optional behavior with `if let` | `source-code/n-body-simulation/src/main.rs` |
+| Tuple destructuring in patterns | `source-code/iterators/src/main.rs`, `source-code/traits/src/matrix.rs`, `source-code/n-body-simulation/rust/src/system.rs` |
+| Optional behavior with `if let` | `source-code/n-body-simulation/rust/src/main.rs` |
 | Formatted output | `source-code/numerical-function/src/main.rs`, `source-code/basic-types/src/main.rs`, `source-code/control-flow/src/main.rs` |
 
 ## Ownership, Borrowing, And Mutation
@@ -93,17 +93,17 @@ several places when they combine multiple ideas.
 
 | Feature | Where to look |
 |---|---|
-| Defining a `struct` | `source-code/structs-and-methods/src/matrix.rs`, `source-code/smart-pointers/src/tree.rs`, `source-code/n-body-simulation/src/system.rs` |
-| Private fields with public methods | `source-code/structs-and-methods/src/matrix.rs`, `source-code/smart-pointers/src/tree.rs`, `source-code/n-body-simulation/src/system.rs` |
-| Associated constructor `new` | `source-code/structs-and-methods/src/matrix.rs`, `source-code/smart-pointers/src/tree.rs`, `source-code/n-body-simulation/src/system.rs` |
-| `impl` blocks | `source-code/structs-and-methods/src/matrix.rs`, `source-code/smart-pointers/src/tree.rs`, `source-code/n-body-simulation/src/system.rs` |
+| Defining a `struct` | `source-code/structs-and-methods/src/matrix.rs`, `source-code/smart-pointers/src/tree.rs`, `source-code/n-body-simulation/rust/src/system.rs` |
+| Private fields with public methods | `source-code/structs-and-methods/src/matrix.rs`, `source-code/smart-pointers/src/tree.rs`, `source-code/n-body-simulation/rust/src/system.rs` |
+| Associated constructor `new` | `source-code/structs-and-methods/src/matrix.rs`, `source-code/smart-pointers/src/tree.rs`, `source-code/n-body-simulation/rust/src/system.rs` |
+| `impl` blocks | `source-code/structs-and-methods/src/matrix.rs`, `source-code/smart-pointers/src/tree.rs`, `source-code/n-body-simulation/rust/src/system.rs` |
 | Getter methods | `source-code/structs-and-methods/src/matrix.rs`, `source-code/smart-pointers/src/tree.rs` |
-| Mutable methods | `source-code/structs-and-methods/src/matrix.rs`, `source-code/n-body-simulation/src/system.rs` |
+| Mutable methods | `source-code/structs-and-methods/src/matrix.rs`, `source-code/n-body-simulation/rust/src/system.rs` |
 | Flat vector storage for 2D data | `source-code/structs-and-methods/src/matrix.rs` |
-| Structure-of-arrays storage | `source-code/n-body-simulation/src/system.rs` |
+| Structure-of-arrays storage | `source-code/n-body-simulation/rust/src/system.rs` |
 | Crate-private API with `pub(crate)` | `source-code/smart-pointers/src/tree.rs` |
 | Separating data structures from algorithms | `source-code/smart-pointers/src/tree.rs`, `source-code/smart-pointers/src/bst.rs` |
-| Splitting code into modules with `mod` | `source-code/enum-match/src/main.rs`, `source-code/user-defined-trait/src/main.rs`, `source-code/n-body-simulation/src/main.rs` |
+| Splitting code into modules with `mod` | `source-code/enum-match/src/main.rs`, `source-code/user-defined-trait/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
 
 ## Generics, Traits, And Polymorphism
 
@@ -167,11 +167,11 @@ several places when they combine multiple ideas.
 | CSV input | `source-code/iterators/src/main.rs`, `source-code/iterators/data.txt` |
 | `serde::Deserialize` derive | `source-code/iterators/src/main.rs`, `source-code/smart-pointers/src/tree.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
 | Deserializing rows into a struct | `source-code/iterators/src/main.rs` |
-| `serde::Serialize` derive | `source-code/smart-pointers/src/tree.rs`, `source-code/n-body-simulation/src/main.rs` |
+| `serde::Serialize` derive | `source-code/smart-pointers/src/tree.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
 | JSON serialization and deserialization | `source-code/smart-pointers/src/tree.rs` |
 | Serializing recursive data structures | `source-code/smart-pointers/src/tree.rs` |
-| Writing CSV records | `source-code/n-body-simulation/src/main.rs` |
-| Serializing typed records to CSV | `source-code/n-body-simulation/src/main.rs` |
+| Writing CSV records | `source-code/n-body-simulation/rust/src/main.rs` |
+| Serializing typed records to CSV | `source-code/n-body-simulation/rust/src/main.rs` |
 | TOML configuration file for run parameters | `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/julia-set/julia-set-toml-config/julia-set.toml` |
 | Deserializing a TOML file into a typed config struct | `source-code/julia-set/julia-set-toml-config/src/main.rs` |
 
@@ -187,7 +187,7 @@ several places when they combine multiple ideas.
 | Runtime distribution enum with a common `sample` method | `source-code/random-numbers/src/main.rs` |
 | Generic method over any RNG implementing `Rng` | `source-code/random-numbers/src/main.rs` |
 | Seeded random data structure construction | `source-code/smart-pointers/src/main.rs` |
-| Random initial conditions for a simulation | `source-code/n-body-simulation/src/system.rs` |
+| Random initial conditions for a simulation | `source-code/n-body-simulation/rust/src/system.rs` |
 
 ## Scientific And Numerical Examples
 
@@ -202,8 +202,8 @@ several places when they combine multiple ideas.
 | `mdarray` expression evaluation | `source-code/julia-set/julia-set-mdarray-expr-eval/` |
 | Configuration-driven Julia-set runs | `source-code/julia-set/julia-set-toml-config/` |
 | Data parallelism with Rayon | `source-code/julia-set/julia-set-rayon/` |
-| N-body simulation with velocity Verlet integration | `source-code/n-body-simulation/` |
-| Softened gravitational interactions | `source-code/n-body-simulation/src/system.rs` |
+| N-body simulation with velocity Verlet integration | `source-code/n-body-simulation/rust/` |
+| Softened gravitational interactions | `source-code/n-body-simulation/rust/src/system.rs` |
 
 ## Python Visualization Helpers
 

@@ -156,9 +156,9 @@ cargo run --release -- --width 800 --height 600 | ../view-fractal.py
 Or visualize N-body diagnostics:
 
 ```bash
-cd source-code/n-body-simulation
+cd source-code/n-body-simulation/rust
 cargo run -- --steps 200 --save-evolution evolution.csv
-./visualize-evolution.py evolution.csv
+../visualize-evolution.py evolution.csv
 ```
 
 ## Useful References
