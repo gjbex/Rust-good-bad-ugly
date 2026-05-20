@@ -47,7 +47,7 @@ Total duration: 4 hours.
 
 ## Training materials
 
-The [learning modules](learning-modules-site/index.html) are available as a website.
+The [learning modules](docs/learning-modules-site/index.html) are available as a website.
 
 The [slide deck](slides/rust-good-bad-ugly.html) is available as a Quarto
 RevealJS presentation.
