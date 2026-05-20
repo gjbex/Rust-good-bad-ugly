@@ -1,0 +1,26 @@
+# Conclusions
+
+## Outome
+
+Hopefully, you have determined what is
+
+- the good,
+- the bad, and
+- the ugly
+
+for *you*
+
+
+## References
+
+Software
+
+- [Rustup](https://rustup.rs/)
+
+Documentation
+
+- [The Rust Programming Language](https://doc.rust-lang.org/book/)
+- [The Rust Reference](https://doc.rust-lang.org/reference/)
+- [The Rust Standard Library](https://doc.rust-lang.org/std/)
+- [The Rust API Guidelines](https://rust-lang.github.io/api-guidelines/)
+- [The Rustonomicon](https://doc.rust-lang.org/nomicon/)
