@@ -1,6 +1,6 @@
 # Conclusions
 
-## Outome
+## Outcome
 
 Hopefully, you have determined what is
 
@@ -11,16 +11,38 @@ Hopefully, you have determined what is
 for *you*
 
 
-## References
-
-Software
+## Core Rust References
 
 - [Rustup](https://rustup.rs/)
-
-Documentation
-
 - [The Rust Programming Language](https://doc.rust-lang.org/book/)
-- [The Rust Reference](https://doc.rust-lang.org/reference/)
+- [Rust By Example](https://doc.rust-lang.org/rust-by-example/)
+- [The Cargo Book](https://doc.rust-lang.org/cargo/)
 - [The Rust Standard Library](https://doc.rust-lang.org/std/)
+
+
+## Crates Used In This Course
+
+- [docs.rs](https://docs.rs/)
+- [crates.io](https://crates.io/)
+- [`clap`](https://docs.rs/clap/latest/clap/)
+- [`serde`](https://docs.rs/serde/latest/serde/)
+- [`csv`](https://docs.rs/csv/latest/csv/)
+- [`toml`](https://docs.rs/toml/latest/toml/)
+- [`rand`](https://docs.rs/rand/latest/rand/)
+- [`rand_distr`](https://docs.rs/rand_distr/latest/rand_distr/)
+- [`num-complex`](https://docs.rs/num-complex/latest/num_complex/)
+- [`rayon`](https://docs.rs/rayon/latest/rayon/)
+
+
+## Scientific Computing Crates
+
+- [`ndarray`](https://docs.rs/ndarray/latest/ndarray/)
+- [`nalgebra`](https://docs.rs/nalgebra/latest/nalgebra/)
+- [`faer`](https://docs.rs/faer/latest/faer/)
+- [`mdarray`](https://docs.rs/mdarray/latest/mdarray/)
+
+
+## Further Rust References
+
+- [The Rust Reference](https://doc.rust-lang.org/reference/)
 - [The Rust API Guidelines](https://rust-lang.github.io/api-guidelines/)
-- [The Rustonomicon](https://doc.rust-lang.org/nomicon/)
