@@ -1,0 +1,7 @@
+interface:
+  display_name: "Rust Quarto Teaching Slides"
+  short_description: "Convert Rust modules into teaching slides"
+  default_prompt: "Use $rust-scicomp-quarto-slides to create a Quarto revealjs deck from a Rust scientific-computing module."
+
+policy:
+  allow_implicit_invocation: true
