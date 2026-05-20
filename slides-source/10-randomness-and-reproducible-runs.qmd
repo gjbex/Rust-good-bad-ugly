@@ -1,0 +1,345 @@
+# Module 10: Randomness And Reproducible Runs
+
+::: notes
+This is the first module where reproducibility is the central concept. Make the
+seed and the exact command visible as part of the experiment.
+:::
+
+## Module Arc
+
+- Run the same random stream twice
+- Choose a named RNG algorithm
+- Parse distribution choices from the command line
+- Convert CLI choices to runtime distribution objects
+- Generate data that can be piped into another tool
+
+::: notes
+Connect command-line arguments from Module 1 to reproducible scientific runs.
+:::
+
+## By The End
+
+- Explain why seeds matter
+- Construct a seedable RNG
+- Sample uniform and normal distributions
+- Use `ValueEnum` for distribution choices
+- Pass an RNG explicitly to sampling code
+- Visualize generated samples with a histogram
+
+::: notes
+These goals combine reproducibility, API design, and simple data workflow.
+:::
+
+## Terminal: Same Seed, Same Stream
+
+```{.bash}
+cd source-code/random-numbers
+cargo run -- --count 5 --seed 42 --distribution uniform
+cargo run -- --count 5 --seed 42 --distribution uniform
+```
+
+- Same RNG
+- Same seed
+- Same sequence of sampling calls
+- Same output stream
+
+::: notes
+Run these two commands back to back. The duplicate output is the point.
+:::
+
+## Terminal: Change The Seed
+
+```{.bash}
+cargo run -- --count 5 --seed 43 --distribution uniform
+```
+
+- One input changed
+- The stream changes
+- The command records the run configuration
+
+::: notes
+This is the smallest reproducibility experiment in the module.
+:::
+
+## Why Reproducibility Matters
+
+- Random initialization affects simulations
+- Sampling choices affect results
+- Synthetic data should be regenerable
+- Bugs are easier to investigate with repeatable runs
+- A seed is part of the experiment
+
+::: notes
+Tie this to scientific debugging and result comparison.
+:::
+
+## Choosing A Named RNG
+
+```rust
+use rand_chacha::ChaCha12Rng;
+```
+
+```rust
+let mut rng = ChaCha12Rng::seed_from_u64(args.seed);
+```
+
+- The RNG algorithm is explicit
+- The seed initializes the stream
+- Sampling mutates the RNG state
+
+::: notes
+Mention that unspecified defaults are weaker for reproducibility across
+versions and platforms.
+:::
+
+## Command-Line Parameters
+
+```rust
+#[derive(Parser, Debug)]
+struct Args {
+    #[arg(short, long, default_value_t = 1)]
+    count: usize,
+
+    #[arg(short, long, default_value_t = 1234)]
+    seed: u64,
+
+    #[arg(short, long, default_value = "uniform")]
+    distribution: DistributionKind,
+}
+```
+
+- Count controls stream length
+- Seed controls the random stream
+- Distribution controls the sampled values
+
+::: notes
+This reinforces that random runs should be configured from the outside.
+:::
+
+## CLI Choices With `ValueEnum`
+
+```rust
+#[derive(Clone, ValueEnum, Debug)]
+enum DistributionKind {
+    Uniform,
+    Normal,
+}
+```
+
+```{.bash}
+cargo run -- --help
+```
+
+- Accepted values are explicit
+- `clap` parses the enum
+- Invalid choices are rejected at the boundary
+
+::: notes
+Use `--help` to show the accepted distribution values.
+:::
+
+## Runtime Distribution Objects
+
+```rust
+enum RealDistribution {
+    Uniform(Uniform<f64>),
+    Normal(Normal<f64>),
+}
+```
+
+- CLI choices describe user intent
+- Runtime objects perform sampling
+- The program separates parsing from computation
+
+::: notes
+This design pattern becomes useful when configuration grows.
+:::
+
+## From Choice To Distribution
+
+```rust
+impl RealDistribution {
+    fn from_kind(kind: DistributionKind) -> Self {
+        match kind {
+            DistributionKind::Uniform => {
+                Self::Uniform(Uniform::new(0.0, 1.0).expect("valid uniform distribution"))
+            }
+            DistributionKind::Normal => {
+                Self::Normal(Normal::new(0.0, 1.0).expect("valid normal distribution"))
+            }
+        }
+    }
+}
+```
+
+- `uniform` maps to `[0.0, 1.0)`
+- `normal` maps to mean `0.0`, standard deviation `1.0`
+- Distribution construction happens in one place
+
+::: notes
+This is a longer slide, but it shows the pattern clearly.
+:::
+
+## Sampling Method
+
+```rust
+fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> f64 {
+    match self {
+        Self::Uniform(distribution) => distribution.sample(rng),
+        Self::Normal(distribution) => distribution.sample(rng),
+    }
+}
+```
+
+- The method receives the RNG explicitly
+- The exact RNG type is generic
+- Sampling advances the RNG state
+
+::: notes
+Do not dwell on `?Sized`; the practical point is "pass the RNG in".
+:::
+
+## Generating A Stream
+
+```rust
+let args = Args::parse();
+let mut rng = ChaCha12Rng::seed_from_u64(args.seed);
+let distribution = RealDistribution::from_kind(args.distribution);
+
+for _ in 0..args.count {
+    let random_number = distribution.sample(&mut rng);
+    println!("{}", random_number);
+}
+```
+
+- Parse configuration
+- Initialize the RNG
+- Sample repeatedly
+- Write one value per line
+
+::: notes
+The plain-text output makes shell pipelines easy.
+:::
+
+## Terminal: Normal Samples
+
+```{.bash}
+cargo run -- --count 5 --seed 42 --distribution normal
+```
+
+- Same seed gives the same normal samples
+- Different distribution changes the stream of values
+- The command is enough to repeat the run
+
+::: notes
+Compare with the uniform output if useful.
+:::
+
+## Data For Pipelines
+
+```{.bash}
+cargo run -- --count 1000 --seed 42 --distribution normal > samples.txt
+```
+
+- Standard output can be redirected
+- One sample per line is easy to inspect
+- Text output can feed other tools
+
+::: notes
+This is a useful habit for small scientific command-line tools.
+:::
+
+## Visualization Pipeline
+
+```{.bash}
+cargo run -- --count 1000 --seed 42 --distribution normal | ./show-distribution.py
+```
+
+- Rust generates samples
+- Python visualizes a histogram
+- The command records the full data-generation step
+
+::: notes
+Only run this if the environment has Plotly and a browser/display available.
+The slide remains useful as a workflow pattern.
+:::
+
+## Python Helper
+
+```python
+values = [float(line.strip()) for line in sys.stdin if line.strip()]
+figure = go.Figure(data=[go.Histogram(x=values, nbinsx=20)])
+figure.show()
+```
+
+- Read numbers from standard input
+- Build a histogram
+- Keep visualization separate from generation
+
+::: notes
+This justifies using Python where it is convenient without complicating the
+Rust example.
+:::
+
+## Randomness And Program Design
+
+- Avoid hidden global RNGs
+- Pass RNGs into functions that sample
+- Keep seeds in CLI arguments, config, logs, or metadata
+- Keep the order of random draws reproducible
+- Treat random inputs as part of the run
+
+::: notes
+This is the design takeaway for larger simulations.
+:::
+
+## Extending The Example
+
+- Change normal mean and standard deviation
+- Add another `DistributionKind`
+- Add a matching `RealDistribution` variant
+- Implement the new sampling branch
+- Compare histograms using the same seed and count
+
+::: notes
+An exponential distribution from `rand_distr` is a natural extension.
+:::
+
+## Hands-On Sequence
+
+1. Run the default command
+2. Repeat a command with the same seed
+3. Change only the seed
+4. Switch from uniform to normal
+5. Inspect `cargo run -- --help`
+6. Change normal distribution parameters
+7. Add a new distribution choice
+8. Visualize 1000 generated samples
+
+::: notes
+Use this as the lab checklist. The new distribution is a stretch task.
+:::
+
+## Questions
+
+- Which inputs are needed to reproduce this run?
+- Is the RNG algorithm named explicitly?
+- Where is the seed recorded?
+- Does any function create hidden randomness?
+- Can the generated data be inspected or piped onward?
+
+::: notes
+Use these questions to close the module.
+:::
+
+## Connection To Later Modules
+
+- Julia set examples are deterministic by design
+- N-body examples use random initialization
+- Seeds make simulation comparisons repeatable
+- Output files and visualization become part of the workflow
+
+::: notes
+Transition to Module 11: data parallelism with Rayon, then the integrated
+numerical examples.
+:::

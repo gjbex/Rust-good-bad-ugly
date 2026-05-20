@@ -1,0 +1,513 @@
+# Module 7: Collections, Iterators, And Text Data
+
+::: notes
+This is the bridge from small scalar examples to data-processing programs.
+Keep examples concrete: rows, columns, counts, filters, and reductions.
+:::
+
+## Module Arc
+
+- Read structured text into typed values
+- Store columns in vectors
+- Transform and filter with iterators
+- Combine related sequences
+- Count and classify text tokens
+- Choose buffered I/O for file processing
+
+::: notes
+The emphasis is readable collection processing, not clever iterator chains.
+:::
+
+## By The End
+
+- Build vectors with `push`
+- Use `iter`, `iter_mut`, and `into_iter`
+- Use `filter`, `map`, `zip`, `unzip`, and `enumerate`
+- Use `sum`, `fold`, and `scan`
+- Use `HashMap` for counts
+- Use `HashSet` for unique values
+- Read and write text through buffers
+
+::: notes
+These are practical data-processing tools used in later modules.
+:::
+
+## Terminal: Iterator Example
+
+```{.bash}
+cd source-code/iterators
+cargo run -- --file data.txt
+```
+
+- Read two numeric columns
+- Store `x` and `y` values
+- Transform and summarize the data
+
+::: notes
+Run the program before opening `source-code/iterators/src/main.rs`.
+:::
+
+## Vectors
+
+```rust
+let mut xs = Vec::new();
+let mut ys = Vec::new();
+```
+
+```rust
+xs.push(value.x);
+ys.push(value.y);
+```
+
+- `Vec<T>` stores a growable sequence
+- All elements have the same type
+- The vectors are mutable while they are being filled
+
+::: notes
+Connect this to reading data one record at a time.
+:::
+
+## Structured Text To Typed Values
+
+```rust
+#[derive(Deserialize, Debug)]
+struct Values {
+    x: f64,
+    y: f64,
+}
+```
+
+```rust
+let mut reader = csv::Reader::from_path(args.file)?;
+```
+
+- `serde` maps records to a Rust struct
+- `csv` handles parsing the file format
+- The rest of the program works with `f64`
+
+::: notes
+The key idea is converting external text into typed values at the input
+boundary.
+:::
+
+## Deserializing Records
+
+```rust
+for result in reader.deserialize() {
+    let value: Values = result?;
+    xs.push(value.x);
+    ys.push(value.y);
+}
+```
+
+- Each record can fail to parse
+- `?` propagates parse or I/O errors
+- Valid records become ordinary Rust values
+
+::: notes
+Error handling is not the main topic yet, but this prepares Module 8.
+:::
+
+## Borrowed Iteration And `copied`
+
+```rust
+let filtered_xs: Vec<f64> = xs
+    .iter()
+    .copied()
+    .filter(|x| *x >= 10.0)
+    .collect();
+```
+
+- `iter()` yields `&f64`
+- `copied()` turns `&f64` into `f64`
+- Copying is appropriate for small scalar values
+
+::: notes
+Without `copied`, the pipeline works with references. Both patterns are useful.
+:::
+
+## Filtering Values
+
+```rust
+.filter(|x| *x >= 10.0)
+```
+
+- The closure decides which values remain
+- Iterator adapters are lazy
+- `collect` consumes the pipeline
+
+::: notes
+Change the threshold in the source as a small live edit if useful.
+:::
+
+## Mapping Values
+
+```rust
+let cubed_xs: Vec<f64> = xs
+    .iter()
+    .copied()
+    .map(|x| x.powi(3))
+    .collect();
+```
+
+- `map` transforms each item
+- The output item type can differ from the input item type
+- Element-wise numerical transformations read naturally as pipelines
+
+::: notes
+Use this to connect iterators back to scalar methods from Module 2.
+:::
+
+## Collecting Results
+
+```rust
+let cubed_xs: Vec<f64> = xs
+    .iter()
+    .copied()
+    .map(|x| x.powi(3))
+    .collect();
+```
+
+- `collect` builds a concrete collection
+- The type annotation says what to build
+- The same iterator could feed different collection types
+
+::: notes
+This is a common place where Rust needs a type hint.
+:::
+
+## Combining Columns With `zip`
+
+```rust
+let filtered_pairs: Vec<(f64, f64)> = xs
+    .iter()
+    .copied()
+    .zip(ys.iter().copied())
+    .filter(|(x, _)| *x >= 10.0)
+    .collect();
+```
+
+- `zip` combines two iterators
+- Items become 2-tuples
+- Related columns can be processed together
+
+::: notes
+Connect this to paired data from experiments or simulations.
+:::
+
+## Splitting Pairs With `unzip`
+
+```rust
+let (filtered_xs, filtered_ys): (Vec<f64>, Vec<f64>) =
+    filtered_pairs
+        .iter()
+        .copied()
+        .unzip();
+```
+
+- `unzip` splits an iterator over pairs
+- The result has two collections
+- The output type is written explicitly
+
+::: notes
+The explicit tuple type helps Rust know both collection types.
+:::
+
+## Simple Reductions
+
+```rust
+let sum_y: f64 = ys.iter().sum();
+```
+
+- A reduction turns many values into one value
+- The type annotation fixes the numeric result type
+- `sum` is concise for common accumulation
+
+::: notes
+Point out that `ys.iter()` yields references, and numeric `sum` handles the
+borrowed values here through standard trait implementations.
+:::
+
+## General Accumulation With `fold`
+
+```rust
+let sum_of_squares = xs
+    .iter()
+    .copied()
+    .fold(0.0, |accumulator, x| accumulator + x * x);
+```
+
+- `fold` carries an accumulator
+- The final accumulator is the result
+- Useful when no specialized reduction exists
+
+::: notes
+Ask learners to adapt this for `y` values in the hands-on work, but keep the
+prompt in notes if presenting live.
+:::
+
+## Running State With `scan`
+
+```rust
+let cumulative_sum: Vec<f64> = xs
+    .iter()
+    .copied()
+    .scan(0.0, |state, x| {
+        *state += x;
+        Some(*state)
+    })
+    .collect();
+```
+
+- `scan` keeps state between items
+- Each step can yield a value
+- Running sums and cumulative quantities fit this pattern
+
+::: notes
+This is more advanced than `sum` and `fold`; keep the example concrete.
+:::
+
+## Indices With `enumerate`
+
+```rust
+for (i, y) in ys.iter().enumerate() {
+    println!("Index: {i}, y value: {y:.1}");
+}
+```
+
+- `enumerate` attaches an index
+- The item becomes `(index, value)`
+- Manual counters are usually unnecessary
+
+::: notes
+This pattern appears often when reporting or debugging data.
+:::
+
+## Terminal: Iterator Exercises
+
+```{.bash}
+cd source-code/iterators
+cargo run -- --file data.txt
+```
+
+- Change the filter threshold
+- Add `x.sqrt()` for non-negative `x`
+- Compute the sum of squares of `y`
+- Compute cumulative sums
+- Build a vector of `x + y`
+
+::: notes
+Use a subset depending on time. Keep changes small and visible.
+:::
+
+## Terminal: Count Nucleotides
+
+```{.bash}
+cd source-code/hashmap-hashset
+cargo run --bin count-nucleotides -- --file errors.txt
+```
+
+- Count valid nucleotide characters
+- Collect unique invalid tokens
+- Print counts in a stable order
+
+::: notes
+Run before opening `src/count-nucleotides.rs`.
+:::
+
+## Hash Maps For Counting
+
+```rust
+let mut counts = HashMap::new();
+```
+
+```rust
+*counts.entry(nucleotide).or_insert(0) += 1;
+```
+
+- `HashMap<K, V>` stores values by key
+- `entry` selects or creates a map entry
+- `or_insert(0)` provides the initial count
+
+::: notes
+This entry API is worth reading slowly in code.
+:::
+
+## Stable Count Output
+
+```rust
+for nucleotide in VALID_NUCLEOTIDES {
+    counts.entry(nucleotide).or_insert(0);
+    println!("{nucleotide}: {}", counts[&nucleotide]);
+}
+```
+
+- Every valid nucleotide appears in the output
+- Missing keys receive count `0`
+- Iterating over a fixed list gives stable ordering
+
+::: notes
+Hash map iteration order is not the right ordering mechanism here.
+:::
+
+## Hash Sets For Unique Values
+
+```rust
+let mut error_tokens = HashSet::new();
+```
+
+```rust
+error_tokens.insert(nucleotide);
+```
+
+- A set stores each value once
+- Repeated invalid tokens do not create duplicates
+- Use a set for "which values appeared?"
+
+::: notes
+Contrast with the map when the question is "how many times?".
+:::
+
+## Buffered Text Input
+
+```rust
+let file = std::fs::File::open(args.file)
+    .expect("Failed to open the DNA sequence file");
+let reader = BufReader::new(file);
+```
+
+- Buffered input avoids many tiny reads
+- File processing becomes more efficient
+- The reader provides byte or line iteration
+
+::: notes
+This is a pragmatic default for file-based text processing.
+:::
+
+## Byte-Wise Processing
+
+```rust
+for byte in reader.bytes() {
+    let nucleotide = byte.expect("Failed to read the DNA sequence file") as char;
+    // process nucleotide
+}
+```
+
+- Byte-wise processing fits simple ASCII-like sequence data
+- General Unicode text usually needs a different approach
+- The input format should drive the reading strategy
+
+::: notes
+This distinction matters for scientific file formats that are not all the same
+kind of text.
+:::
+
+## Matching While Processing Input
+
+```rust
+match nucleotide {
+    nucleotide if is_valid_nucleotide(nucleotide) => {
+        *counts.entry(nucleotide).or_insert(0) += 1;
+    }
+    nucleotide if nucleotide.is_whitespace() => {}
+    _ => {
+        error_tokens.insert(nucleotide);
+    }
+}
+```
+
+- Valid nucleotide: increment count
+- Whitespace: ignore
+- Anything else: record an error token
+
+::: notes
+This combines Module 3 `match` with maps and sets.
+:::
+
+## Buffered Text Output
+
+```rust
+let file = std::fs::File::create(args.file).expect("Unable to create file");
+let mut output = std::io::BufWriter::new(file);
+```
+
+```rust
+write!(output, "{random_nucleotide}").expect("Unable to write file");
+writeln!(output).expect("Unable to write file");
+```
+
+- Buffered output groups small writes
+- `write!` and `writeln!` format text
+- Output files become inputs for later steps
+
+::: notes
+Use the generator and read-error binaries to show this workflow if time allows.
+:::
+
+## Terminal: Generate And Count Data
+
+```{.bash}
+cd source-code/hashmap-hashset
+cargo run --bin generate-data -- --count 200 --file data.txt
+cargo run --bin read-errors -- --file data.txt --output errors.txt --error-rate 0.2
+cargo run --bin count-nucleotides -- --file errors.txt
+```
+
+- Generate synthetic sequence data
+- Introduce controlled errors
+- Count valid and invalid tokens
+
+::: notes
+This gives a compact file-processing workflow that resembles scientific data
+preparation.
+:::
+
+## Choosing The Collection
+
+- Ordered sequence: `Vec<T>`
+- Counts by key: `HashMap<K, usize>`
+- Unique values: `HashSet<T>`
+- Borrowed view of sequence data: `&[T]`
+- Iterator pipeline: transformations without intermediate variables
+
+::: notes
+This is the design summary for the module.
+:::
+
+## Hands-On Sequence
+
+1. Run `source-code/iterators`
+2. Change the filter threshold
+3. Add a `map` pipeline
+4. Add `fold` and `scan` reductions
+5. Use `zip` to compute `x + y`
+6. Run `count-nucleotides`
+7. Count invalid tokens with a second `HashMap`
+8. Generate a new input file and count it
+
+::: notes
+Use this as the lab checklist. Keep iterator changes readable.
+:::
+
+## Questions
+
+- Is the data a sequence, a lookup table, or a set?
+- Should the pipeline work with references or copied values?
+- What operation consumes the iterator?
+- Does `collect` need a type annotation?
+- Should the file be read by record, line, or byte?
+
+::: notes
+Use these questions to close the module.
+:::
+
+## Connection To The Next Module
+
+- File reads can fail
+- Parsing records can fail
+- Missing values need explicit representation
+- Data-processing programs need recoverable errors
+
+::: notes
+Transition to Module 8: error handling.
+:::

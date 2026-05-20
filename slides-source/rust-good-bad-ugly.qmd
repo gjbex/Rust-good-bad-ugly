@@ -1,0 +1,49 @@
+---
+title: "Rust, the good, the bad, and the ugly"
+author: "Geert Jan Bex"
+format:
+  revealjs:
+    theme: simple
+    css: styles.css
+    slide-number: true
+    chalkboard: true
+    preview-links: auto
+    code-line-numbers: false
+execute:
+  echo: true
+  eval: false
+---
+
+{{< include motivation.qmd >}}
+
+{{< include 00-learning-modules-overview.qmd >}}
+
+{{< include 01-getting-started-with-rust-projects.qmd >}}
+
+{{< include 02-scalar-computation-and-numeric-basics.qmd >}}
+
+{{< include 03-control-flow-and-program-structure.qmd >}}
+
+{{< include 04-ownership-borrowing-and-mutation.qmd >}}
+
+{{< include 05-data-modeling-with-structs-and-methods.qmd >}}
+
+{{< include 06-reusable-abstractions-with-traits.qmd >}}
+
+{{< include 07-collections-iterators-and-text-data.qmd >}}
+
+{{< include 08-error-handling.qmd >}}
+
+{{< include 09-project-organization-libraries-and-tests.qmd >}}
+
+{{< include 10-randomness-and-reproducible-runs.qmd >}}
+
+{{< include 11-data-parallelism-with-rayon.qmd >}}
+
+{{< include 12-integrated-numerical-example-julia-set.qmd >}}
+
+{{< include 13-integrated-numerical-example-n-body-simulation.qmd >}}
+
+{{< include ecosystem.qmd >}}
+
+{{< include finally.qmd >}}

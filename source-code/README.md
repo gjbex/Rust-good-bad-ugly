@@ -48,6 +48,10 @@ prevent or make explicit in safe code.
    methods with trait bounds.
 1. `traits`: illustrates how to implement standard traits such as `Index`,
    `IndexMut`, `Display`, and `TryFrom` for a custom type.
+1. `smart-pointers`: illustrates how to use `Box<T>` to define a recursive
+   binary tree, separate a general tree data structure from binary-search-tree
+   algorithms, encapsulate mutation with crate-private methods, implement
+   `Display`, and derive `serde` serialization traits for recursive data.
 1. `iterators`: illustrates how to use iterators to process collections of data.
 1. `random-numbers`: illustrates how to use the `rand` and `rand_distr` crates
    to generate random numbers.
@@ -60,5 +64,5 @@ programming.
 
 `n-body-simulation`: softened gravitational n-body simulation that combines
 structs, methods, random initialization, command-line parameters, CSV output,
-numerical time integration, and Python visualization.  This can serve as a
-capstone example after the smaller feature-focused examples.
+numerical time integration, and Python visualization.  This can serve as an
+integrated numerical example after the smaller feature-focused examples.

@@ -1,0 +1,65 @@
+# Conclusions
+
+## Outcome
+
+Hopefully, you have determined what is
+
+- the good,
+- the bad, and
+- the ugly
+
+for *you*
+
+
+## Core Rust References
+
+- [Rustup](https://rustup.rs/)
+- [The Rust Programming Language](https://doc.rust-lang.org/book/)
+- [Rust By Example](https://doc.rust-lang.org/rust-by-example/)
+- [The Cargo Book](https://doc.rust-lang.org/cargo/)
+- [The Rust Standard Library](https://doc.rust-lang.org/std/)
+
+
+## Finding Crates
+
+- [docs.rs](https://docs.rs/)
+- [crates.io](https://crates.io/)
+
+
+## Crates: Command Line And Configuration
+
+- [`clap`](https://docs.rs/clap/latest/clap/)
+- [`toml`](https://docs.rs/toml/latest/toml/)
+
+
+## Crates: Numerics And Randomness
+
+- [`num-complex`](https://docs.rs/num-complex/latest/num_complex/)
+- [`rand`](https://docs.rs/rand/latest/rand/)
+- [`rand_chacha`](https://docs.rs/rand_chacha/latest/rand_chacha/)
+- [`rand_distr`](https://docs.rs/rand_distr/latest/rand_distr/)
+
+
+## Crates: I/O And Data
+
+- [`serde`](https://docs.rs/serde/latest/serde/)
+- [`csv`](https://docs.rs/csv/latest/csv/)
+
+
+## Crates: Parallelism
+
+- [`rayon`](https://docs.rs/rayon/latest/rayon/)
+
+
+## Scientific Computing Crates
+
+- [`ndarray`](https://docs.rs/ndarray/latest/ndarray/)
+- [`nalgebra`](https://docs.rs/nalgebra/latest/nalgebra/)
+- [`faer`](https://docs.rs/faer/latest/faer/)
+- [`mdarray`](https://docs.rs/mdarray/latest/mdarray/)
+
+
+## Further Rust References
+
+- [The Rust Reference](https://doc.rust-lang.org/reference/)
+- [The Rust API Guidelines](https://rust-lang.github.io/api-guidelines/)

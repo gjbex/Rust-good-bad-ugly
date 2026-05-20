@@ -1,0 +1,438 @@
+# Module 5: Data Modeling With Structs And Methods
+
+::: notes
+Use scientific domain language here: matrices, particles, parameters, and
+diagnostics. Structs should feel like modeling tools.
+:::
+
+## Module Arc
+
+- Group related data into a named type
+- Attach behavior to that type
+- Protect invariants with private fields
+- Keep `main.rs` focused on program flow
+- Generalize the type when one design fits multiple element types
+
+::: notes
+The main example is a teaching matrix type. It is not meant to replace
+established numerical crates.
+:::
+
+## By The End
+
+- Define a `struct` with named fields
+- Implement methods in an `impl` block
+- Distinguish `self`, `&self`, and `&mut self`
+- Create values with associated functions such as `new`
+- Store matrix data in a flat vector
+- Add trait bounds only where operations need them
+
+::: notes
+These are the working capabilities for this section.
+:::
+
+## Terminal: Matrix Example
+
+```{.bash}
+cd source-code/structs-and-methods
+cargo run -- --help
+cargo run -- --rows 2 --cols 5
+```
+
+- Create a matrix from command-line dimensions
+- Fill it through methods
+- Print values through methods
+
+::: notes
+Run the program first, then open `src/main.rs` and `src/matrix.rs`.
+:::
+
+## Why A Struct?
+
+```rust
+pub struct Matrix {
+    rows: usize,
+    cols: usize,
+    data: Vec<f64>,
+}
+```
+
+- Rows, columns, and storage belong together
+- The type has a useful invariant
+- `data.len()` should match `rows * cols`
+
+::: notes
+The invariant motivates private fields and constructor methods.
+:::
+
+## Private Fields
+
+```rust
+pub struct Matrix {
+    rows: usize,
+    cols: usize,
+    data: Vec<f64>,
+}
+```
+
+- `pub struct Matrix` makes the type visible
+- The fields are private
+- External code uses the public methods
+
+::: notes
+If time permits, try accessing `matrix.data` from `main.rs` and run
+`cargo check`.
+:::
+
+## Associated Function: `new`
+
+```rust
+impl Matrix {
+    pub fn new(rows: usize, cols: usize) -> Self {
+        Self {
+            rows,
+            cols,
+            data: vec![0.0; rows * cols],
+        }
+    }
+}
+```
+
+- `new` belongs to `Matrix`
+- It does not take `self`
+- `Self` means `Matrix` inside this `impl`
+
+::: notes
+Connect this to constructors without forcing object-oriented vocabulary.
+:::
+
+## Creating A Value
+
+```rust
+let mut matrix = Matrix::new(args.rows, args.cols);
+```
+
+- Type-qualified syntax calls the associated function
+- The matrix starts with initialized storage
+- The binding is mutable because elements will be set later
+
+::: notes
+Point out the connection to Module 4: `set` will require `&mut self`.
+:::
+
+## Methods With `&self`
+
+```rust
+impl Matrix {
+    pub fn rows(&self) -> usize {
+        self.rows
+    }
+
+    pub fn cols(&self) -> usize {
+        self.cols
+    }
+}
+```
+
+- `&self` means shared access
+- These methods only read fields
+- Accessors expose selected internal state
+
+::: notes
+Accessors are useful here because fields remain private.
+:::
+
+## Methods With `&mut self`
+
+```rust
+pub fn set(&mut self, row: usize, col: usize, value: f64) {
+    self.data[row * self.cols + col] = value;
+}
+```
+
+- `&mut self` means mutable access
+- The method changes matrix storage
+- The caller needs a mutable matrix binding
+
+::: notes
+This reinforces ownership and borrowing from Module 4 in method syntax.
+:::
+
+## Reading An Element
+
+```rust
+pub fn get(&self, row: usize, col: usize) -> f64 {
+    self.data[row * self.cols + col]
+}
+```
+
+- `get` only needs shared access
+- The indexing formula maps 2D coordinates to flat storage
+- Row-major layout stores each row contiguously
+
+::: notes
+The first version does not check bounds explicitly. The generic version later
+uses `Option` and `Result`.
+:::
+
+## Filling Through The Interface
+
+```rust
+for i in 0..matrix.rows() {
+    for j in 0..matrix.cols() {
+        matrix.set(i, j, (i * matrix.cols() + j) as f64);
+    }
+}
+```
+
+- Dimensions come from accessor methods
+- Values are written through `set`
+- The caller does not touch `data` directly
+
+::: notes
+This slide shows how the type's interface shapes external code.
+:::
+
+## Keeping `main.rs` Focused
+
+```text
+src/
+├── main.rs
+└── matrix.rs
+```
+
+```rust
+mod matrix;
+use matrix::Matrix;
+```
+
+- `main.rs` handles CLI and program flow
+- `matrix.rs` defines the domain type
+- Module boundaries keep examples readable
+
+::: notes
+This continues the module-organization story from Module 3.
+:::
+
+## Encapsulation
+
+```rust
+pub fn new(rows: usize, cols: usize) -> Self
+pub fn rows(&self) -> usize
+pub fn cols(&self) -> usize
+pub fn get(&self, row: usize, col: usize) -> f64
+pub fn set(&mut self, row: usize, col: usize, value: f64)
+```
+
+- Public methods define supported operations
+- Private fields protect representation choices
+- Invariants stay inside the module
+
+::: notes
+Keep this concrete: rows, cols, and data length must stay consistent.
+:::
+
+## Terminal: Add A Method
+
+```{.bash}
+cd source-code/structs-and-methods
+cargo check
+```
+
+- Add `len(&self) -> usize`
+- Call `matrix.len()` from `main.rs`
+- Try direct field access and inspect the diagnostic
+
+::: notes
+Visible text is a participant exercise. Restore direct field access afterward.
+:::
+
+## Private Helper Method
+
+```rust
+fn index(&self, row: usize, col: usize) -> usize {
+    row * self.cols + col
+}
+```
+
+- Repeated indexing logic gets one name
+- `get` and `set` use the same mapping
+- The helper can stay private
+
+::: notes
+This is a useful refactoring exercise before the generic version.
+:::
+
+## Generic Matrix
+
+```rust
+pub struct Matrix<T> {
+    rows: usize,
+    cols: usize,
+    data: Vec<T>,
+}
+```
+
+- `T` is the element type
+- `Matrix<f64>` stores floating-point values
+- `Matrix<i32>` stores integer values
+
+::: notes
+Present generics as reuse of one data model, not as abstraction for its own
+sake.
+:::
+
+## Terminal: Generic Structs
+
+```{.bash}
+cd source-code/generic-structs
+cargo run -- --help
+cargo run -- --rows 2 --cols 3
+```
+
+- Locate the `Matrix<f64>`
+- Locate the `Matrix<i32>`
+- Add a `Matrix<bool>` or `Matrix<char>`
+
+::: notes
+The extra matrix is a compact exercise that demonstrates the type parameter.
+:::
+
+## Methods For All `T`
+
+```rust
+impl<T> Matrix<T> {
+    pub fn rows(&self) -> usize {
+        self.rows
+    }
+
+    pub fn cols(&self) -> usize {
+        self.cols
+    }
+}
+```
+
+- Reading dimensions does not depend on the element type
+- No trait bound is needed
+- The method works for every `Matrix<T>`
+
+::: notes
+This slide sets up "bounds where needed".
+:::
+
+## Checked Indexing
+
+```rust
+fn index(&self, row: usize, col: usize) -> Option<usize> {
+    if row < self.rows && col < self.cols {
+        Some(row * self.cols + col)
+    } else {
+        None
+    }
+}
+```
+
+- `Some(index)` means the coordinates are valid
+- `None` means the coordinates are out of bounds
+- Bounds checking becomes part of the interface
+
+::: notes
+This introduces `Option` lightly before the later error-handling module.
+:::
+
+## Borrowing Elements
+
+```rust
+pub fn get(&self, row: usize, col: usize) -> Option<&T> {
+    self.index(row, col).map(|index| &self.data[index])
+}
+```
+
+- The result may be missing
+- The element is borrowed, not copied
+- `T` does not need to implement `Copy` or `Clone`
+
+::: notes
+This is an ownership point: returning `&T` avoids moving or cloning an element.
+:::
+
+## Setting Elements
+
+```rust
+pub fn set(&mut self, row: usize, col: usize, value: T) -> Result<(), String> {
+    let index = self
+        .index(row, col)
+        .ok_or_else(|| format!("matrix index ({row}, {col}) is out of bounds"))?;
+    self.data[index] = value;
+    Ok(())
+}
+```
+
+- The value is moved into the matrix
+- Out-of-bounds writes return an error
+- `Result` makes failure explicit
+
+::: notes
+Do not turn this into the full error-handling lesson. The main point is method
+signatures communicating failure.
+:::
+
+## Trait Bounds Where Needed
+
+```rust
+impl<T: Clone> Matrix<T> {
+    pub fn new(rows: usize, cols: usize, value: T) -> Self {
+        Self {
+            rows,
+            cols,
+            data: vec![value; rows * cols],
+        }
+    }
+}
+```
+
+- Repeated initialization needs cloneable values
+- The `Clone` bound belongs on this implementation
+- Other methods can work without `T: Clone`
+
+::: notes
+Temporarily remove the bound to show why `vec![value; n]` requires it.
+:::
+
+## Hands-On Sequence
+
+1. Run `source-code/structs-and-methods`
+2. Add `len(&self) -> usize`
+3. Try direct access to `matrix.data`
+4. Add a private `index` helper
+5. Run `source-code/generic-structs`
+6. Add a `Matrix<bool>` or `Matrix<char>`
+7. Remove and restore the `Clone` bound
+
+::: notes
+Use this as the lab checklist. Keep compiler-diagnostic experiments small and
+restore the original code afterward.
+:::
+
+## Questions
+
+- Which values belong together as one type?
+- Which fields should stay private?
+- Which methods need `&self`?
+- Which methods need `&mut self`?
+- Where does a trait bound actually belong?
+
+::: notes
+Use these questions to close the module and prepare the move to traits.
+:::
+
+## Connection To The Next Module
+
+- Methods attach behavior to one type
+- Traits describe behavior shared across types
+- Trait bounds generalize generic code
+- Standard traits provide familiar operations
+
+::: notes
+Transition to Module 6: reusable abstractions with traits.
+:::

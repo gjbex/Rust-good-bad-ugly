@@ -1,0 +1,374 @@
+# Module 9: Project Organization, Libraries, And Tests
+
+::: notes
+This module explains how examples grow without becoming one large `main.rs`.
+Keep the motivation pragmatic: reuse, clarity, and testability.
+:::
+
+## Module Arc
+
+- Move from one binary to several targets
+- Share common rules through a library target
+- Keep binaries focused on coordination
+- Put tests near the behavior they check
+- Test numerical code with appropriate tolerances
+
+::: notes
+The main layout example is `source-code/hashmap-hashset`.
+:::
+
+## By The End
+
+- Distinguish binary targets from library targets
+- Use `src/lib.rs` for shared package code
+- Run a specific binary with `cargo run --bin`
+- Add unit tests with `#[cfg(test)]` and `#[test]`
+- Use `assert!` and `assert_eq!`
+- Write floating-point checks with tolerances
+
+::: notes
+These are the working skills for scaling beyond one-file examples.
+:::
+
+## From One Binary To Several Targets
+
+```text
+src/
+└── main.rs
+```
+
+```text
+src/
+├── lib.rs
+├── generate-data.rs
+├── read-errors.rs
+└── count-nucleotides.rs
+```
+
+- Small examples can start with one binary
+- Related tools can live in one package
+- Shared rules belong in the library
+
+::: notes
+Use the DNA-like sequence tools as the motivating example.
+:::
+
+## Terminal: Related Binaries
+
+```{.bash}
+cd source-code/hashmap-hashset
+cargo run --bin generate-data -- --count 200 --file data.txt
+cargo run --bin read-errors -- --file data.txt --output errors.txt --error-rate 0.2
+cargo run --bin count-nucleotides -- --file errors.txt
+```
+
+- Generate data
+- Inject read errors
+- Count valid and invalid tokens
+
+::: notes
+Run this as a workflow: one package, several related executables.
+:::
+
+## Binary Targets In `Cargo.toml`
+
+```toml
+[[bin]]
+name = "generate-data"
+path = "src/generate-data.rs"
+
+[[bin]]
+name = "read-errors"
+path = "src/read-errors.rs"
+
+[[bin]]
+name = "count-nucleotides"
+path = "src/count-nucleotides.rs"
+```
+
+- Each target has its own `main`
+- `cargo run --bin NAME` selects the executable
+- Program arguments still follow `--`
+
+::: notes
+This is the Cargo mechanism behind the previous terminal commands.
+:::
+
+## Library Target
+
+```rust
+pub const VALID_NUCLEOTIDES: [char; 4] = ['A', 'C', 'G', 'T'];
+pub const ERROR_TOKENS: [char; 12] = ['B', 'D', 'E', 'F', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O'];
+
+pub fn is_valid_nucleotide(value: char) -> bool {
+    VALID_NUCLEOTIDES.contains(&value)
+}
+```
+
+- `src/lib.rs` defines reusable package code
+- `pub` exposes items to binaries
+- Shared rules stay in one place
+
+::: notes
+The long constant line is acceptable here because it is the actual shared
+vocabulary.
+:::
+
+## Importing Library Code
+
+```toml
+name = "hashmap-hashset"
+```
+
+```rust
+use hashmap_hashset::{VALID_NUCLEOTIDES, is_valid_nucleotide};
+```
+
+- Hyphens in package names become underscores in crate names
+- Binaries import the package library by crate name
+- Shared definitions are not duplicated
+
+::: notes
+This naming rule is easy to miss and useful to make explicit.
+:::
+
+## What Belongs In `main`?
+
+- Parse command-line arguments
+- Open input and output resources
+- Call reusable logic
+- Report results
+
+## What Belongs Elsewhere?
+
+- Shared domain constants
+- Reusable validation functions
+- Core numerical algorithms
+- Testable helper functions
+
+::: notes
+This pair of slides can be discussed together. The visible text is framed as a
+design checklist.
+:::
+
+## Unit Test Module
+
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn recognizes_valid_nucleotides() {
+        for nucleotide in VALID_NUCLEOTIDES {
+            assert!(is_valid_nucleotide(nucleotide));
+        }
+    }
+}
+```
+
+- `#[cfg(test)]` compiles the module for tests
+- `#[test]` marks a test case
+- Tests live close to the code they check
+
+::: notes
+Open `source-code/hashmap-hashset/src/lib.rs` for the full tests.
+:::
+
+## Using `super`
+
+```rust
+use super::*;
+```
+
+```rust
+use super::quad;
+```
+
+- `super` refers to the parent module
+- Tests can access nearby implementation items
+- Selective imports make dependencies clearer
+
+::: notes
+Use `enum-match/src/simpson.rs` as the selective-import example.
+:::
+
+## Assertions
+
+```rust
+assert!(is_valid_nucleotide(nucleotide));
+```
+
+```rust
+assert_eq!(matrix[(0, 0)], 1);
+assert_eq!(matrix[(1, 1)], 4);
+```
+
+- `assert!` checks a Boolean condition
+- `assert_eq!` compares expected equality
+- Equality failures show both values
+
+::: notes
+This is basic but worth making concrete before numerical tolerances.
+:::
+
+## Testing Error Paths
+
+```rust
+#[test]
+fn rejects_ragged_rows() {
+    let result = Matrix::try_from(vec![vec![1, 2], vec![3]]);
+
+    assert!(result.is_err());
+}
+```
+
+- Invalid inputs need tests too
+- The test checks behavior, not implementation details
+- Error text can be tested separately when needed
+
+::: notes
+This comes from the `traits` matrix tests.
+:::
+
+## Numerical Tests With Tolerances
+
+```rust
+#[test]
+fn integrates_sine_on_zero_to_pi() {
+    let result = quad(|x| f64::sin(x), 0.0, std::f64::consts::PI, 1000);
+
+    assert!((result - 2.0).abs() < 2.0e-12);
+}
+```
+
+- Floating-point results often need tolerances
+- The tolerance depends on method and scale
+- Too loose hides bugs; too tight creates noise
+
+::: notes
+Use this to reinforce scientific-testing judgment.
+:::
+
+## Testing Trait Behavior
+
+```rust
+#[test]
+fn displays_matrix_rows() {
+    let matrix =
+        Matrix::try_from(vec![vec![1, 2], vec![3, 4]])
+            .expect("rows have the same length");
+
+    assert_eq!(matrix.to_string(), "1 2\n3 4");
+}
+```
+
+- Test the public behavior users rely on
+- Formatting behavior is checked through `to_string`
+- Trait implementations deserve tests
+
+::: notes
+Other tests in the same file cover indexing and iteration behavior.
+:::
+
+## Running Tests
+
+```{.bash}
+cd source-code/hashmap-hashset
+cargo test
+```
+
+```{.bash}
+cd ../traits
+cargo test displays_matrix_rows
+```
+
+- Run all tests while checking the package
+- Filter by test name while working on one behavior
+- Keep test names descriptive
+
+::: notes
+Demonstrate the filtered test command if useful.
+:::
+
+## Terminal: Add Shared Code
+
+```{.bash}
+cd source-code/hashmap-hashset
+cargo test
+```
+
+- Add `is_known_token`
+- Test valid nucleotides
+- Test error tokens
+- Run the package tests
+
+::: notes
+Suggested helper:
+`is_valid_nucleotide(value) || is_error_token(value)`.
+:::
+
+## Terminal: Numerical Test Tolerance
+
+```{.bash}
+cd source-code/enum-match
+cargo test
+```
+
+- Locate the Simpson integration test
+- Change the tolerance temporarily
+- Restore the original tolerance
+
+::: notes
+Use this as a compact demonstration of tolerance sensitivity.
+:::
+
+## Choosing Test Scope
+
+- Pure helper functions are easy unit-test targets
+- CLI parsing can stay in binaries at first
+- Shared algorithms belong in modules or libraries
+- Error paths should have at least one direct test
+- Numerical tests should state their tolerance clearly
+
+::: notes
+This helps learners decide what to test as examples grow.
+:::
+
+## Hands-On Sequence
+
+1. Identify the three `[[bin]]` sections
+2. Run each binary with `cargo run --bin`
+3. Inspect public items in `src/lib.rs`
+4. Add and test `is_known_token`
+5. Run `cargo test`
+6. Inspect the Simpson numerical test
+7. Run one specific matrix test by name
+8. Add one additional matrix behavior test
+
+::: notes
+Use this as the lab checklist.
+:::
+
+## Questions
+
+- Which code is shared by more than one binary?
+- Which rules should live in `src/lib.rs`?
+- Does `main` coordinate or implement domain logic?
+- Which error path should be tested?
+- What tolerance is scientifically meaningful?
+
+::: notes
+Use these questions to close the module.
+:::
+
+## Connection To The Next Module
+
+- Reproducible random examples need explicit seeds
+- Data-generation tools benefit from shared helpers
+- Tests make stochastic and file-based code safer
+- Larger examples need clearer package boundaries
+
+::: notes
+Transition to Module 10: randomness and reproducible runs.
+:::

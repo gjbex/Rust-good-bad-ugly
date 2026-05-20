@@ -1,0 +1,451 @@
+# Module 13: Integrated Numerical Example: N-Body Simulation
+
+::: notes
+Frame this as a small but realistic scientific application. It combines CLI
+parameters, domain types, methods, output, and analysis.
+:::
+
+## Module Arc
+
+- Represent a particle system as Rust data
+- Initialize from reproducible randomness
+- Evolve state with a time-integration method
+- Compute diagnostics during the run
+- Write structured output for analysis and animation
+
+::: notes
+This module is larger than the Julia set example because it evolves state over
+time.
+:::
+
+## By The End
+
+- Explain how simulation state is stored
+- Identify random initialization and its seed
+- Follow the velocity Verlet update stages
+- Interpret energy and center-of-mass diagnostics
+- Distinguish evolution output from particle-state output
+- Use Python helpers to inspect results
+
+::: notes
+Keep the emphasis on program organization and diagnostics, not full celestial
+mechanics.
+:::
+
+## Terminal: Default Simulation
+
+```{.bash}
+cd source-code/n-body-simulation/rust
+cargo run
+```
+
+- Use default particle count
+- Use default seed
+- Run without writing output files
+
+::: notes
+The default run may not print much; it establishes that the program executes.
+:::
+
+## Command-Line Parameters
+
+```rust
+#[arg(long, default_value_t = 100)]
+num_particles: usize,
+
+#[arg(long, default_value_t = 1234)]
+seed: u64,
+
+#[arg(long, default_value_t = 0.001)]
+delta_time: f64,
+
+#[arg(long = "steps", default_value_t = 100)]
+num_steps: usize,
+```
+
+- Model size
+- Random seed
+- Time step
+- Number of steps
+
+::: notes
+Connect this to reproducible command-line runs.
+:::
+
+## Optional Outputs
+
+```rust
+#[arg(long)]
+save_evolution: Option<String>,
+
+#[arg(long)]
+save_states: Option<String>,
+```
+
+- No file name means no output file
+- `Some(filename)` enables output
+- Optional outputs are not errors
+
+::: notes
+This is a concrete use of `Option` from Module 8.
+:::
+
+## Simulation State
+
+```rust
+pub struct System {
+    xs: Vec<f64>,
+    ys: Vec<f64>,
+    zs: Vec<f64>,
+    vxs: Vec<f64>,
+    vys: Vec<f64>,
+    vzs: Vec<f64>,
+    masses: Vec<f64>,
+    softening_length: f64,
+}
+```
+
+- Positions, velocities, and masses are stored in vectors
+- Fields are private
+- Methods control access and mutation
+
+::: notes
+This is a struct-and-methods example at a larger scale.
+:::
+
+## Random Initialization
+
+```rust
+pub fn new(num_particles: usize, seed: u64, softening_length: f64) -> Self {
+    let mut rng = rand::rngs::StdRng::seed_from_u64(seed);
+    // allocate vectors and sample values
+}
+```
+
+- The seed fixes the initial condition
+- Positions, velocities, and masses are sampled
+- The constructor returns an initialized system
+
+::: notes
+Connect to Module 10: random initialization must be reproducible.
+:::
+
+## Initialization Distributions
+
+```rust
+let position_distribution =
+    Uniform::new(0.0, 1.0).expect("position distribution bounds should be valid");
+let velocity_distribution =
+    Normal::new(0.0, 1.0).expect("velocity distribution parameters should be valid");
+let mass_distribution =
+    Uniform::new(0.1, 1.0).expect("mass distribution bounds should be valid");
+```
+
+- Positions use a uniform distribution
+- Velocities use a normal distribution
+- Masses use a positive uniform distribution
+
+::: notes
+The exact distributions are modeling choices for this teaching example.
+:::
+
+## Gravitational Softening
+
+```rust
+let distance_squared =
+    dx * dx + dy * dy + dz * dz + self.softening_length * self.softening_length;
+```
+
+- Softening prevents extremely large close-range forces
+- It is a numerical modeling choice
+- Force and energy calculations use the same softening length
+
+::: notes
+Keep the focus on why this parameter exists and why consistency matters.
+:::
+
+## Acceleration On One Particle
+
+```rust
+fn acceleration_on(&self, index: usize) -> (f64, f64, f64) {
+    let mut acceleration = (0.0, 0.0, 0.0);
+    for i in 0..self.num_particles() {
+        if i != index {
+            let dx = self.xs[i] - self.xs[index];
+            let dy = self.ys[i] - self.ys[index];
+            let dz = self.zs[i] - self.zs[index];
+            // accumulate contribution
+        }
+    }
+    acceleration
+}
+```
+
+- One particle receives contributions from all others
+- The return value is a 3-tuple
+- The method only reads system state
+
+::: notes
+Mention that a named `Vector3` type could be clearer in a larger code base.
+:::
+
+## Acceleration Collection
+
+```rust
+fn accelerations(&self) -> Vec<(f64, f64, f64)> {
+    (0..self.num_particles())
+        .map(|i| self.acceleration_on(i))
+        .collect()
+}
+```
+
+- Iterator over particle indices
+- One acceleration tuple per particle
+- Results are collected before the update
+
+::: notes
+This uses iterator patterns from Module 7.
+:::
+
+## Velocity Verlet: Positions
+
+```rust
+let accelerations = self.accelerations();
+let half_dt_squared = 0.5 * dt * dt;
+
+for i in 0..self.num_particles() {
+    let (ax, ay, az) = accelerations[i];
+    self.xs[i] += self.vxs[i] * dt + ax * half_dt_squared;
+    self.ys[i] += self.vys[i] * dt + ay * half_dt_squared;
+    self.zs[i] += self.vzs[i] * dt + az * half_dt_squared;
+}
+```
+
+- Compute current accelerations
+- Update positions
+- Keep old accelerations for velocity update
+
+::: notes
+This is the first stage of the time integrator.
+:::
+
+## Velocity Verlet: Velocities
+
+```rust
+let new_accelerations = self.accelerations();
+
+for i in 0..self.num_particles() {
+    let (ax, ay, az) = accelerations[i];
+    let (new_ax, new_ay, new_az) = new_accelerations[i];
+    self.vxs[i] += 0.5 * (ax + new_ax) * dt;
+    self.vys[i] += 0.5 * (ay + new_ay) * dt;
+    self.vzs[i] += 0.5 * (az + new_az) * dt;
+}
+```
+
+- Recompute accelerations after moving particles
+- Average old and new accelerations
+- Update velocities in place
+
+::: notes
+Use this to show why the update method mutates `self`.
+:::
+
+## Diagnostics
+
+```rust
+pub fn kinetic_energy(&self) -> f64
+pub fn potential_energy(&self) -> f64
+pub fn total_energy(&self) -> f64
+pub fn center_of_mass(&self) -> (f64, f64, f64)
+```
+
+- Energy tracks numerical behavior
+- Center of mass tracks system drift
+- Diagnostics make simulations inspectable
+
+::: notes
+Diagnostics are part of the program design, not decoration.
+:::
+
+## Evolution CSV Records
+
+```rust
+#[derive(Serialize)]
+struct EvolutionRecord {
+    step: usize,
+    potential_energy: f64,
+    kinetic_energy: f64,
+    total_energy: f64,
+    center_of_mass_x: f64,
+    center_of_mass_y: f64,
+    center_of_mass_z: f64,
+}
+```
+
+- One row per time step
+- Compact diagnostic output
+- Useful for plots and sanity checks
+
+::: notes
+This is the smaller output file.
+:::
+
+## Particle-State CSV Records
+
+```rust
+#[derive(Serialize)]
+struct ParticleStateRecord {
+    step: usize,
+    particle: usize,
+    x: f64,
+    y: f64,
+    z: f64,
+    vx: f64,
+    vy: f64,
+    vz: f64,
+    mass: f64,
+}
+```
+
+- One row per particle per time step
+- Larger output
+- Useful for animation and detailed inspection
+
+::: notes
+Compare output size and purpose with evolution records.
+:::
+
+## Optional Writers
+
+```rust
+let mut evolution_writer = args
+    .save_evolution
+    .as_deref()
+    .map(|filename| csv::Writer::from_path(filename).expect("Failed to create evolution file"));
+```
+
+- `Option<String>` becomes `Option<Writer>`
+- Missing output file is valid
+- Writing happens only when a writer exists
+
+::: notes
+This is another practical `Option` example.
+:::
+
+## Write Only When Enabled
+
+```rust
+fn write_evolution_record(
+    writer: &mut Option<csv::Writer<std::fs::File>>,
+    step: usize,
+    system: &System,
+) {
+    if let Some(writer) = writer.as_mut() {
+        writer
+            .serialize(evolution_record(step, system))
+            .expect("Failed to write evolution record");
+    }
+}
+```
+
+- `as_mut` borrows the optional writer mutably
+- `Some` writes one record
+- `None` does nothing
+
+::: notes
+This connects borrowing, `Option`, and I/O.
+:::
+
+## Terminal: Save Diagnostics
+
+```{.bash}
+cargo run -- --steps 200 --save-evolution evolution.csv
+../visualize-evolution.py evolution.csv
+```
+
+- Save energy and center-of-mass diagnostics
+- Plot diagnostic time series
+- Compare runs with different parameters
+
+::: notes
+Only run the Python script if dependencies and display/browser support are
+available.
+:::
+
+## Terminal: Save Particle States
+
+```{.bash}
+cargo run -- --steps 100 --save-states states.csv
+../animate-states.py states.csv --output animation.html
+```
+
+- Save per-particle state over time
+- Generate an animation
+- Inspect motion rather than only diagnostics
+
+::: notes
+The animation script uses pandas and Plotly.
+:::
+
+## Parameter Experiments
+
+- Reduce `--delta-time`
+- Change `--seed`
+- Change `--softening`
+- Change `--num-particles`
+- Compare diagnostics and animations
+
+::: notes
+Encourage changing one parameter at a time.
+:::
+
+## Interpreting Energy
+
+- Total energy should usually vary less with smaller time steps
+- Softening changes the modeled interaction
+- Random initialization affects close encounters
+- Finite precision affects long runs
+
+::: notes
+Keep this qualitative. The module is not a full numerical integration course.
+:::
+
+## Hands-On Sequence
+
+1. Run the default simulation
+2. Save evolution diagnostics
+3. Visualize diagnostics
+4. Repeat with a smaller `--delta-time`
+5. Change the seed
+6. Save particle states
+7. Animate particle states
+8. Add one extra CSV diagnostic column
+
+::: notes
+Use this as the lab checklist.
+:::
+
+## Questions
+
+- Which methods only read the system?
+- Which method mutates the system?
+- Which parameters define a reproducible run?
+- Which output file is appropriate for diagnostics?
+- When would a named `Vector3` type improve the code?
+
+::: notes
+Use these questions to close the module.
+:::
+
+## Relation To The Julia Set Example
+
+- Julia set: deterministic grid computation
+- N-body: random initialization and time evolution
+- Julia set: matrix-like iteration counts
+- N-body: diagnostics and structured CSV output
+- Both use external visualization tools
+
+::: notes
+Use this to summarize the two integrated examples together.
+:::

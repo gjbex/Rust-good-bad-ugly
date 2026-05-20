@@ -1,9 +1,12 @@
+mod matrix;
+
 use clap::Parser;
-use mdarray::{DArray, DSlice};
+use matrix::Matrix;
 use num_complex::Complex64;
+use rayon::prelude::*;
 
 #[derive(Parser)]
-#[command(name = "Mandelbrot Set Generator", version)]
+#[command(name = "Parallel Julia Set Generator", version)]
 struct Args {
     #[arg(short, long, default_value_t = 1000)]
     max_iterations: usize,
@@ -17,12 +20,8 @@ struct Args {
     c_imag: f64,
 }
 
-type MatrixC = DArray<Complex64, 2>;
-type MatrixCSlice = DSlice<Complex64, 2>;
-type MatrixI = DArray<usize, 2>;
-
-fn initialize_z(rows: usize, cols: usize) -> MatrixC {
-    let mut z = MatrixC::from_elem([rows, cols], Complex64::new(0.0, 0.0));
+fn initialize_z(rows: usize, cols: usize) -> Matrix<Complex64> {
+    let mut z = Matrix::new(rows, cols, Complex64::new(0.0, 0.0));
     let domain_min = -2.0;
     let domain_max = 2.0;
     let delta_re = (domain_max - domain_min) / (cols as f64);
@@ -33,7 +32,8 @@ fn initialize_z(rows: usize, cols: usize) -> MatrixC {
                 domain_min + j as f64 * delta_re,
                 domain_min + i as f64 * delta_im,
             );
-            z[[i, j]] = z_value;
+            z.set(i, j, z_value)
+                .expect("loop indices should be in bounds");
         }
     }
     z
@@ -50,16 +50,21 @@ fn iterate_z_value(z: Complex64, c: Complex64, max_iterations: usize) -> usize {
     max_iterations
 }
 
-fn iterate_z_matrix(z: &MatrixCSlice, c: Complex64, max_iterations: usize) -> MatrixI {
-    let mut result = MatrixI::from_elem([z.dim(0), z.dim(1)], 0);
-    for i in 0..z.dim(0) {
-        for j in 0..z.dim(1) {
-            let z_value = z[[i, j]];
-            let iterations = iterate_z_value(z_value, c, max_iterations);
-            result[[i, j]] = iterations;
-        }
-    }
-    result
+fn iterate_z_matrix(z: &Matrix<Complex64>, c: Complex64, max_iterations: usize) -> Matrix<usize> {
+    let rows = z.rows();
+    let cols = z.cols();
+    let data: Vec<usize> = (0..rows * cols)
+        .into_par_iter()
+        .with_min_len(1000)
+        .map(|index| {
+            let row = index / cols;
+            let col = index % cols;
+            let z_value = *z.get(row, col).expect("flat index should be in bounds");
+            iterate_z_value(z_value, c, max_iterations)
+        })
+        .collect();
+
+    Matrix::from_vec(rows, cols, data).expect("parallel result should match matrix shape")
 }
 
 fn main() {
@@ -67,9 +72,13 @@ fn main() {
     let c = Complex64::new(args.c_real, args.c_imag);
     let z = initialize_z(args.height, args.width);
     let result = iterate_z_matrix(&z, c, args.max_iterations);
-    for i in 0..result.dim(0) {
-        for j in 0..result.dim(1) {
-            print!("{:3} ", result[[i, j]]);
-        }        println!();
+    for i in 0..result.rows() {
+        for j in 0..result.cols() {
+            print!(
+                "{:3} ",
+                result.get(i, j).expect("loop indices should be in bounds")
+            );
+        }
+        println!();
     }
 }

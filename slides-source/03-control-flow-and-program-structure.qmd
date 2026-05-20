@@ -1,0 +1,375 @@
+# Module 3: Control Flow And Program Structure
+
+::: notes
+Connect control flow to small numerical functions, not abstract syntax. This is
+where learners start shaping repeated computations.
+:::
+
+## Module Arc
+
+- Make choices with `if` and `else`
+- Repeat work with `while`, `for`, and ranges
+- Name reusable calculations with functions
+- Represent choices with enums
+- Split growing examples across source files
+
+::: notes
+The through-line is moving from straight-line programs to programs that choose,
+repeat, and organize behavior.
+:::
+
+## By The End
+
+- Use `if`, `while`, and `for`
+- Use half-open and inclusive ranges
+- Define typed functions
+- Use blocks and `if` expressions as values
+- Select behavior with `match`
+- Declare modules with `mod`
+
+::: notes
+Keep this slide trainee-facing. Details are introduced through examples.
+:::
+
+## Terminal: Greatest Common Divisors
+
+```{.bash}
+cd source-code/control-flow
+cargo run
+```
+
+- Inspect the table of `gcd(a, b)` values
+- Identify the repeated calculation
+- Locate the loop bounds in `main`
+
+::: notes
+Run the program first. Then open `source-code/control-flow/src/main.rs`.
+:::
+
+## Branches With `if` And `else`
+
+```rust
+if a > b {
+    a -= b;
+} else {
+    b -= a;
+}
+```
+
+- The condition must be a `bool`
+- Each branch updates one local value
+- Integers are not used as truth values
+
+::: notes
+Contrast with C/C++ only briefly. The practical point is explicit Boolean
+conditions.
+:::
+
+## Loops With `while`
+
+```rust
+fn gcd(mut a: i32, mut b: i32) -> i32 {
+    while a != b {
+        if a > b {
+            a -= b;
+        } else {
+            b -= a;
+        }
+    }
+    a
+}
+```
+
+- `while` repeats while the condition is true
+- `mut` allows local parameter bindings to change
+- The final expression `a` is the return value
+
+::: notes
+Emphasize that `mut` here applies to local copies of the parameters, not to the
+caller's variables.
+:::
+
+## Half-Open Ranges
+
+```rust
+for i in 0..n {
+    println!("{i}");
+}
+```
+
+- Includes `0`
+- Stops before `n`
+- Common for indices and repeated work
+
+::: notes
+This prepares learners for later iterator and indexing examples.
+:::
+
+## Inclusive Ranges
+
+```rust
+for a in 1..=a_max {
+    for b in 1..=b_max {
+        println!("gcd({a}, {b}) = {}", gcd(a, b));
+    }
+}
+```
+
+- Includes both endpoints
+- Useful for small numeric tables
+- Nested loops describe a grid of input pairs
+
+::: notes
+As a quick edit, change `..=` to `..` and compare the output.
+:::
+
+## Terminal: Change The Grid
+
+```{.bash}
+cd source-code/control-flow
+cargo run
+```
+
+- Change `a_max` and `b_max`
+- Compare `1..=a_max` with `1..a_max`
+- Trace one pair such as `gcd(9, 6)`
+
+::: notes
+This is trainee-facing exercise text. Demonstrate or let participants do it.
+:::
+
+## Functions With Typed Interfaces
+
+```rust
+fn polynomial(x: f64, a: f64, b: f64, c: f64) -> f64 {
+    a * x.powi(2) + b * x + c
+}
+```
+
+- Parameter types are explicit
+- Return type follows `->`
+- The last expression is returned
+
+::: notes
+This revisits Module 2 and uses it to introduce function structure.
+:::
+
+## Semicolon And Return Value
+
+```rust
+fn polynomial(x: f64, a: f64, b: f64, c: f64) -> f64 {
+    a * x.powi(2) + b * x + c
+}
+```
+
+- No semicolon: expression value is returned
+- Semicolon: expression becomes a statement
+- Return type and body must agree
+
+::: notes
+If useful, add a semicolon and run `cargo check` in
+`source-code/numerical-function`.
+:::
+
+## Blocks As Expressions
+
+```rust
+let square = {
+    let x = 2.0;
+    x * x
+};
+```
+
+- A block can produce a value
+- Local bindings stay inside the block
+- The final expression determines the block value
+
+::: notes
+This is a small conceptual bridge to `if` expressions and `match` expressions.
+:::
+
+## `if` Expressions
+
+```rust
+let weight = if i % 2 == 0 { 2.0 } else { 4.0 };
+```
+
+- The whole `if` has a value
+- Both branches must have compatible types
+- Useful for local numerical choices
+
+::: notes
+This exact pattern appears in the Simpson quadrature implementation.
+:::
+
+## Tuples
+
+```rust
+let point: (f64, f64) = (1.0, 2.0);
+
+let x = point.0;
+let y = point.1;
+
+let (row, col) = (2_usize, 3_usize);
+```
+
+- Tuples group a fixed number of values
+- Fields are accessed by position
+- Destructuring names the components
+
+::: notes
+Mention that a `struct` is clearer once the grouped values represent a
+recurring concept.
+:::
+
+## Terminal: Quadrature Choices
+
+```{.bash}
+cd source-code/enum-match
+cargo run
+cargo run -- --method gauss
+```
+
+- Run both integration methods
+- Compare the command-line option with the code
+- Identify where the selected method is handled
+
+::: notes
+Open `source-code/enum-match/src/main.rs` after running the commands.
+:::
+
+## Enums For Fixed Choices
+
+```rust
+#[derive(Clone, ValueEnum)]
+enum QuadratureMethod {
+    Simpson,
+    Gauss,
+}
+```
+
+- An enum value is one variant from a fixed set
+- The variants are part of the type
+- Parsed input becomes a Rust value
+
+::: notes
+This is more precise than passing strings around after parsing.
+:::
+
+## Selecting Behavior With `match`
+
+```rust
+let result = match args.method {
+    QuadratureMethod::Simpson => simpson::quad(f, a, b, 1000),
+    QuadratureMethod::Gauss => gauss::quad(f, a, b),
+};
+```
+
+- Each arm handles one variant
+- The compiler checks coverage
+- The selected arm produces the value of `result`
+
+::: notes
+If time permits, add a new variant without a matching arm and run
+`cargo check`.
+:::
+
+## Closures As Function Arguments
+
+```rust
+let f = |x: f64| x.sin();
+```
+
+```rust
+pub fn quad<F>(f: F, a: f64, b: f64, n: usize) -> f64
+where
+    F: Fn(f64) -> f64,
+{
+    // implementation
+}
+```
+
+- The integration algorithm receives the function to integrate
+- The same algorithm can run on different functions
+- The trait bound is a preview of later modules
+
+::: notes
+Do not dwell on generic syntax yet. The main idea is passing behavior as an
+argument.
+:::
+
+## Source Modules
+
+```text
+src/
+├── main.rs
+├── simpson.rs
+└── gauss.rs
+```
+
+```rust
+mod simpson;
+mod gauss;
+```
+
+- `main.rs` handles setup and dispatch
+- Numerical algorithms live in separate files
+- Qualified names show where functions come from
+
+::: notes
+Connect this to keeping growing examples readable.
+:::
+
+## Qualified Function Calls
+
+```rust
+simpson::quad(f, a, b, 1000)
+gauss::quad(f, a, b)
+```
+
+- Module names organize related code
+- Function names can be reused in different modules
+- Call sites show the chosen implementation
+
+::: notes
+Both modules expose a `quad` function with different signatures. This is a
+useful setup for later discussions of traits and abstractions.
+:::
+
+## Hands-On Sequence
+
+1. Run `source-code/control-flow`
+2. Change `a_max` and `b_max`
+3. Compare `1..=a_max` with `1..a_max`
+4. Add a second function to `source-code/numerical-function`
+5. Run both `enum-match` methods
+6. Change the integrated function from `sin` to `cos`
+7. Add an enum variant and inspect the `match` diagnostic
+
+::: notes
+Use this slide as a lab checklist. The visible text is intentionally phrased as
+participant work.
+:::
+
+## Questions
+
+- Which loops naturally fit ranges?
+- When should a calculation become a function?
+- When is a tuple enough, and when is a struct clearer?
+- Which choices deserve an enum?
+- What should stay in `main.rs`?
+
+::: notes
+Use these questions to close the module and prepare the ownership transition.
+:::
+
+## Connection To The Next Module
+
+- Functions make ownership visible at boundaries
+- Mutation starts to matter more
+- Loops over collections introduce borrowing questions
+- Larger structures need clearer data ownership
+
+::: notes
+Transition to Module 4: ownership, borrowing, and mutation.
+:::

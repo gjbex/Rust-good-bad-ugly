@@ -1,0 +1,363 @@
+# Module 11: Data Parallelism With Rayon
+
+::: notes
+Rayon should feel like a controlled extension of iterator-based code, not a
+generic concurrency module.
+:::
+
+## Module Arc
+
+- Identify independent numerical work
+- Compare serial and parallel Julia set implementations
+- Replace a serial range with a parallel iterator
+- Collect independent results into a matrix
+- Measure with release builds and meaningful problem sizes
+
+::: notes
+The central contrast is baseline nested loops versus Rayon over flat indices.
+:::
+
+## By The End
+
+- Explain data parallelism
+- Use `rayon::prelude::*`
+- Use `into_par_iter` on a range
+- Map flat indices to matrix coordinates
+- Avoid concurrent writes to one shared matrix
+- Control worker threads with `RAYON_NUM_THREADS`
+
+::: notes
+Keep the focus on data-parallel structure and measurement.
+:::
+
+## Why Julia Set Work Parallelizes
+
+```text
+z <- z * z + c
+```
+
+- Each output grid point starts from its own `z`
+- Each point runs the same iteration rule
+- One grid point does not need another grid point's result
+- The output is one value per grid point
+
+::: notes
+This independence is why the example is a good first Rayon target.
+:::
+
+## Add Rayon
+
+```toml
+[dependencies]
+clap = { version = "4.0", features = ["derive"] }
+num-complex = "0.4"
+rayon = "1.10"
+```
+
+```rust
+use rayon::prelude::*;
+```
+
+- The crate provides parallel iterators
+- The prelude brings Rayon traits into scope
+- `into_par_iter` becomes available
+
+::: notes
+Open `julia-set-rayon/Cargo.toml` and `src/main.rs` if useful.
+:::
+
+## Terminal: Baseline Output
+
+```{.bash}
+cd source-code/julia-set/julia-set-baseline
+cargo run --release -- --width 400 --height 300 > /tmp/julia-serial.txt
+```
+
+- Build with optimizations
+- Use a fixed image size
+- Save output for comparison
+
+::: notes
+Redirecting output avoids sending a large text matrix to the terminal.
+:::
+
+## Serial Matrix Computation
+
+```rust
+fn iterate_z_matrix(z: &Matrix<Complex64>, c: Complex64, max_iterations: usize) -> Matrix<usize> {
+    let mut result = Matrix::new(z.rows(), z.cols(), 0);
+    for i in 0..z.rows() {
+        for j in 0..z.cols() {
+            let z_value = *z.get(i, j).expect("loop indices should be in bounds");
+            let iterations = iterate_z_value(z_value, c, max_iterations);
+            result.set(i, j, iterations)
+                .expect("loop indices should be in bounds");
+        }
+    }
+    result
+}
+```
+
+- Nested loops visit grid points one by one
+- The result matrix is mutated in place
+- This version is the reference behavior
+
+::: notes
+This is intentionally clear serial code. It gives the parallel version
+something concrete to match.
+:::
+
+## Terminal: Rayon Output
+
+```{.bash}
+cd ../julia-set-rayon
+cargo run --release -- --width 400 --height 300 > /tmp/julia-rayon.txt
+diff /tmp/julia-serial.txt /tmp/julia-rayon.txt
+```
+
+- Use the same parameters
+- Compare output, not just speed
+- Parallel code should preserve results
+
+::: notes
+Correctness comparison comes before benchmarking.
+:::
+
+## Parallel Matrix Computation
+
+```rust
+let data: Vec<usize> = (0..rows * cols)
+    .into_par_iter()
+    .with_min_len(1000)
+    .map(|index| {
+        let row = index / cols;
+        let col = index % cols;
+        let z_value = *z.get(row, col).expect("flat index should be in bounds");
+        iterate_z_value(z_value, c, max_iterations)
+    })
+    .collect();
+```
+
+- The flat index range covers every grid point
+- Rayon splits work across worker threads
+- Each task computes one output value
+- `collect` builds the result vector
+
+::: notes
+The local source includes `with_min_len(1000)`, which nudges Rayon toward
+larger chunks of work.
+:::
+
+## Flat Index To Matrix Coordinates
+
+```rust
+let row = index / cols;
+let col = index % cols;
+```
+
+- One flat range replaces two nested loops
+- Division gives the row
+- Remainder gives the column
+- The mapping matches row-major storage
+
+::: notes
+Connect this back to the matrix indexing formula from Modules 5 and 6.
+:::
+
+## Avoid Shared Mutable State
+
+```rust
+.map(|index| {
+    // compute one usize
+})
+.collect()
+```
+
+- Each parallel task returns a value
+- No task writes into a shared result matrix
+- The collected vector is wrapped after the parallel work finishes
+
+::: notes
+This is the design lesson: produce independent values instead of coordinating
+concurrent mutation.
+:::
+
+## Matrix From Parallel Data
+
+```rust
+pub fn from_vec(rows: usize, cols: usize, data: Vec<T>) -> Result<Self, String> {
+    if data.len() == rows * cols {
+        Ok(Self { rows, cols, data })
+    } else {
+        Err(format!(
+            "matrix data has {} elements, but shape ({rows}, {cols}) requires {}",
+            data.len(),
+            rows * cols
+        ))
+    }
+}
+```
+
+- The vector must match the requested shape
+- The matrix invariant is checked once
+- The parallel result becomes a normal matrix
+
+::: notes
+This reinforces the invariant and error-handling material.
+:::
+
+## Running With Visualization
+
+```{.bash}
+cd source-code/julia-set/julia-set-rayon
+cargo run --release -- --width 800 --height 600 | ../view-fractal.py
+```
+
+- Rust computes the iteration counts
+- Text output feeds the viewer
+- The command-line interface matches the baseline
+
+::: notes
+Only run the viewer when the environment supports it. The command is still a
+useful workflow reference.
+:::
+
+## Control Worker Threads
+
+```{.bash}
+RAYON_NUM_THREADS=4 cargo run --release -- --width 800 --height 600 > /dev/null
+```
+
+- Rayon uses a worker thread pool
+- The environment variable fixes the thread count
+- Thread count matters for scaling experiments
+
+::: notes
+Use redirection to avoid measuring terminal output.
+:::
+
+## Thread Count Experiment
+
+```{.bash}
+RAYON_NUM_THREADS=1 cargo run --release -- --width 1200 --height 1200 > /dev/null
+RAYON_NUM_THREADS=2 cargo run --release -- --width 1200 --height 1200 > /dev/null
+RAYON_NUM_THREADS=4 cargo run --release -- --width 1200 --height 1200 > /dev/null
+```
+
+- Keep problem size fixed
+- Change one variable at a time
+- Interpret results with CPU core count in mind
+
+::: notes
+For rigorous measurement, use the benchmark script rather than eyeballing run
+times.
+:::
+
+## Benchmark All Julia Set Variants
+
+```{.bash}
+cd source-code/julia-set
+WARMUP=1 RUNS=3 ./benchmark.sh
+```
+
+- Build implementations in release mode
+- Smoke-test outputs
+- Compare with `hyperfine`
+
+::: notes
+This script requires `hyperfine`. If unavailable, keep the slide as a workflow
+description.
+:::
+
+## Larger Workloads Matter
+
+```{.bash}
+WIDTH=1600 HEIGHT=1600 MAX_ITERATIONS=1000 WARMUP=1 RUNS=5 ./benchmark.sh
+```
+
+- Small workloads can be dominated by overhead
+- Larger grids expose more parallel work
+- Release builds are required for meaningful comparisons
+
+::: notes
+Do not promise speedup. The point is measurement under plausible conditions.
+:::
+
+## Rayon Thread Scaling Script
+
+```{.bash}
+cd source-code/julia-set/julia-set-rayon
+THREAD_COUNTS="1 2 4 8" ./benchmark.sh
+```
+
+- Build only the Rayon implementation
+- Run the same workload with multiple thread counts
+- Compare scaling trends
+
+::: notes
+Use this if the environment has enough cores and `hyperfine`.
+:::
+
+## When Rayon Fits
+
+- Many independent tasks
+- Enough work per task
+- CPU-bound computation
+- Safe collection or reduction of results
+- Minimal shared mutable state
+
+::: notes
+Julia set grids satisfy these conditions for sufficiently large images.
+:::
+
+## When Rayon May Not Help
+
+- Tiny workloads
+- Strong dependencies between neighboring results
+- I/O-bound programs
+- Heavy synchronization
+- Work split into tasks that are too small
+
+::: notes
+This sets expectations and prevents treating Rayon as automatic speedup.
+:::
+
+## Hands-On Sequence
+
+1. Run the serial baseline
+2. Run the Rayon version with the same parameters
+3. Compare outputs with `diff`
+4. Inspect both `iterate_z_matrix` functions
+5. Run with `RAYON_NUM_THREADS=1`
+6. Run with more worker threads
+7. Use a larger image size
+8. Run the Rayon benchmark script
+
+::: notes
+Use this as the lab checklist. Correctness comparison should come before
+benchmarking.
+:::
+
+## Questions
+
+- Which work units are independent?
+- What data is shared read-only?
+- Where are output values collected?
+- What overhead does parallelism introduce?
+- Is the benchmark problem large enough?
+
+::: notes
+Use these questions to close the module.
+:::
+
+## Connection To Later Material
+
+- Julia set variants compare implementation styles
+- Parallel reductions are a natural next topic
+- Numerical crates may expose parallel iteration
+- Reproducible random streams need care in parallel code
+- Larger simulations need explicit performance measurements
+
+::: notes
+Transition to the integrated Julia set module.
+:::

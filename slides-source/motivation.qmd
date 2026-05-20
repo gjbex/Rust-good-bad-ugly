@@ -1,0 +1,30 @@
+# Motivation
+
+Central question: is Rust a programming language you want to use for scientific computing and/or data analysis?
+
+
+## Rust: the good
+
+Features:
+
+- Memory safety without garbage collection
+- Concurrency without data races
+- Zero-cost abstractions
+- Modern tooling and ecosystem(?)
+- Performance comparable to C/C++
+- Strong type system and pattern matching
+
+
+## Rust: the bad
+
+Challenges:
+
+- Steep learning curve
+- Limited libraries and ecosystem for scientific computing
+- Less community support and resources for data science
+- Slower compile times
+
+
+## Rust: the ugly
+
+Overhyped?  Judge for yourselves
