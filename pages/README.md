@@ -9,7 +9,7 @@ C, C++, Python, Julia, R, and Fortran, so that you can answer these questions
 for yourself.
 
 
-## Learning Outcomes
+## Learning outcomes
 
 When you complete this training you will
 
@@ -45,7 +45,7 @@ Total duration: 4 hours.
   | wrap up                                      | 10 min.  |
 
 
-## Training Materials
+## Training materials
 
 The [learning modules](learning-modules/) are available as a website.
 
@@ -56,7 +56,7 @@ The source code, slide sources, and learning-module Markdown files are
 available in the [GitHub repository](https://github.com/{{GITHUB_REPOSITORY}}).
 
 
-## Target Audience
+## Target audience
 
 This training is for you if you want to learn enough Rust to judge whether it
 could work for scientific computing, technical software, data-processing tools,

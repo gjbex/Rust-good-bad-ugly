@@ -178,7 +178,7 @@ Preview the site locally with:
 mkdocs serve
 ```
 
-The GitHub Pages workflow builds the Markdown landing page under `/`, this site
+The GitHub Pages workflow builds the Jekyll landing page under `/`, this site
 under `/learning-modules/`, and the Quarto slide deck under `/slides/`.
 
 ## Useful References
