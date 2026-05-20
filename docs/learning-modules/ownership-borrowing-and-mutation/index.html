@@ -174,10 +174,10 @@ to learn when each program isolates one rule at a time.</p>
 </ul>
 <p>The examples used in this module are:</p>
 <ul>
-<li><code>source-code/mutable-variables</code></li>
-<li><code>source-code/mutable-borrowing</code></li>
-<li><code>source-code/borrowing-vectors</code></li>
-<li><code>source-code/copy-vs-move</code></li>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/mutable-variables"><code>source-code/mutable-variables</code></a></li>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/mutable-borrowing"><code>source-code/mutable-borrowing</code></a></li>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/borrowing-vectors"><code>source-code/borrowing-vectors</code></a></li>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/copy-vs-move"><code>source-code/copy-vs-move</code></a></li>
 </ul>
 <h2 id="immutable-by-default">Immutable By Default<a class="headerlink" href="#immutable-by-default" title="Permanent link">&para;</a></h2>
 <p>Rust bindings are immutable by default:</p>
@@ -213,7 +213,7 @@ that visible with a mutable reference:</p>
     *dxdt = -x;
 }
 </code></pre>
-<p>This appears in <code>source-code/mutable-borrowing</code>:</p>
+<p>This appears in <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/mutable-borrowing"><code>source-code/mutable-borrowing</code></a>:</p>
 <pre><code class="language-bash">cd source-code/mutable-borrowing
 cargo run
 </code></pre>
@@ -313,7 +313,7 @@ slice:</p>
     }
 }
 </code></pre>
-<p>This appears in <code>source-code/borrowing-vectors</code>:</p>
+<p>This appears in <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/borrowing-vectors"><code>source-code/borrowing-vectors</code></a>:</p>
 <pre><code class="language-bash">cd source-code/borrowing-vectors
 cargo run
 </code></pre>
@@ -404,7 +404,7 @@ vector is copied element by element.</p>
 <p>Use this sequence as a practical lab.</p>
 <ol>
 <li>
-<p>Run <code>source-code/mutable-variables</code> and identify which binding has to be
+<p>Run <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/mutable-variables"><code>source-code/mutable-variables</code></a> and identify which binding has to be
    mutable.</p>
 </li>
 <li>
@@ -412,14 +412,14 @@ vector is copied element by element.</p>
    diagnostic, then restore <code>mut</code>.</p>
 </li>
 <li>
-<p>Run <code>source-code/mutable-borrowing</code> and follow where <code>dxdt</code> is modified.</p>
+<p>Run <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/mutable-borrowing"><code>source-code/mutable-borrowing</code></a> and follow where <code>dxdt</code> is modified.</p>
 </li>
 <li>
 <p>Rewrite <code>rhs</code> locally so that it returns <code>f64</code> instead of writing through
    <code>&amp;mut f64</code>, then update the call site.</p>
 </li>
 <li>
-<p>Run <code>source-code/copy-vs-move</code> and compare the scalar copy with the vector
+<p>Run <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/copy-vs-move"><code>source-code/copy-vs-move</code></a> and compare the scalar copy with the vector
    move.</p>
 </li>
 <li>
@@ -430,7 +430,7 @@ vector is copied element by element.</p>
 <p>Change <code>mean_borrow</code> to use a slice signature, then update the call site.</p>
 </li>
 <li>
-<p>Run <code>source-code/borrowing-vectors</code> and inspect the normalization output.</p>
+<p>Run <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/borrowing-vectors"><code>source-code/borrowing-vectors</code></a> and inspect the normalization output.</p>
 </li>
 <li>
 <p>Uncomment the borrow-checker example in <code>borrowing-vectors</code>, run

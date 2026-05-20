@@ -5,5 +5,9 @@ site/
 _site/
 _site*/
 
+# Python helper script caches
+__pycache__/
+*.py[cod]
+
 # Generated GitHub Pages sub-sites are intentionally committed when the
 # workflow updates them.

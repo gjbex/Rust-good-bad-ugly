@@ -168,11 +168,11 @@ ambiguous or accidental computations.</p>
 </ul>
 <p>The examples used in this module are:</p>
 <ul>
-<li><code>source-code/basic-types</code></li>
-<li><code>source-code/math</code></li>
-<li><code>source-code/numerical-function</code></li>
-<li><code>source-code/no-double-promotion</code></li>
-<li><code>source-code/complex-numbers</code></li>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/basic-types"><code>source-code/basic-types</code></a></li>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/math"><code>source-code/math</code></a></li>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/numerical-function"><code>source-code/numerical-function</code></a></li>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/no-double-promotion"><code>source-code/no-double-promotion</code></a></li>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/complex-numbers"><code>source-code/complex-numbers</code></a></li>
 </ul>
 <h2 id="scalar-types">Scalar Types<a class="headerlink" href="#scalar-types" title="Permanent link">&para;</a></h2>
 <p>Rust has several families of scalar types:</p>
@@ -281,7 +281,7 @@ periodic domains, <code>div_euclid</code> and <code>rem_euclid</code> are often 
 <h2 id="mathematical-functions">Mathematical Functions<a class="headerlink" href="#mathematical-functions" title="Permanent link">&para;</a></h2>
 <p>Floating-point mathematical functions are implemented as methods on <code>f32</code> and
 <code>f64</code> values.</p>
-<p>Examples from <code>source-code/math</code> include:</p>
+<p>Examples from <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/math"><code>source-code/math</code></a> include:</p>
 <pre><code class="language-rust">let angle = std::f64::consts::FRAC_PI_6;
 let value = 2.0_f64;
 
@@ -378,27 +378,27 @@ println!(&quot;{}&quot;, z1.norm());
 <p>Use this sequence as a practical lab.</p>
 <ol>
 <li>
-<p>Run <code>source-code/basic-types</code> and identify the ranges of <code>i32</code>, <code>u32</code>,
+<p>Run <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/basic-types"><code>source-code/basic-types</code></a> and identify the ranges of <code>i32</code>, <code>u32</code>,
    <code>f32</code>, and <code>f64</code>.</p>
 </li>
 <li>
-<p>Modify <code>source-code/basic-types/src/main.rs</code> to print one additional
+<p>Modify <a href="https://github.com/gjbex/Rust-good-bad-ugly/blob/main/source-code/basic-types/src/main.rs"><code>source-code/basic-types/src/main.rs</code></a> to print one additional
    floating-point constant for both <code>f32</code> and <code>f64</code>.</p>
 </li>
 <li>
-<p>Run <code>source-code/math</code> and compare integer division with floating-point
+<p>Run <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/math"><code>source-code/math</code></a> and compare integer division with floating-point
    division.</p>
 </li>
 <li>
-<p>Change the integer values in <code>source-code/math/src/main.rs</code> and predict the
+<p>Change the integer values in <a href="https://github.com/gjbex/Rust-good-bad-ugly/blob/main/source-code/math/src/main.rs"><code>source-code/math/src/main.rs</code></a> and predict the
    result of <code>/</code>, <code>%</code>, <code>div_euclid</code>, and <code>rem_euclid</code> before running the code.</p>
 </li>
 <li>
-<p>Add one more mathematical function call to <code>source-code/math</code>, such as
+<p>Add one more mathematical function call to <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/math"><code>source-code/math</code></a>, such as
    <code>value.cbrt()</code> or <code>value.log2()</code>.</p>
 </li>
 <li>
-<p>Run <code>source-code/numerical-function</code> with different polynomial
+<p>Run <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/numerical-function"><code>source-code/numerical-function</code></a> with different polynomial
    coefficients:</p>
 </li>
 </ol>
@@ -406,14 +406,14 @@ println!(&quot;{}&quot;, z1.norm());
    cargo run -- --a 2.0 --b -1.0 --c 0.5</code></p>
 <ol>
 <li>
-<p>Remove one <code>as f64</code> conversion from <code>source-code/numerical-function</code> and run
+<p>Remove one <code>as f64</code> conversion from <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/numerical-function"><code>source-code/numerical-function</code></a> and run
    <code>cargo check</code>. Read the compiler diagnostic, then restore the conversion.</p>
 </li>
 <li>
-<p>Run <code>source-code/no-double-promotion</code> and inspect the printed type names.</p>
+<p>Run <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/no-double-promotion"><code>source-code/no-double-promotion</code></a> and inspect the printed type names.</p>
 </li>
 <li>
-<p>Run <code>source-code/complex-numbers</code> and add a calculation of <code>z1 - z2</code>.</p>
+<p>Run <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/complex-numbers"><code>source-code/complex-numbers</code></a> and add a calculation of <code>z1 - z2</code>.</p>
 </li>
 </ol>
 <h2 id="discussion-points">Discussion Points<a class="headerlink" href="#discussion-points" title="Permanent link">&para;</a></h2>
