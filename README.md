@@ -18,9 +18,10 @@ of what Rust programming is like.
 ## What is it?
 
 1. `source-code`: source code for the training session.
-1. `docs/learning-modules`: Markdown learning modules, configured as an MkDocs
+1. `learning-modules`: Markdown learning modules, configured as an MkDocs
 site.
-1. `pages`: Jekyll landing page source for the published GitHub Pages site.
+1. `docs/README.md`: Jekyll landing page source for the published GitHub Pages
+site.
 1. `mkdocs.yml`: MkDocs configuration for building the learning-module site.
 1. `environment.yml`: conda environment file for the training session, used to
 run visualization scripts and build the MkDocs site.

@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>9. Project Organization, Libraries, And Tests - Rust, the good, the bad, and the ugly</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "9. Project Organization, Libraries, And Tests";
+        var mkdocs_page_input_path = "project-organization-libraries-and-tests.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/rust.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/bash.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/toml.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Rust, the good, the bad, and the ugly
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../learning-module-structure/">Module Structure</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Learning Modules</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../getting-started-with-rust-projects/">1. Getting Started With Rust Projects</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scalar-computation-and-numeric-basics/">2. Scalar Computation And Numeric Basics</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../control-flow-and-program-structure/">3. Control Flow And Program Structure</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ownership-borrowing-and-mutation/">4. Ownership, Borrowing, And Mutation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-modeling-with-structs-and-methods/">5. Data Modeling With Structs And Methods</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reusable-abstractions-with-traits/">6. Reusable Abstractions With Traits</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../collections-iterators-and-text-data/">7. Collections, Iterators, And Text Data</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error-handling/">8. Error Handling</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">9. Project Organization, Libraries, And Tests</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#learning-objectives">Learning Objectives</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#from-one-binary-to-several-targets">From One Binary To Several Targets</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#binary-targets">Binary Targets</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#library-targets">Library Targets</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#using-library-code-from-binaries">Using Library Code From Binaries</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#what-belongs-in-main">What Belongs In main?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#unit-tests">Unit Tests</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#using-super-in-tests">Using super In Tests</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#assertions">Assertions</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#testing-error-paths">Testing Error Paths</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#numerical-tests-with-tolerances">Numerical Tests With Tolerances</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#testing-trait-behavior">Testing Trait Behavior</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#running-specific-tests">Running Specific Tests</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#suggested-hands-on-work">Suggested Hands-On Work</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#discussion-points">Discussion Points</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#connection-to-later-modules">Connection To Later Modules</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../randomness-and-reproducible-runs/">10. Randomness And Reproducible Runs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-parallelism-with-rayon/">11. Data Parallelism With Rayon</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-julia-set/">12. Integrated Numerical Example: Julia Set</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-n-body-simulation/">13. Integrated Numerical Example: N-Body Simulation</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Rust, the good, the bad, and the ugly</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Learning Modules</li>
+      <li class="breadcrumb-item active">9. Project Organization, Libraries, And Tests</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="project-organization-libraries-and-tests">Project Organization, Libraries, And Tests<a class="headerlink" href="#project-organization-libraries-and-tests" title="Permanent link">&para;</a></h1>
+<p>This module introduces Cargo package layouts that go beyond a single
+<code>src/main.rs</code>. Earlier examples used one binary at a time. Larger examples
+often need shared code, several related executables, and tests that verify
+small pieces of behavior.</p>
+<p>The focus here is structure: where code lives, how binaries share library code,
+how Cargo selects which binary to run, and how unit tests are placed close to
+the code they check.</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>After completing this module, participants should be able to:</p>
+<ul>
+<li>Explain the difference between a binary target and a library target.</li>
+<li>Use <code>src/lib.rs</code> for code shared by multiple executables.</li>
+<li>Define multiple executables in one Cargo package with <code>[[bin]]</code>.</li>
+<li>Run a specific binary with <code>cargo run --bin</code>.</li>
+<li>Import shared package code from a binary target.</li>
+<li>Add unit tests in a <code>#[cfg(test)]</code> module.</li>
+<li>Mark test functions with <code>#[test]</code>.</li>
+<li>Use <code>assert!</code> and <code>assert_eq!</code>.</li>
+<li>Write numerical checks with tolerances.</li>
+<li>Decide which code belongs in <code>main.rs</code> and which code belongs in reusable
+  modules or a library target.</li>
+</ul>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<p>Participants should already be comfortable with:</p>
+<ul>
+<li>Cargo projects and <code>Cargo.toml</code>.</li>
+<li>Modules declared with <code>mod</code>.</li>
+<li>Functions, structs, enums, and traits.</li>
+<li>Collections and text processing.</li>
+<li>Basic <code>Option</code> and <code>Result</code>.</li>
+</ul>
+<p>The examples used in this module are:</p>
+<ul>
+<li><code>source-code/hashmap-hashset</code></li>
+<li><code>source-code/enum-match</code></li>
+<li><code>source-code/traits</code></li>
+</ul>
+<h2 id="from-one-binary-to-several-targets">From One Binary To Several Targets<a class="headerlink" href="#from-one-binary-to-several-targets" title="Permanent link">&para;</a></h2>
+<p>A minimal Rust binary project has one main executable:</p>
+<pre><code class="language-text">src/
+└── main.rs
+</code></pre>
+<p>That is enough for many small examples. The <code>hashmap-hashset</code> example is a
+larger package with several related executables:</p>
+<pre><code class="language-text">src/
+├── lib.rs
+├── generate-data.rs
+├── read-errors.rs
+└── count-nucleotides.rs
+</code></pre>
+<p>The three executable programs are:</p>
+<ul>
+<li><code>generate-data</code></li>
+<li><code>read-errors</code></li>
+<li><code>count-nucleotides</code></li>
+</ul>
+<p>They all work with the same DNA-like sequence vocabulary, so the shared
+definitions live in <code>src/lib.rs</code>.</p>
+<h2 id="binary-targets">Binary Targets<a class="headerlink" href="#binary-targets" title="Permanent link">&para;</a></h2>
+<p>Each executable in a Cargo package is a binary target. The <code>hashmap-hashset</code>
+package declares its binaries explicitly in <code>Cargo.toml</code>:</p>
+<pre><code class="language-toml">[[bin]]
+name = &quot;generate-data&quot;
+path = &quot;src/generate-data.rs&quot;
+
+[[bin]]
+name = &quot;read-errors&quot;
+path = &quot;src/read-errors.rs&quot;
+
+[[bin]]
+name = &quot;count-nucleotides&quot;
+path = &quot;src/count-nucleotides.rs&quot;
+</code></pre>
+<p>Each binary file has its own <code>main</code> function. Run a specific binary with:</p>
+<pre><code class="language-bash">cargo run --bin generate-data -- --count 800 --file data.txt
+cargo run --bin read-errors -- --file data.txt --output errors.txt --error-rate 0.1
+cargo run --bin count-nucleotides -- --file errors.txt
+</code></pre>
+<p>The first <code>--</code> separates Cargo arguments from arguments passed to the selected
+program.</p>
+<h2 id="library-targets">Library Targets<a class="headerlink" href="#library-targets" title="Permanent link">&para;</a></h2>
+<p>When a package contains <code>src/lib.rs</code>, Cargo builds a library target as well.
+This library can be used by the package's binaries.</p>
+<p>The shared library code in <code>hashmap-hashset</code> is:</p>
+<pre><code class="language-rust">pub const VALID_NUCLEOTIDES: [char; 4] = ['A', 'C', 'G', 'T'];
+pub const ERROR_TOKENS: [char; 12] = ['B', 'D', 'E', 'F', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O'];
+
+pub fn is_valid_nucleotide(value: char) -&gt; bool {
+    VALID_NUCLEOTIDES.contains(&amp;value)
+}
+
+pub fn is_error_token(value: char) -&gt; bool {
+    ERROR_TOKENS.contains(&amp;value)
+}
+</code></pre>
+<p>The constants and functions are marked <code>pub</code> because the binary targets need to
+use them.</p>
+<h2 id="using-library-code-from-binaries">Using Library Code From Binaries<a class="headerlink" href="#using-library-code-from-binaries" title="Permanent link">&para;</a></h2>
+<p>Binary targets can import the package's library by using the package name with
+hyphens converted to underscores.</p>
+<p>The package is named:</p>
+<pre><code class="language-toml">name = &quot;hashmap-hashset&quot;
+</code></pre>
+<p>The corresponding Rust crate name is:</p>
+<pre><code class="language-rust">hashmap_hashset
+</code></pre>
+<p>For example, <code>count-nucleotides.rs</code> imports shared definitions with:</p>
+<pre><code class="language-rust">use hashmap_hashset::{VALID_NUCLEOTIDES, is_valid_nucleotide};
+</code></pre>
+<p>This keeps the valid nucleotide list in one place. The generator, error
+injector, and counter do not each need their own separate copy of the same
+definition.</p>
+<h2 id="what-belongs-in-main">What Belongs In <code>main</code>?<a class="headerlink" href="#what-belongs-in-main" title="Permanent link">&para;</a></h2>
+<p>A useful rule is that <code>main</code> should coordinate the program:</p>
+<ul>
+<li>parse command-line arguments;</li>
+<li>open input and output resources;</li>
+<li>call domain logic;</li>
+<li>report results.</li>
+</ul>
+<p>Reusable logic should move into functions, modules, or <code>src/lib.rs</code>.</p>
+<p>For the nucleotide example, the valid nucleotide list and helper functions are
+shared domain logic, so they belong in the library. The details of command-line
+arguments and file names remain in the individual binary programs.</p>
+<p>This separation becomes more important when several executables need to agree
+on the same rules.</p>
+<h2 id="unit-tests">Unit Tests<a class="headerlink" href="#unit-tests" title="Permanent link">&para;</a></h2>
+<p>Rust unit tests are usually placed close to the code they test. A common
+pattern is a test module at the bottom of a source file:</p>
+<pre><code class="language-rust">#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn recognizes_valid_nucleotides() {
+        for nucleotide in VALID_NUCLEOTIDES {
+            assert!(is_valid_nucleotide(nucleotide));
+        }
+    }
+}
+</code></pre>
+<p>The <code>#[cfg(test)]</code> attribute means the module is compiled only when running
+tests.</p>
+<p>The <code>#[test]</code> attribute marks a function as a test case.</p>
+<p>Run tests with:</p>
+<pre><code class="language-bash">cargo test
+</code></pre>
+<h2 id="using-super-in-tests">Using <code>super</code> In Tests<a class="headerlink" href="#using-super-in-tests" title="Permanent link">&para;</a></h2>
+<p>Tests inside a nested <code>tests</code> module often need access to items from the parent
+module. This is done with <code>super</code>:</p>
+<pre><code class="language-rust">use super::*;
+</code></pre>
+<p>or more selectively:</p>
+<pre><code class="language-rust">use super::quad;
+</code></pre>
+<p>In <code>source-code/enum-match/src/simpson.rs</code>, the test imports the quadrature
+function with:</p>
+<pre><code class="language-rust">use super::quad;
+</code></pre>
+<p>This means "use <code>quad</code> from the module that contains this test module."</p>
+<h2 id="assertions">Assertions<a class="headerlink" href="#assertions" title="Permanent link">&para;</a></h2>
+<p>Tests usually check behavior with assertion macros.</p>
+<p>Use <code>assert!</code> for Boolean conditions:</p>
+<pre><code class="language-rust">assert!(is_valid_nucleotide(nucleotide));
+</code></pre>
+<p>Use <code>assert_eq!</code> when two values should be equal:</p>
+<pre><code class="language-rust">assert_eq!(matrix[(0, 0)], 1);
+assert_eq!(matrix[(1, 1)], 4);
+</code></pre>
+<p><code>assert_eq!</code> is often preferable for equality checks because failure messages
+show both the left and right values.</p>
+<h2 id="testing-error-paths">Testing Error Paths<a class="headerlink" href="#testing-error-paths" title="Permanent link">&para;</a></h2>
+<p>Tests should cover error paths as well as successful paths. The matrix trait
+example checks that ragged nested vectors are rejected:</p>
+<pre><code class="language-rust">#[test]
+fn rejects_ragged_rows() {
+    let result = Matrix::try_from(vec![vec![1, 2], vec![3]]);
+
+    assert!(result.is_err());
+}
+</code></pre>
+<p>This test does not need to inspect the exact error message. It only verifies
+that invalid input is rejected.</p>
+<p>For user-facing tools, more detailed tests may check the specific error text,
+but that can make tests more brittle.</p>
+<h2 id="numerical-tests-with-tolerances">Numerical Tests With Tolerances<a class="headerlink" href="#numerical-tests-with-tolerances" title="Permanent link">&para;</a></h2>
+<p>Numerical code often should not be tested with exact floating-point equality.
+The <code>enum-match</code> example tests Simpson integration of <code>sin(x)</code> on <code>[0, pi]</code>.
+The exact result is <code>2</code>, but the computed result is compared with a tolerance:</p>
+<pre><code class="language-rust">#[test]
+fn integrates_sine_on_zero_to_pi() {
+    let result = quad(|x| f64::sin(x), 0.0, std::f64::consts::PI, 1000);
+
+    assert!((result - 2.0).abs() &lt; 2.0e-12);
+}
+</code></pre>
+<p>The tolerance should be chosen based on the method, expected accuracy, and
+floating-point scale of the problem. A tolerance that is too loose may miss
+real bugs. A tolerance that is too tight may fail for unimportant numerical
+noise.</p>
+<h2 id="testing-trait-behavior">Testing Trait Behavior<a class="headerlink" href="#testing-trait-behavior" title="Permanent link">&para;</a></h2>
+<p>The <code>traits</code> example uses tests to check behavior provided by trait
+implementations:</p>
+<pre><code class="language-rust">#[test]
+fn displays_matrix_rows() {
+    let matrix =
+        Matrix::try_from(vec![vec![1, 2], vec![3, 4]]).expect(&quot;rows have the same length&quot;);
+
+    assert_eq!(matrix.to_string(), &quot;1 2\n3 4&quot;);
+}
+</code></pre>
+<p>This test checks the <code>Display</code> implementation through the public behavior it
+enables: converting the matrix to a string.</p>
+<p>Other tests check indexing, mutable indexing, borrowed iteration, mutable
+borrowed iteration, and owned iteration. That is a useful pattern: test the
+syntax and behavior that users of the type will actually rely on.</p>
+<h2 id="running-specific-tests">Running Specific Tests<a class="headerlink" href="#running-specific-tests" title="Permanent link">&para;</a></h2>
+<p>For small examples, running all tests is usually fine:</p>
+<pre><code class="language-bash">cargo test
+</code></pre>
+<p>Cargo can also run tests whose names match a filter:</p>
+<pre><code class="language-bash">cargo test displays_matrix_rows
+</code></pre>
+<p>This is useful when working on one behavior at a time.</p>
+<h2 id="suggested-hands-on-work">Suggested Hands-On Work<a class="headerlink" href="#suggested-hands-on-work" title="Permanent link">&para;</a></h2>
+<p>Use this sequence as a practical lab.</p>
+<ol>
+<li>
+<p>Open <code>source-code/hashmap-hashset/Cargo.toml</code> and identify the three
+   <code>[[bin]]</code> sections.</p>
+</li>
+<li>
+<p>Run each binary:</p>
+</li>
+</ol>
+<p><code>bash
+   cd source-code/hashmap-hashset
+   cargo run --bin generate-data -- --count 200 --file data.txt
+   cargo run --bin read-errors -- --file data.txt --output errors.txt --error-rate 0.2
+   cargo run --bin count-nucleotides -- --file errors.txt</code></p>
+<ol>
+<li>
+<p>Open <code>src/lib.rs</code> and identify which items are public.</p>
+</li>
+<li>
+<p>Add a new helper function to <code>src/lib.rs</code>, such as:</p>
+</li>
+</ol>
+<p><code>rust
+   pub fn is_known_token(value: char) -&gt; bool {
+       is_valid_nucleotide(value) || is_error_token(value)
+   }</code></p>
+<ol>
+<li>
+<p>Add a unit test for the new helper.</p>
+</li>
+<li>
+<p>Run:</p>
+</li>
+</ol>
+<p><code>bash
+   cargo test</code></p>
+<ol>
+<li>
+<p>Open <code>source-code/enum-match/src/simpson.rs</code> and inspect the numerical test.</p>
+</li>
+<li>
+<p>Change the tolerance temporarily and observe when the test fails.</p>
+</li>
+<li>
+<p>Open <code>source-code/traits/src/matrix.rs</code> and run one specific test by name:</p>
+</li>
+</ol>
+<p><code>bash
+   cd source-code/traits
+   cargo test displays_matrix_rows</code></p>
+<ol>
+<li>Add a test that checks one additional behavior, such as formatting a
+    one-row matrix.</li>
+</ol>
+<h2 id="discussion-points">Discussion Points<a class="headerlink" href="#discussion-points" title="Permanent link">&para;</a></h2>
+<p>This module is a good place to emphasize:</p>
+<ul>
+<li>A Cargo package can contain a library target and multiple binary targets.</li>
+<li><code>src/lib.rs</code> is a good home for shared reusable code.</li>
+<li>Binaries should coordinate program behavior rather than duplicate shared
+  rules.</li>
+<li>Unit tests are usually easiest to maintain when they live close to the code
+  they test.</li>
+<li>Tests should cover success paths and meaningful error paths.</li>
+<li>Floating-point tests usually need tolerances, not exact equality.</li>
+<li>Test names should describe behavior.</li>
+</ul>
+<h2 id="connection-to-later-modules">Connection To Later Modules<a class="headerlink" href="#connection-to-later-modules" title="Permanent link">&para;</a></h2>
+<p>Project organization and tests support the larger examples that follow:</p>
+<ul>
+<li>Randomness examples benefit from testable helper functions and reproducible
+  seeds.</li>
+<li>Julia set variants reuse earlier matrix and configuration patterns.</li>
+<li>The N-body example combines several responsibilities that would naturally be
+  split into modules in a larger project.</li>
+</ul>
+<p>Once participants understand how to organize shared code and tests, they are
+ready to study reproducible random data generation and then larger integrated
+examples.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../error-handling/" class="btn btn-neutral float-left" title="8. Error Handling"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../randomness-and-reproducible-runs/" class="btn btn-neutral float-right" title="10. Randomness And Reproducible Runs">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../error-handling/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../randomness-and-reproducible-runs/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

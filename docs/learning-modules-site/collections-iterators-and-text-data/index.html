@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>7. Collections, Iterators, And Text Data - Rust, the good, the bad, and the ugly</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "7. Collections, Iterators, And Text Data";
+        var mkdocs_page_input_path = "collections-iterators-and-text-data.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/rust.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/bash.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/toml.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Rust, the good, the bad, and the ugly
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../learning-module-structure/">Module Structure</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Learning Modules</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../getting-started-with-rust-projects/">1. Getting Started With Rust Projects</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scalar-computation-and-numeric-basics/">2. Scalar Computation And Numeric Basics</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../control-flow-and-program-structure/">3. Control Flow And Program Structure</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ownership-borrowing-and-mutation/">4. Ownership, Borrowing, And Mutation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-modeling-with-structs-and-methods/">5. Data Modeling With Structs And Methods</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reusable-abstractions-with-traits/">6. Reusable Abstractions With Traits</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">7. Collections, Iterators, And Text Data</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#learning-objectives">Learning Objectives</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#vectors">Vectors</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#reading-structured-text-with-csv-and-serde">Reading Structured Text With csv And serde</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#borrowed-iteration-and-copied">Borrowed Iteration And copied</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#filtering-values">Filtering Values</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#mapping-values">Mapping Values</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#collecting-results">Collecting Results</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#combining-iterators-with-zip">Combining Iterators With zip</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#splitting-2-tuples-with-unzip">Splitting 2-Tuples With unzip</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#reductions-with-sum-fold-and-scan">Reductions With sum, fold, And scan</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adding-indices-with-enumerate">Adding Indices With enumerate</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#hash-maps-for-counting">Hash Maps For Counting</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#hash-sets-for-unique-values">Hash Sets For Unique Values</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#buffered-text-input">Buffered Text Input</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#buffered-text-output">Buffered Text Output</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#matching-while-processing-input">Matching While Processing Input</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#suggested-hands-on-work">Suggested Hands-On Work</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#discussion-points">Discussion Points</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#connection-to-later-modules">Connection To Later Modules</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error-handling/">8. Error Handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../project-organization-libraries-and-tests/">9. Project Organization, Libraries, And Tests</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../randomness-and-reproducible-runs/">10. Randomness And Reproducible Runs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-parallelism-with-rayon/">11. Data Parallelism With Rayon</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-julia-set/">12. Integrated Numerical Example: Julia Set</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-n-body-simulation/">13. Integrated Numerical Example: N-Body Simulation</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Rust, the good, the bad, and the ugly</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Learning Modules</li>
+      <li class="breadcrumb-item active">7. Collections, Iterators, And Text Data</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="collections-iterators-and-text-data">Collections, Iterators, And Text Data<a class="headerlink" href="#collections-iterators-and-text-data" title="Permanent link">&para;</a></h1>
+<p>This module introduces collection-oriented programming in Rust. It focuses on
+vectors, iterator pipelines, hash maps, hash sets, and simple text-file
+processing. These are the tools that turn earlier examples from small scalar
+computations into programs that process data.</p>
+<p>The examples in this module deliberately stay close to common scientific and
+technical workflows: read data, store values, transform collections, compute
+summaries, and count or classify tokens.</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>After completing this module, participants should be able to:</p>
+<ul>
+<li>Store homogeneous values in <code>Vec&lt;T&gt;</code>.</li>
+<li>Build vectors incrementally with <code>push</code>.</li>
+<li>Iterate over collections with <code>iter</code>, <code>iter_mut</code>, and <code>into_iter</code>.</li>
+<li>Use iterator adapters such as <code>filter</code>, <code>map</code>, <code>zip</code>, <code>unzip</code>, and
+  <code>enumerate</code>.</li>
+<li>Use <code>sum</code> for simple reductions.</li>
+<li>Explain when <code>copied</code> is useful.</li>
+<li>Explain the role of <code>collect</code> and why type annotations are sometimes needed.</li>
+<li>Use <code>HashMap</code> to count values.</li>
+<li>Use <code>HashSet</code> to collect unique values.</li>
+<li>Read text input with buffered readers.</li>
+<li>Write text output with buffered writers.</li>
+<li>Process input byte by byte when that is appropriate for the file format.</li>
+</ul>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<p>Participants should already be comfortable with:</p>
+<ul>
+<li>Ownership and borrowing.</li>
+<li>Shared and mutable references.</li>
+<li>Functions and closures.</li>
+<li><code>for</code> loops.</li>
+<li>Basic error handling with <code>Result</code> is useful, but not the main focus here.</li>
+</ul>
+<p>The examples used in this module are:</p>
+<ul>
+<li><code>source-code/iterators</code></li>
+<li><code>source-code/hashmap-hashset</code></li>
+</ul>
+<h2 id="vectors">Vectors<a class="headerlink" href="#vectors" title="Permanent link">&para;</a></h2>
+<p>A <code>Vec&lt;T&gt;</code> stores a growable sequence of values of the same type. The
+<code>iterators</code> example reads two numeric columns from a CSV file and stores them in
+separate vectors:</p>
+<pre><code class="language-bash">cd source-code/iterators
+cargo run -- --file data.txt
+</code></pre>
+<p>The relevant setup is:</p>
+<pre><code class="language-rust">let mut xs = Vec::new();
+let mut ys = Vec::new();
+</code></pre>
+<p>Values are appended with <code>push</code>:</p>
+<pre><code class="language-rust">xs.push(value.x);
+ys.push(value.y);
+</code></pre>
+<p>The vectors are mutable because reading the file grows them one record at a
+time.</p>
+<h2 id="reading-structured-text-with-csv-and-serde">Reading Structured Text With <code>csv</code> And <code>serde</code><a class="headerlink" href="#reading-structured-text-with-csv-and-serde" title="Permanent link">&para;</a></h2>
+<p>The <code>iterators</code> example uses the <code>csv</code> crate to read records and <code>serde</code> to
+deserialize each record into a Rust struct:</p>
+<pre><code class="language-rust">#[derive(Deserialize, Debug)]
+struct Values {
+    x: f64,
+    y: f64,
+}
+</code></pre>
+<p>The file is opened through the CSV reader:</p>
+<pre><code class="language-rust">let mut reader = csv::Reader::from_path(args.file)?;
+</code></pre>
+<p>Each record is deserialized in a loop:</p>
+<pre><code class="language-rust">for result in reader.deserialize() {
+    let value: Values = result?;
+    xs.push(value.x);
+    ys.push(value.y);
+}
+</code></pre>
+<p>The important pattern is that external text data is converted into typed Rust
+values near the input boundary. The rest of the program can then work with
+<code>Vec&lt;f64&gt;</code> rather than raw strings.</p>
+<h2 id="borrowed-iteration-and-copied">Borrowed Iteration And <code>copied</code><a class="headerlink" href="#borrowed-iteration-and-copied" title="Permanent link">&para;</a></h2>
+<p>Calling <code>iter</code> on a vector yields references to the elements:</p>
+<pre><code class="language-rust">xs.iter()
+</code></pre>
+<p>For a <code>Vec&lt;f64&gt;</code>, this produces items of type <code>&amp;f64</code>. When the program wants
+independent <code>f64</code> values in the iterator pipeline, it can use <code>copied</code>:</p>
+<pre><code class="language-rust">let filtered_xs: Vec&lt;f64&gt; = xs
+    .iter()
+    .copied()
+    .filter(|x| *x &gt;= 10.0)
+    .collect();
+</code></pre>
+<p>The <code>copied</code> adapter is appropriate here because <code>f64</code> is a small scalar type
+that implements <code>Copy</code>.</p>
+<p>Without <code>copied</code>, the pipeline would operate on references. That is often fine,
+but collecting owned scalar values is clearer for this example.</p>
+<h2 id="filtering-values">Filtering Values<a class="headerlink" href="#filtering-values" title="Permanent link">&para;</a></h2>
+<p>The <code>filter</code> adapter keeps only values that satisfy a predicate:</p>
+<pre><code class="language-rust">let filtered_xs: Vec&lt;f64&gt; = xs
+    .iter()
+    .copied()
+    .filter(|x| *x &gt;= 10.0)
+    .collect();
+</code></pre>
+<p>The closure:</p>
+<pre><code class="language-rust">|x| *x &gt;= 10.0
+</code></pre>
+<p>decides whether each value should be kept.</p>
+<p>Iterator adapters are lazy. The pipeline does not produce the final vector
+until <code>collect</code> is called.</p>
+<h2 id="mapping-values">Mapping Values<a class="headerlink" href="#mapping-values" title="Permanent link">&para;</a></h2>
+<p>The <code>map</code> adapter transforms each item:</p>
+<pre><code class="language-rust">let cubed_xs: Vec&lt;f64&gt; = xs
+    .iter()
+    .copied()
+    .map(|x| x.powi(3))
+    .collect();
+</code></pre>
+<p>This pipeline reads the <code>x</code> values, copies each scalar value, computes its
+cube, and collects the results into a new vector.</p>
+<p>This is often clearer than writing a manual loop when the computation is a
+straightforward element-wise transformation.</p>
+<h2 id="collecting-results">Collecting Results<a class="headerlink" href="#collecting-results" title="Permanent link">&para;</a></h2>
+<p>The <code>collect</code> adapter consumes an iterator and builds a collection:</p>
+<pre><code class="language-rust">let cubed_xs: Vec&lt;f64&gt; = xs
+    .iter()
+    .copied()
+    .map(|x| x.powi(3))
+    .collect();
+</code></pre>
+<p>The type annotation is important:</p>
+<pre><code class="language-rust">Vec&lt;f64&gt;
+</code></pre>
+<p>Rust can usually infer the iterator item type, but it often needs help knowing
+which collection type to build. The same iterator could sometimes be collected
+into a <code>Vec</code>, a <code>HashSet</code>, or another collection.</p>
+<h2 id="combining-iterators-with-zip">Combining Iterators With <code>zip</code><a class="headerlink" href="#combining-iterators-with-zip" title="Permanent link">&para;</a></h2>
+<p>The <code>zip</code> adapter combines two iterators into one iterator over 2-tuples:</p>
+<pre><code class="language-rust">let filtered_pairs: Vec&lt;(f64, f64)&gt; = xs
+    .iter()
+    .copied()
+    .zip(ys.iter().copied())
+    .filter(|(x, _)| *x &gt;= 10.0)
+    .collect();
+</code></pre>
+<p>Here, the <code>x</code> and <code>y</code> columns are combined again after being stored in separate
+vectors. The filter then keeps only 2-tuples whose <code>x</code> value is at least
+<code>10.0</code>.</p>
+<p>This is useful when two sequences represent related data and should be
+processed together.</p>
+<h2 id="splitting-2-tuples-with-unzip">Splitting 2-Tuples With <code>unzip</code><a class="headerlink" href="#splitting-2-tuples-with-unzip" title="Permanent link">&para;</a></h2>
+<p>The inverse operation is <code>unzip</code>, which splits an iterator over 2-tuples into
+two collections:</p>
+<pre><code class="language-rust">let (filtered_xs_unpacked, filtered_ys_unpacked): (Vec&lt;f64&gt;, Vec&lt;f64&gt;) =
+    filtered_pairs
+        .iter()
+        .copied()
+        .unzip();
+</code></pre>
+<p>The result type is written explicitly:</p>
+<pre><code class="language-rust">(Vec&lt;f64&gt;, Vec&lt;f64&gt;)
+</code></pre>
+<p>This tells Rust that the first components should be collected into one vector
+and the second components into another vector.</p>
+<h2 id="reductions-with-sum-fold-and-scan">Reductions With <code>sum</code>, <code>fold</code>, And <code>scan</code><a class="headerlink" href="#reductions-with-sum-fold-and-scan" title="Permanent link">&para;</a></h2>
+<p>Some iterator operations reduce many values to one value. The <code>iterators</code>
+example computes the sum of the <code>y</code> values:</p>
+<pre><code class="language-rust">let sum_y: f64 = ys.iter().sum();
+</code></pre>
+<p>The type annotation tells Rust which numeric type the sum should produce.</p>
+<p>For more general accumulation, use <code>fold</code>:</p>
+<pre><code class="language-rust">let sum_of_squares = xs
+    .iter()
+    .copied()
+    .fold(0.0, |accumulator, x| accumulator + x * x);
+</code></pre>
+<p><code>fold</code> carries an accumulator through the iterator and returns the final
+accumulated value.</p>
+<p>Use <code>scan</code> when the intermediate accumulated states are also part of the
+result:</p>
+<pre><code class="language-rust">let cumulative_sum: Vec&lt;f64&gt; = xs
+    .iter()
+    .copied()
+    .scan(0.0, |state, x| {
+        *state += x;
+        Some(*state)
+    })
+    .collect();
+</code></pre>
+<p>This produces the running sum after each input value. Conceptually, <code>fold</code>
+returns only the final accumulated value, while <code>scan</code> yields the sequence of
+accumulated states.</p>
+<h2 id="adding-indices-with-enumerate">Adding Indices With <code>enumerate</code><a class="headerlink" href="#adding-indices-with-enumerate" title="Permanent link">&para;</a></h2>
+<p>The <code>enumerate</code> adapter attaches an index to each item:</p>
+<pre><code class="language-rust">let indexed_xs: Vec&lt;(usize, f64)&gt; = xs
+    .iter()
+    .copied()
+    .enumerate()
+    .collect();
+</code></pre>
+<p>This produces 2-tuples of the form:</p>
+<pre><code class="language-rust">(index, value)
+</code></pre>
+<p>It can also be used directly in a loop:</p>
+<pre><code class="language-rust">for (i, y) in ys.iter().enumerate() {
+    println!(&quot;Index: {i}, y value: {y:.1}&quot;);
+}
+</code></pre>
+<p>This is usually preferable to manually maintaining a separate counter.</p>
+<h2 id="hash-maps-for-counting">Hash Maps For Counting<a class="headerlink" href="#hash-maps-for-counting" title="Permanent link">&para;</a></h2>
+<p>A <code>HashMap&lt;K, V&gt;</code> stores values by key. The <code>hashmap-hashset</code> example uses a
+hash map to count nucleotide characters:</p>
+<pre><code class="language-bash">cd source-code/hashmap-hashset
+cargo run --bin count-nucleotides -- --file errors.txt
+</code></pre>
+<p>The count map is created with:</p>
+<pre><code class="language-rust">let mut counts = HashMap::new();
+</code></pre>
+<p>Each valid nucleotide updates its count:</p>
+<pre><code class="language-rust">*counts.entry(nucleotide).or_insert(0) += 1;
+</code></pre>
+<p>This pattern is common enough to read carefully:</p>
+<ul>
+<li><code>entry(nucleotide)</code> selects the map entry for that key.</li>
+<li><code>or_insert(0)</code> inserts <code>0</code> if the key was not present.</li>
+<li><code>*... += 1</code> increments the value stored in the map.</li>
+</ul>
+<p>After processing the file, the program ensures that every valid nucleotide has
+an entry:</p>
+<pre><code class="language-rust">for nucleotide in VALID_NUCLEOTIDES {
+    counts.entry(nucleotide).or_insert(0);
+    println!(&quot;{nucleotide}: {}&quot;, counts[&amp;nucleotide]);
+}
+</code></pre>
+<p>This makes the output stable even if a nucleotide did not occur in the input.</p>
+<h2 id="hash-sets-for-unique-values">Hash Sets For Unique Values<a class="headerlink" href="#hash-sets-for-unique-values" title="Permanent link">&para;</a></h2>
+<p>A <code>HashSet&lt;T&gt;</code> stores unique values. The same example uses a hash set to record
+which invalid tokens appeared in the input:</p>
+<pre><code class="language-rust">let mut error_tokens = HashSet::new();
+</code></pre>
+<p>When an invalid token is found, it is inserted:</p>
+<pre><code class="language-rust">error_tokens.insert(nucleotide);
+</code></pre>
+<p>If the same invalid token appears many times, the set still stores it once.
+That makes <code>HashSet</code> a natural choice when the question is "which values were
+seen?" rather than "how many times did each value occur?"</p>
+<h2 id="buffered-text-input">Buffered Text Input<a class="headerlink" href="#buffered-text-input" title="Permanent link">&para;</a></h2>
+<p>The nucleotide-counting example reads a text file through a buffered reader:</p>
+<pre><code class="language-rust">let file = std::fs::File::open(args.file)
+    .expect(&quot;Failed to open the DNA sequence file&quot;);
+let reader = BufReader::new(file);
+</code></pre>
+<p>Buffered input avoids asking the operating system for tiny pieces of data one
+at a time. This matters for larger files.</p>
+<p>The example then iterates over bytes:</p>
+<pre><code class="language-rust">for byte in reader.bytes() {
+    let nucleotide = byte.expect(&quot;Failed to read the DNA sequence file&quot;) as char;
+    // process nucleotide
+}
+</code></pre>
+<p>Byte-wise processing is appropriate here because the input is simple
+ASCII-like sequence data. For general Unicode text, line-based or string-based
+processing is usually more appropriate.</p>
+<h2 id="buffered-text-output">Buffered Text Output<a class="headerlink" href="#buffered-text-output" title="Permanent link">&para;</a></h2>
+<p>The data-generation and error-injection programs use buffered writers:</p>
+<pre><code class="language-rust">let file = std::fs::File::create(args.file).expect(&quot;Unable to create file&quot;);
+let mut output = std::io::BufWriter::new(file);
+</code></pre>
+<p>Values are written with <code>write!</code> and <code>writeln!</code>:</p>
+<pre><code class="language-rust">write!(output, &quot;{random_nucleotide}&quot;).expect(&quot;Unable to write file&quot;);
+writeln!(output).expect(&quot;Unable to write file&quot;);
+</code></pre>
+<p>Buffered output is the counterpart to buffered input: it groups many small
+writes into fewer larger writes.</p>
+<h2 id="matching-while-processing-input">Matching While Processing Input<a class="headerlink" href="#matching-while-processing-input" title="Permanent link">&para;</a></h2>
+<p>The nucleotide-counting example classifies each character with <code>match</code> and
+match guards:</p>
+<pre><code class="language-rust">match nucleotide {
+    nucleotide if is_valid_nucleotide(nucleotide) =&gt; {
+        *counts.entry(nucleotide).or_insert(0) += 1;
+    }
+    nucleotide if nucleotide.is_whitespace() =&gt; {}
+    _ =&gt; {
+        error_tokens.insert(nucleotide);
+    }
+}
+</code></pre>
+<p>The cases are:</p>
+<ul>
+<li>valid nucleotide: increment its count;</li>
+<li>whitespace: ignore it;</li>
+<li>anything else: record it as an error token.</li>
+</ul>
+<p>This combines pattern matching with collection updates.</p>
+<h2 id="suggested-hands-on-work">Suggested Hands-On Work<a class="headerlink" href="#suggested-hands-on-work" title="Permanent link">&para;</a></h2>
+<p>Use this sequence as a practical lab.</p>
+<ol>
+<li>Run the iterator example:</li>
+</ol>
+<p><code>bash
+   cd source-code/iterators
+   cargo run -- --file data.txt</code></p>
+<ol>
+<li>
+<p>Change the <code>filter</code> threshold from <code>10.0</code> to another value and inspect the
+   output.</p>
+</li>
+<li>
+<p>Add a <code>map</code> pipeline that computes <code>x.sqrt()</code> for all non-negative <code>x</code>
+   values.</p>
+</li>
+<li>
+<p>Add a <code>fold</code> expression that computes the sum of squares of the <code>y</code> values.</p>
+</li>
+<li>
+<p>Add a <code>scan</code> expression that computes the cumulative sum of the <code>y</code> values.</p>
+</li>
+<li>
+<p>Use <code>zip</code> to compute a vector of <code>x + y</code> values.</p>
+</li>
+<li>
+<p>Run the nucleotide-counting example:</p>
+</li>
+</ol>
+<p><code>bash
+   cd source-code/hashmap-hashset
+   cargo run --bin count-nucleotides -- --file errors.txt</code></p>
+<ol>
+<li>
+<p>Add a second <code>HashMap</code> that counts invalid tokens instead of storing only
+   the unique invalid tokens.</p>
+</li>
+<li>
+<p>Change the output order by printing the contents of the map directly, then
+   compare that with iterating over <code>VALID_NUCLEOTIDES</code>.</p>
+</li>
+<li>
+<p>Run the data generator and error injector to produce a new input file:</p>
+<p><code>bash
+cargo run --bin generate-data -- --count 200 --file data.txt
+cargo run --bin read-errors -- --file data.txt --output errors.txt --error-rate 0.2
+cargo run --bin count-nucleotides -- --file errors.txt</code></p>
+</li>
+</ol>
+<h2 id="discussion-points">Discussion Points<a class="headerlink" href="#discussion-points" title="Permanent link">&para;</a></h2>
+<p>This module is a good place to emphasize:</p>
+<ul>
+<li>Iterators describe a sequence of processing steps.</li>
+<li>Iterator adapters are lazy until consumed by <code>collect</code>, <code>sum</code>, a <code>for</code> loop,
+  or another consuming operation.</li>
+<li>Type annotations on <code>collect</code> tell Rust what collection to build.</li>
+<li><code>copied</code> is useful when moving from borrowed scalar values to owned scalar
+  values.</li>
+<li><code>HashMap</code> is useful for counts and lookup tables.</li>
+<li><code>HashSet</code> is useful for uniqueness.</li>
+<li>Buffered I/O is a sensible default for file-based text processing.</li>
+<li>Choose byte-wise, line-wise, or record-wise processing based on the input
+  format.</li>
+</ul>
+<h2 id="connection-to-later-modules">Connection To Later Modules<a class="headerlink" href="#connection-to-later-modules" title="Permanent link">&para;</a></h2>
+<p>Collection and iterator patterns appear throughout larger Rust programs:</p>
+<ul>
+<li>Project-organization examples reuse collection-processing code from multiple
+  binaries.</li>
+<li>Error-handling examples make file and parse failures explicit.</li>
+<li>Randomness examples generate collections of synthetic data.</li>
+<li>Julia set examples fill matrix-like storage with computed values.</li>
+<li>The N-body example iterates over particles, forces, diagnostics, and output
+  records.</li>
+</ul>
+<p>Once participants are comfortable processing collections and text data, they
+are ready to study error handling and then the project organization needed for
+larger examples.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../reusable-abstractions-with-traits/" class="btn btn-neutral float-left" title="6. Reusable Abstractions With Traits"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../error-handling/" class="btn btn-neutral float-right" title="8. Error Handling">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../reusable-abstractions-with-traits/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../error-handling/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

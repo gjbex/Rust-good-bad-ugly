@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>11. Data Parallelism With Rayon - Rust, the good, the bad, and the ugly</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "11. Data Parallelism With Rayon";
+        var mkdocs_page_input_path = "data-parallelism-with-rayon.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/rust.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/bash.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/toml.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Rust, the good, the bad, and the ugly
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../learning-module-structure/">Module Structure</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Learning Modules</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../getting-started-with-rust-projects/">1. Getting Started With Rust Projects</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scalar-computation-and-numeric-basics/">2. Scalar Computation And Numeric Basics</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../control-flow-and-program-structure/">3. Control Flow And Program Structure</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ownership-borrowing-and-mutation/">4. Ownership, Borrowing, And Mutation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-modeling-with-structs-and-methods/">5. Data Modeling With Structs And Methods</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reusable-abstractions-with-traits/">6. Reusable Abstractions With Traits</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../collections-iterators-and-text-data/">7. Collections, Iterators, And Text Data</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error-handling/">8. Error Handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../project-organization-libraries-and-tests/">9. Project Organization, Libraries, And Tests</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../randomness-and-reproducible-runs/">10. Randomness And Reproducible Runs</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">11. Data Parallelism With Rayon</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#learning-objectives">Learning Objectives</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#why-the-julia-set-parallelizes-well">Why The Julia Set Parallelizes Well</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adding-rayon">Adding Rayon</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#serial-matrix-computation">Serial Matrix Computation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#parallel-matrix-computation">Parallel Matrix Computation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#avoiding-shared-mutable-state">Avoiding Shared Mutable State</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#creating-a-matrix-from-computed-data">Creating A Matrix From Computed Data</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#running-the-parallel-version">Running The Parallel Version</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#controlling-the-number-of-threads">Controlling The Number Of Threads</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#benchmarking">Benchmarking</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#when-rayon-is-a-good-fit">When Rayon Is A Good Fit</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#suggested-hands-on-work">Suggested Hands-On Work</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#discussion-points">Discussion Points</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#connection-to-later-material">Connection To Later Material</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-julia-set/">12. Integrated Numerical Example: Julia Set</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-n-body-simulation/">13. Integrated Numerical Example: N-Body Simulation</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Rust, the good, the bad, and the ugly</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Learning Modules</li>
+      <li class="breadcrumb-item active">11. Data Parallelism With Rayon</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="data-parallelism-with-rayon">Data Parallelism With Rayon<a class="headerlink" href="#data-parallelism-with-rayon" title="Permanent link">&para;</a></h1>
+<p>This module introduces data parallelism in Rust using Rayon. The example is a
+parallel Julia set implementation, chosen because each grid point can be
+computed independently once the input parameters are known.</p>
+<p>The goal is to show the basic Rayon workflow: identify independent work,
+replace a sequential iterator with a parallel iterator, collect the results,
+and control the number of worker threads when benchmarking or experimenting.</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>After completing this module, participants should be able to:</p>
+<ul>
+<li>Explain what data parallelism means.</li>
+<li>Identify independent per-element work in a numerical algorithm.</li>
+<li>Add Rayon as a dependency.</li>
+<li>Import Rayon parallel iterator traits.</li>
+<li>Use <code>into_par_iter</code> to process a range in parallel.</li>
+<li>Use <code>map</code> and <code>collect</code> with a parallel iterator.</li>
+<li>Avoid shared mutable state in a parallel computation.</li>
+<li>Control Rayon worker threads with <code>RAYON_NUM_THREADS</code>.</li>
+<li>Compare serial and parallel implementations of the same algorithm.</li>
+<li>Recognize when parallel overhead can dominate small workloads.</li>
+</ul>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<p>Participants should already be comfortable with:</p>
+<ul>
+<li>Iterators and iterator adapters.</li>
+<li>Ownership and borrowing.</li>
+<li>Closures.</li>
+<li>Vectors and collection with <code>collect</code>.</li>
+<li>The baseline Julia set implementation.</li>
+<li>Running release builds with Cargo.</li>
+</ul>
+<p>The example used in this module is:</p>
+<ul>
+<li><code>source-code/julia-set/julia-set-rayon</code></li>
+</ul>
+<p>The serial reference implementation is:</p>
+<ul>
+<li><code>source-code/julia-set/julia-set-baseline</code></li>
+</ul>
+<h2 id="why-the-julia-set-parallelizes-well">Why The Julia Set Parallelizes Well<a class="headerlink" href="#why-the-julia-set-parallelizes-well" title="Permanent link">&para;</a></h2>
+<p>In the Julia set computation, each output grid point is computed independently.
+For one grid point, the program starts from one complex value <code>z</code>, repeatedly
+applies:</p>
+<pre><code class="language-text">z &lt;- z * z + c
+</code></pre>
+<p>and records the number of iterations before escape.</p>
+<p>The computation for one grid point does not need the result from any other grid
+point. That independence is the main reason this is a good data-parallel
+example.</p>
+<h2 id="adding-rayon">Adding Rayon<a class="headerlink" href="#adding-rayon" title="Permanent link">&para;</a></h2>
+<p>The Rayon implementation adds the crate in <code>Cargo.toml</code>:</p>
+<pre><code class="language-toml">[dependencies]
+clap = { version = &quot;4.0&quot;, features = [&quot;derive&quot;] }
+num-complex = &quot;0.4&quot;
+rayon = &quot;1.10&quot;
+</code></pre>
+<p>The program imports Rayon's prelude:</p>
+<pre><code class="language-rust">use rayon::prelude::*;
+</code></pre>
+<p>The prelude brings the parallel iterator traits into scope, including the trait
+that provides <code>into_par_iter</code>.</p>
+<h2 id="serial-matrix-computation">Serial Matrix Computation<a class="headerlink" href="#serial-matrix-computation" title="Permanent link">&para;</a></h2>
+<p>The baseline computes the result matrix with nested loops:</p>
+<pre><code class="language-rust">fn iterate_z_matrix(z: &amp;Matrix&lt;Complex64&gt;, c: Complex64, max_iterations: usize) -&gt; Matrix&lt;usize&gt; {
+    let mut result = Matrix::new(z.rows(), z.cols(), 0);
+    for i in 0..z.rows() {
+        for j in 0..z.cols() {
+            let z_value = *z.get(i, j).expect(&quot;loop indices should be in bounds&quot;);
+            let iterations = iterate_z_value(z_value, c, max_iterations);
+            result.set(i, j, iterations)
+                .expect(&quot;loop indices should be in bounds&quot;);
+        }
+    }
+    result
+}
+</code></pre>
+<p>This is clear and useful as a reference implementation, but it performs one
+grid point after another on one thread.</p>
+<h2 id="parallel-matrix-computation">Parallel Matrix Computation<a class="headerlink" href="#parallel-matrix-computation" title="Permanent link">&para;</a></h2>
+<p>The Rayon version computes a flat vector of result values in parallel:</p>
+<pre><code class="language-rust">fn iterate_z_matrix(z: &amp;Matrix&lt;Complex64&gt;, c: Complex64, max_iterations: usize) -&gt; Matrix&lt;usize&gt; {
+    let rows = z.rows();
+    let cols = z.cols();
+    let data: Vec&lt;usize&gt; = (0..rows * cols)
+        .into_par_iter()
+        .map(|index| {
+            let row = index / cols;
+            let col = index % cols;
+            let z_value = *z.get(row, col).expect(&quot;flat index should be in bounds&quot;);
+            iterate_z_value(z_value, c, max_iterations)
+        })
+        .collect();
+
+    Matrix::from_vec(rows, cols, data).expect(&quot;parallel result should match matrix shape&quot;)
+}
+</code></pre>
+<p>The range:</p>
+<pre><code class="language-rust">0..rows * cols
+</code></pre>
+<p>represents all flat matrix indices. Rayon splits that range across worker
+threads.</p>
+<p>Each worker maps an index to a row and column:</p>
+<pre><code class="language-rust">let row = index / cols;
+let col = index % cols;
+</code></pre>
+<p>Then it computes one independent output value.</p>
+<h2 id="avoiding-shared-mutable-state">Avoiding Shared Mutable State<a class="headerlink" href="#avoiding-shared-mutable-state" title="Permanent link">&para;</a></h2>
+<p>A tempting parallel design would be to create one mutable result matrix and let
+multiple threads write into it. That would introduce shared mutable state.</p>
+<p>The Rayon version avoids that by having each parallel task produce one value:</p>
+<pre><code class="language-rust">.map(|index| {
+    // compute one usize
+})
+</code></pre>
+<p>The values are collected into a new vector:</p>
+<pre><code class="language-rust">let data: Vec&lt;usize&gt; = ...collect();
+</code></pre>
+<p>After the parallel computation is complete, the vector is wrapped in a matrix:</p>
+<pre><code class="language-rust">Matrix::from_vec(rows, cols, data)
+</code></pre>
+<p>This pattern is often the cleanest first approach to data parallelism: compute
+independent output values and collect them, rather than coordinating concurrent
+writes.</p>
+<h2 id="creating-a-matrix-from-computed-data">Creating A Matrix From Computed Data<a class="headerlink" href="#creating-a-matrix-from-computed-data" title="Permanent link">&para;</a></h2>
+<p>The Rayon variant adds a constructor to the simple matrix type:</p>
+<pre><code class="language-rust">pub fn from_vec(rows: usize, cols: usize, data: Vec&lt;T&gt;) -&gt; Result&lt;Self, String&gt; {
+    if data.len() == rows * cols {
+        Ok(Self { rows, cols, data })
+    } else {
+        Err(format!(
+            &quot;matrix data has {} elements, but shape ({rows}, {cols}) requires {}&quot;,
+            data.len(),
+            rows * cols
+        ))
+    }
+}
+</code></pre>
+<p>This constructor checks that the flat vector has the expected number of
+elements. The parallel computation should produce exactly one value per grid
+point, but the check keeps the matrix invariant explicit.</p>
+<h2 id="running-the-parallel-version">Running The Parallel Version<a class="headerlink" href="#running-the-parallel-version" title="Permanent link">&para;</a></h2>
+<p>Run the Rayon implementation with:</p>
+<pre><code class="language-bash">cd source-code/julia-set/julia-set-rayon
+cargo run --release -- --width 800 --height 600 | ../view-fractal.py
+</code></pre>
+<p>It uses the same command-line arguments and output format as the baseline, so
+the outputs can be compared directly.</p>
+<h2 id="controlling-the-number-of-threads">Controlling The Number Of Threads<a class="headerlink" href="#controlling-the-number-of-threads" title="Permanent link">&para;</a></h2>
+<p>Rayon uses a thread pool by default. The number of worker threads can be
+controlled with <code>RAYON_NUM_THREADS</code>:</p>
+<pre><code class="language-bash">RAYON_NUM_THREADS=4 cargo run --release -- --width 800 --height 600 | ../view-fractal.py
+</code></pre>
+<p>This is useful when comparing runs on shared machines or when studying scaling.</p>
+<p>For example:</p>
+<pre><code class="language-bash">RAYON_NUM_THREADS=1 cargo run --release -- --width 1200 --height 1200 &gt; /dev/null
+RAYON_NUM_THREADS=2 cargo run --release -- --width 1200 --height 1200 &gt; /dev/null
+RAYON_NUM_THREADS=4 cargo run --release -- --width 1200 --height 1200 &gt; /dev/null
+</code></pre>
+<p>Thread counts should be interpreted together with the available CPU cores and
+the size of the workload.</p>
+<h2 id="benchmarking">Benchmarking<a class="headerlink" href="#benchmarking" title="Permanent link">&para;</a></h2>
+<p>The Julia set directory includes a benchmark script that compares all Julia set
+implementations:</p>
+<pre><code class="language-bash">cd source-code/julia-set
+./benchmark.sh
+</code></pre>
+<p>The script builds all Julia set implementations in release mode, smoke-tests
+them, and compares them with <code>hyperfine</code>.</p>
+<p>For a quick experiment, reduce the number of runs:</p>
+<pre><code class="language-bash">WARMUP=1 RUNS=3 ./benchmark.sh
+</code></pre>
+<p>For a more meaningful Rayon comparison, use a larger image size:</p>
+<pre><code class="language-bash">WIDTH=1600 HEIGHT=1600 MAX_ITERATIONS=1000 WARMUP=1 RUNS=5 ./benchmark.sh
+</code></pre>
+<p>Very small workloads may make the parallel version look slower because thread
+pool and scheduling overhead dominate the actual computation.</p>
+<p>The Rayon implementation also has its own thread-scaling benchmark script:</p>
+<pre><code class="language-bash">cd source-code/julia-set/julia-set-rayon
+THREAD_COUNTS=&quot;1 2 4 8&quot; ./benchmark.sh
+</code></pre>
+<p>This script builds only the Rayon implementation and runs it repeatedly with
+different <code>RAYON_NUM_THREADS</code> values.</p>
+<h2 id="when-rayon-is-a-good-fit">When Rayon Is A Good Fit<a class="headerlink" href="#when-rayon-is-a-good-fit" title="Permanent link">&para;</a></h2>
+<p>Rayon is a good fit when:</p>
+<ul>
+<li>work can be split into many independent tasks;</li>
+<li>each task is large enough to offset scheduling overhead;</li>
+<li>the computation avoids shared mutable state;</li>
+<li>the output can be collected or reduced safely;</li>
+<li>the algorithm is CPU-bound rather than I/O-bound.</li>
+</ul>
+<p>The Julia set satisfies these conditions well for sufficiently large grids.</p>
+<p>Rayon is less useful when:</p>
+<ul>
+<li>the workload is tiny;</li>
+<li>each task depends strongly on neighboring results;</li>
+<li>the main bottleneck is file I/O;</li>
+<li>synchronization would dominate the computation.</li>
+</ul>
+<h2 id="suggested-hands-on-work">Suggested Hands-On Work<a class="headerlink" href="#suggested-hands-on-work" title="Permanent link">&para;</a></h2>
+<p>Use this sequence as a practical lab.</p>
+<ol>
+<li>Run the serial baseline:</li>
+</ol>
+<p><code>bash
+   cd source-code/julia-set/julia-set-baseline
+   cargo run --release -- --width 400 --height 300 &gt; /tmp/julia-serial.txt</code></p>
+<ol>
+<li>Run the Rayon version with the same parameters:</li>
+</ol>
+<p><code>bash
+   cd ../julia-set-rayon
+   cargo run --release -- --width 400 --height 300 &gt; /tmp/julia-rayon.txt</code></p>
+<ol>
+<li>Compare the outputs:</li>
+</ol>
+<p><code>bash
+   diff /tmp/julia-serial.txt /tmp/julia-rayon.txt</code></p>
+<ol>
+<li>Run the Rayon version with different thread counts:</li>
+</ol>
+<p><code>bash
+   RAYON_NUM_THREADS=1 cargo run --release -- --width 1200 --height 1200 &gt; /dev/null
+   RAYON_NUM_THREADS=4 cargo run --release -- --width 1200 --height 1200 &gt; /dev/null</code></p>
+<ol>
+<li>
+<p>Run the benchmark script from <code>source-code/julia-set</code>.</p>
+</li>
+<li>
+<p>Run the Rayon-specific benchmark script with at least three thread counts.</p>
+</li>
+<li>
+<p>Inspect <code>iterate_z_matrix</code> in the baseline and Rayon versions. Identify the
+   exact point where serial iteration changes to parallel iteration.</p>
+</li>
+<li>
+<p>Change the Rayon implementation to use a smaller image and observe whether
+   parallelism still helps.</p>
+</li>
+<li>
+<p>Discuss why collecting a vector of independent results is simpler than
+   mutating a shared matrix from multiple threads.</p>
+</li>
+</ol>
+<h2 id="discussion-points">Discussion Points<a class="headerlink" href="#discussion-points" title="Permanent link">&para;</a></h2>
+<p>This module is a good place to emphasize:</p>
+<ul>
+<li>Rayon provides data parallelism with a small change to iterator style.</li>
+<li>Parallel iterators preserve many familiar iterator concepts.</li>
+<li>Correct parallel code depends on independent work and clear ownership.</li>
+<li>Avoiding shared mutable state is often the simplest design.</li>
+<li>Parallel overhead matters, especially for small workloads.</li>
+<li>Benchmarks should use release builds and problem sizes large enough to be
+  meaningful.</li>
+</ul>
+<h2 id="connection-to-later-material">Connection To Later Material<a class="headerlink" href="#connection-to-later-material" title="Permanent link">&para;</a></h2>
+<p>Rayon is a first step into Rust parallelism. It is higher-level than manual
+threads and much easier to apply safely when the computation is data-parallel.</p>
+<p>Later parallel topics could include:</p>
+<ul>
+<li>parallel reductions;</li>
+<li>parallel iteration over arrays from numerical crates;</li>
+<li>thread-local state and reproducible random streams;</li>
+<li>synchronization primitives;</li>
+<li>scoped threads;</li>
+<li>distributed-memory parallelism outside Rust's standard ecosystem.</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../randomness-and-reproducible-runs/" class="btn btn-neutral float-left" title="10. Randomness And Reproducible Runs"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../integrated-numerical-example-julia-set/" class="btn btn-neutral float-right" title="12. Integrated Numerical Example: Julia Set">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../randomness-and-reproducible-runs/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../integrated-numerical-example-julia-set/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

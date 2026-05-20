@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>2. Scalar Computation And Numeric Basics - Rust, the good, the bad, and the ugly</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "2. Scalar Computation And Numeric Basics";
+        var mkdocs_page_input_path = "scalar-computation-and-numeric-basics.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/rust.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/bash.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/toml.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Rust, the good, the bad, and the ugly
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../learning-module-structure/">Module Structure</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Learning Modules</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../getting-started-with-rust-projects/">1. Getting Started With Rust Projects</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">2. Scalar Computation And Numeric Basics</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#learning-objectives">Learning Objectives</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#scalar-types">Scalar Types</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#floating-point-types">Floating-Point Types</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#type-inference-and-explicit-types">Type Inference And Explicit Types</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#arithmetic-operators">Arithmetic Operators</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#division-and-remainder-for-negative-integers">Division And Remainder For Negative Integers</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#mathematical-functions">Mathematical Functions</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#numeric-functions-and-explicit-conversion">Numeric Functions And Explicit Conversion</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#avoiding-implicit-double-promotion">Avoiding Implicit Double Promotion</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#complex-numbers">Complex Numbers</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#suggested-hands-on-work">Suggested Hands-On Work</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#discussion-points">Discussion Points</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#connection-to-later-modules">Connection To Later Modules</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../control-flow-and-program-structure/">3. Control Flow And Program Structure</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ownership-borrowing-and-mutation/">4. Ownership, Borrowing, And Mutation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-modeling-with-structs-and-methods/">5. Data Modeling With Structs And Methods</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reusable-abstractions-with-traits/">6. Reusable Abstractions With Traits</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../collections-iterators-and-text-data/">7. Collections, Iterators, And Text Data</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error-handling/">8. Error Handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../project-organization-libraries-and-tests/">9. Project Organization, Libraries, And Tests</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../randomness-and-reproducible-runs/">10. Randomness And Reproducible Runs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-parallelism-with-rayon/">11. Data Parallelism With Rayon</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-julia-set/">12. Integrated Numerical Example: Julia Set</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-n-body-simulation/">13. Integrated Numerical Example: N-Body Simulation</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Rust, the good, the bad, and the ugly</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Learning Modules</li>
+      <li class="breadcrumb-item active">2. Scalar Computation And Numeric Basics</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="scalar-computation-and-numeric-basics">Scalar Computation And Numeric Basics<a class="headerlink" href="#scalar-computation-and-numeric-basics" title="Permanent link">&para;</a></h1>
+<p>This module introduces Rust's scalar types and the numeric operations that are
+most relevant for small scientific and technical programs. It builds on the
+project workflow from <code>learning-modules/getting-started-with-rust-projects.md</code>: each
+example is a small Cargo project that can be built, run, inspected, and
+modified.</p>
+<p>The emphasis is on explicitness. Rust does not silently convert between many
+numeric types, and that is an important part of how the language avoids
+ambiguous or accidental computations.</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>After completing this module, participants should be able to:</p>
+<ul>
+<li>Recognize common integer, floating-point, Boolean, character, and pointer-size
+  types.</li>
+<li>Explain the difference between signed and unsigned integer types.</li>
+<li>Use integer and floating-point arithmetic operators.</li>
+<li>Explain the difference between integer division and floating-point division.</li>
+<li>Use Euclidean division and remainder for signed integers.</li>
+<li>Call mathematical methods on floating-point values.</li>
+<li>Use floating-point constants from the standard library.</li>
+<li>Convert integer values to floating-point values explicitly.</li>
+<li>Understand why Rust avoids implicit double promotion.</li>
+<li>Use <code>num-complex</code> for complex arithmetic.</li>
+</ul>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<p>Participants should already be comfortable with:</p>
+<ul>
+<li>Running a Cargo project with <code>cargo run</code>.</li>
+<li>Checking a project with <code>cargo check</code>.</li>
+<li>Opening and lightly editing <code>src/main.rs</code>.</li>
+<li>Reading simple compiler diagnostics.</li>
+</ul>
+<p>The examples used in this module are:</p>
+<ul>
+<li><code>source-code/basic-types</code></li>
+<li><code>source-code/math</code></li>
+<li><code>source-code/numerical-function</code></li>
+<li><code>source-code/no-double-promotion</code></li>
+<li><code>source-code/complex-numbers</code></li>
+</ul>
+<h2 id="scalar-types">Scalar Types<a class="headerlink" href="#scalar-types" title="Permanent link">&para;</a></h2>
+<p>Rust has several families of scalar types:</p>
+<ul>
+<li>Signed integers: <code>i8</code>, <code>i16</code>, <code>i32</code>, <code>i64</code>, <code>i128</code>, <code>isize</code>.</li>
+<li>Unsigned integers: <code>u8</code>, <code>u16</code>, <code>u32</code>, <code>u64</code>, <code>u128</code>, <code>usize</code>.</li>
+<li>Floating-point values: <code>f32</code>, <code>f64</code>.</li>
+<li>Booleans: <code>bool</code>.</li>
+<li>Unicode scalar values: <code>char</code>.</li>
+</ul>
+<p>The <code>basic-types</code> example prints the minimum and maximum values for many of
+these types:</p>
+<pre><code class="language-bash">cd source-code/basic-types
+cargo run
+</code></pre>
+<p>For fixed-width integer types, the number in the type name is the number of
+bits. For example, <code>i32</code> is a signed 32-bit integer, and <code>u64</code> is an unsigned
+64-bit integer.</p>
+<p>The <code>isize</code> and <code>usize</code> types have the same width as a pointer on the target
+platform. They are commonly used for indexing and sizes, especially <code>usize</code>.</p>
+<h2 id="floating-point-types">Floating-Point Types<a class="headerlink" href="#floating-point-types" title="Permanent link">&para;</a></h2>
+<p>Rust has two built-in floating-point types:</p>
+<ul>
+<li><code>f32</code>: single precision.</li>
+<li><code>f64</code>: double precision.</li>
+</ul>
+<p>The <code>basic-types</code> example prints useful associated constants such as:</p>
+<ul>
+<li><code>f32::MIN</code></li>
+<li><code>f32::MAX</code></li>
+<li><code>f32::MIN_POSITIVE</code></li>
+<li><code>f32::EPSILON</code></li>
+<li><code>f64::MIN</code></li>
+<li><code>f64::MAX</code></li>
+<li><code>f64::MIN_POSITIVE</code></li>
+<li><code>f64::EPSILON</code></li>
+</ul>
+<p>It also shows constants from the standard library, such as:</p>
+<ul>
+<li><code>std::f32::consts::PI</code></li>
+<li><code>std::f32::consts::FRAC_1_SQRT_2</code></li>
+<li><code>std::f64::consts::E</code></li>
+<li><code>std::f64::consts::TAU</code></li>
+</ul>
+<p>These constants are namespaced by type, so the <code>f32</code> and <code>f64</code> versions are
+distinct.</p>
+<h2 id="type-inference-and-explicit-types">Type Inference And Explicit Types<a class="headerlink" href="#type-inference-and-explicit-types" title="Permanent link">&para;</a></h2>
+<p>Rust often infers types from context:</p>
+<pre><code class="language-rust">let x = 17;
+let y = 5.2;
+</code></pre>
+<p>For teaching examples and numerical code, it is often clearer to write the
+type explicitly when the type matters:</p>
+<pre><code class="language-rust">let a: i32 = 17;
+let b: i32 = 5;
+let x: f64 = 17.3;
+let y: f64 = 5.2;
+</code></pre>
+<p>Explicit types are especially useful when comparing integer and floating-point
+behavior.</p>
+<h2 id="arithmetic-operators">Arithmetic Operators<a class="headerlink" href="#arithmetic-operators" title="Permanent link">&para;</a></h2>
+<p>The <code>math</code> example illustrates arithmetic for both integers and floating-point
+values:</p>
+<pre><code class="language-bash">cd source-code/math
+cargo run
+</code></pre>
+<p>The main arithmetic operators are:</p>
+<ul>
+<li><code>+</code> for addition.</li>
+<li><code>-</code> for subtraction.</li>
+<li><code>*</code> for multiplication.</li>
+<li><code>/</code> for division.</li>
+<li><code>%</code> for remainder.</li>
+</ul>
+<p>For integers, division discards the fractional part:</p>
+<pre><code class="language-rust">let a: i32 = 17;
+let b: i32 = 5;
+
+println!(&quot;{}&quot;, a / b);
+println!(&quot;{}&quot;, a % b);
+</code></pre>
+<p>For floating-point values, division produces a floating-point result:</p>
+<pre><code class="language-rust">let x: f64 = 17.3;
+let y: f64 = 5.2;
+
+println!(&quot;{}&quot;, x / y);
+println!(&quot;{}&quot;, x % y);
+</code></pre>
+<p>This is why the example uses different values for integer and floating-point
+arithmetic: the outputs show that these are related operations, but not the
+same computation.</p>
+<h2 id="division-and-remainder-for-negative-integers">Division And Remainder For Negative Integers<a class="headerlink" href="#division-and-remainder-for-negative-integers" title="Permanent link">&para;</a></h2>
+<p>Signed integer division can be subtle when negative values are involved. Rust's
+ordinary <code>/</code> and <code>%</code> operators use truncating division. The <code>math</code> example also
+shows Euclidean division:</p>
+<pre><code class="language-rust">let a: i32 = -17;
+let b: i32 = 5;
+
+println!(&quot;{}&quot;, a / b);
+println!(&quot;{}&quot;, a % b);
+println!(&quot;{}&quot;, a.div_euclid(b));
+println!(&quot;{}&quot;, a.rem_euclid(b));
+</code></pre>
+<p>For algorithms where the remainder should be non-negative, such as indexing
+periodic domains, <code>div_euclid</code> and <code>rem_euclid</code> are often the clearer choice.</p>
+<h2 id="mathematical-functions">Mathematical Functions<a class="headerlink" href="#mathematical-functions" title="Permanent link">&para;</a></h2>
+<p>Floating-point mathematical functions are implemented as methods on <code>f32</code> and
+<code>f64</code> values.</p>
+<p>Examples from <code>source-code/math</code> include:</p>
+<pre><code class="language-rust">let angle = std::f64::consts::FRAC_PI_6;
+let value = 2.0_f64;
+
+println!(&quot;{}&quot;, angle.sin());
+println!(&quot;{}&quot;, angle.cos());
+println!(&quot;{}&quot;, angle.tan());
+println!(&quot;{}&quot;, value.sqrt());
+println!(&quot;{}&quot;, value.powi(8));
+println!(&quot;{}&quot;, value.powf(0.5));
+println!(&quot;{}&quot;, value.exp());
+println!(&quot;{}&quot;, value.ln());
+println!(&quot;{}&quot;, value.log10());
+</code></pre>
+<p>Rounding and absolute-value methods include:</p>
+<pre><code class="language-rust">let x = -3.75_f64;
+
+println!(&quot;{}&quot;, x.abs());
+println!(&quot;{}&quot;, x.floor());
+println!(&quot;{}&quot;, x.ceil());
+println!(&quot;{}&quot;, x.round());
+println!(&quot;{}&quot;, x.trunc());
+</code></pre>
+<p>The method-call syntax is important: these are functions associated with the
+floating-point type and called on a value.</p>
+<h2 id="numeric-functions-and-explicit-conversion">Numeric Functions And Explicit Conversion<a class="headerlink" href="#numeric-functions-and-explicit-conversion" title="Permanent link">&para;</a></h2>
+<p>The <code>numerical-function</code> example defines a small polynomial function:</p>
+<pre><code class="language-bash">cd source-code/numerical-function
+cargo run -- --help
+</code></pre>
+<p>The core function has typed parameters and a typed return value:</p>
+<pre><code class="language-rust">fn polynomial(x: f64, a: f64, b: f64, c: f64) -&gt; f64 {
+    a * x.powi(2) + b * x + c
+}
+</code></pre>
+<p>The example also loops over integer values and converts them to <code>f64</code> when
+constructing floating-point coordinates:</p>
+<pre><code class="language-rust">let delta_x = (x_max - x_min) / (nr_points as f64 - 1.0);
+
+for i in 0..nr_points {
+    let x = x_min + i as f64 * delta_x;
+    let result = polynomial(x, args.a, args.b, args.c);
+    println!(&quot;{x} {result}&quot;);
+}
+</code></pre>
+<p>The <code>as f64</code> conversions are explicit. Rust does not automatically convert an
+integer loop index to a floating-point value.</p>
+<h2 id="avoiding-implicit-double-promotion">Avoiding Implicit Double Promotion<a class="headerlink" href="#avoiding-implicit-double-promotion" title="Permanent link">&para;</a></h2>
+<p>The <code>no-double-promotion</code> example shows that Rust uses context to infer the
+type of floating-point literals:</p>
+<pre><code class="language-bash">cd source-code/no-double-promotion
+cargo run --release
+</code></pre>
+<p>In the example, the function argument is <code>f32</code>:</p>
+<pre><code class="language-rust">fn compute_polynom(x: f32) -&gt; f32 {
+    let a = 3.0;
+    let b = 2.0;
+    let c = 1.0;
+    a * x * x + b * x + c
+}
+</code></pre>
+<p>Because the literals are used in an <code>f32</code> expression, Rust infers them as
+<code>f32</code>. This avoids a common problem in C, C++, and Fortran where single
+precision values may accidentally be promoted to double precision and then
+converted back.</p>
+<p>The important lesson is not that Rust guesses magically, but that every
+expression still has a concrete type. If the context is not clear enough, the
+compiler will ask for more information.</p>
+<h2 id="complex-numbers">Complex Numbers<a class="headerlink" href="#complex-numbers" title="Permanent link">&para;</a></h2>
+<p>Complex numbers are not built into Rust's standard library. Scientific Rust
+programs commonly use the <code>num-complex</code> crate.</p>
+<p>Run the example with:</p>
+<pre><code class="language-bash">cd source-code/complex-numbers
+cargo run
+</code></pre>
+<p>The example imports <code>Complex64</code>, which is a complex number with <code>f64</code> real and
+imaginary parts:</p>
+<pre><code class="language-rust">use num_complex::Complex64;
+
+let z1 = Complex64 { re: 1.0, im: 2.0 };
+let z2 = Complex64 { re: 3.0, im: 4.0 };
+
+println!(&quot;{}&quot;, z1 + z2);
+println!(&quot;{}&quot;, z1 * z2);
+println!(&quot;{}&quot;, z1.re);
+println!(&quot;{}&quot;, z1.im);
+println!(&quot;{}&quot;, z1.norm());
+</code></pre>
+<p>This example reinforces two earlier points:</p>
+<ul>
+<li>Numeric behavior can be extended through crates.</li>
+<li>External types are brought into scope with <code>use</code>.</li>
+</ul>
+<h2 id="suggested-hands-on-work">Suggested Hands-On Work<a class="headerlink" href="#suggested-hands-on-work" title="Permanent link">&para;</a></h2>
+<p>Use this sequence as a practical lab.</p>
+<ol>
+<li>
+<p>Run <code>source-code/basic-types</code> and identify the ranges of <code>i32</code>, <code>u32</code>,
+   <code>f32</code>, and <code>f64</code>.</p>
+</li>
+<li>
+<p>Modify <code>source-code/basic-types/src/main.rs</code> to print one additional
+   floating-point constant for both <code>f32</code> and <code>f64</code>.</p>
+</li>
+<li>
+<p>Run <code>source-code/math</code> and compare integer division with floating-point
+   division.</p>
+</li>
+<li>
+<p>Change the integer values in <code>source-code/math/src/main.rs</code> and predict the
+   result of <code>/</code>, <code>%</code>, <code>div_euclid</code>, and <code>rem_euclid</code> before running the code.</p>
+</li>
+<li>
+<p>Add one more mathematical function call to <code>source-code/math</code>, such as
+   <code>value.cbrt()</code> or <code>value.log2()</code>.</p>
+</li>
+<li>
+<p>Run <code>source-code/numerical-function</code> with different polynomial
+   coefficients:</p>
+</li>
+</ol>
+<p><code>bash
+   cargo run -- --a 2.0 --b -1.0 --c 0.5</code></p>
+<ol>
+<li>
+<p>Remove one <code>as f64</code> conversion from <code>source-code/numerical-function</code> and run
+   <code>cargo check</code>. Read the compiler diagnostic, then restore the conversion.</p>
+</li>
+<li>
+<p>Run <code>source-code/no-double-promotion</code> and inspect the printed type names.</p>
+</li>
+<li>
+<p>Run <code>source-code/complex-numbers</code> and add a calculation of <code>z1 - z2</code>.</p>
+</li>
+</ol>
+<h2 id="discussion-points">Discussion Points<a class="headerlink" href="#discussion-points" title="Permanent link">&para;</a></h2>
+<p>This module is a good place to emphasize:</p>
+<ul>
+<li>Rust's numeric types are explicit and concrete.</li>
+<li>Integer and floating-point arithmetic have different semantics.</li>
+<li>Conversions between numeric types should be visible in the code.</li>
+<li>Floating-point constants and mathematical functions are type-specific.</li>
+<li>Scientific code often needs external crates for domain-specific types such
+  as complex numbers.</li>
+<li>The compiler is a useful guide when a numeric expression has an ambiguous or
+  inconsistent type.</li>
+</ul>
+<h2 id="connection-to-later-modules">Connection To Later Modules<a class="headerlink" href="#connection-to-later-modules" title="Permanent link">&para;</a></h2>
+<p>The concepts in this module appear throughout the rest of the training:</p>
+<ul>
+<li>Control-flow examples use integer ranges and explicit conversions.</li>
+<li>Iterator examples process numeric collections.</li>
+<li>The Julia set examples use complex arithmetic and floating-point constants.</li>
+<li>The N-body simulation uses vectors of floating-point values, mathematical
+  functions, random initial conditions, and numerical diagnostics.</li>
+</ul>
+<p>Once participants are comfortable with scalar values and numeric expressions,
+they are ready to move on to control flow, functions, and pattern matching.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../getting-started-with-rust-projects/" class="btn btn-neutral float-left" title="1. Getting Started With Rust Projects"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../control-flow-and-program-structure/" class="btn btn-neutral float-right" title="3. Control Flow And Program Structure">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../getting-started-with-rust-projects/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../control-flow-and-program-structure/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

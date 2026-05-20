@@ -165,7 +165,7 @@ cargo run -- --steps 200 --save-evolution evolution.csv
 
 ## Building The Learning-Module Site
 
-The learning modules in `docs/learning-modules` are configured as an MkDocs
+The learning modules in `learning-modules` are configured as an MkDocs
 site. From the repository root, build the static site with:
 
 ```bash
@@ -178,8 +178,10 @@ Preview the site locally with:
 mkdocs serve
 ```
 
-The GitHub Pages workflow builds the Jekyll landing page under `/`, this site
-under `/learning-modules/`, and the Quarto slide deck under `/slides/`.
+The GitHub Pages workflow builds this site under `/learning-modules-site/` and
+the Quarto slide deck under `/slides/`. The Jekyll landing page lives in
+`docs/README.md` and is rendered by GitHub Pages in the classic `/docs`
+configuration.
 
 ## Useful References
 

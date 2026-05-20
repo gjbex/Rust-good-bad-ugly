@@ -1,0 +1,4 @@
+title: Rust, the good, the bad, and the ugly
+theme: jekyll-theme-slate
+exclude:
+  - learning-modules

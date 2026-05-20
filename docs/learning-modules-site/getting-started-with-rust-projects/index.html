@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>1. Getting Started With Rust Projects - Rust, the good, the bad, and the ugly</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "1. Getting Started With Rust Projects";
+        var mkdocs_page_input_path = "getting-started-with-rust-projects.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/rust.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/bash.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/toml.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Rust, the good, the bad, and the ugly
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../learning-module-structure/">Module Structure</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Learning Modules</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">1. Getting Started With Rust Projects</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#learning-objectives">Learning Objectives</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#project-structure">Project Structure</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#starting-your-own-project">Starting Your Own Project</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#first-example-hello-world">First Example: Hello World</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#reading-compiler-diagnostics">Reading Compiler Diagnostics</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adding-command-line-arguments">Adding Command-Line Arguments</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#cargo-commands-to-know">Cargo Commands To Know</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#dependencies-and-crates">Dependencies And Crates</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#suggested-hands-on-work">Suggested Hands-On Work</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#discussion-points">Discussion Points</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#connection-to-later-modules">Connection To Later Modules</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scalar-computation-and-numeric-basics/">2. Scalar Computation And Numeric Basics</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../control-flow-and-program-structure/">3. Control Flow And Program Structure</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ownership-borrowing-and-mutation/">4. Ownership, Borrowing, And Mutation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-modeling-with-structs-and-methods/">5. Data Modeling With Structs And Methods</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reusable-abstractions-with-traits/">6. Reusable Abstractions With Traits</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../collections-iterators-and-text-data/">7. Collections, Iterators, And Text Data</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error-handling/">8. Error Handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../project-organization-libraries-and-tests/">9. Project Organization, Libraries, And Tests</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../randomness-and-reproducible-runs/">10. Randomness And Reproducible Runs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-parallelism-with-rayon/">11. Data Parallelism With Rayon</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-julia-set/">12. Integrated Numerical Example: Julia Set</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-n-body-simulation/">13. Integrated Numerical Example: N-Body Simulation</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Rust, the good, the bad, and the ugly</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Learning Modules</li>
+      <li class="breadcrumb-item active">1. Getting Started With Rust Projects</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="getting-started-with-rust-projects">Getting Started With Rust Projects<a class="headerlink" href="#getting-started-with-rust-projects" title="Permanent link">&para;</a></h1>
+<p>This module introduces the basic structure of a Rust project and the everyday
+commands used to build, run, inspect, and extend small Rust programs. It is
+intended as the first hands-on module before moving on to Rust's type system,
+ownership model, control flow, structs, traits, and numerical examples.</p>
+<p>The emphasis is practical: by the end of the module, participants should be
+comfortable opening an existing Rust project, recognizing its main files, using
+Cargo, adding a dependency, and making a small change with confidence.</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>After completing this module, participants should be able to:</p>
+<ul>
+<li>Explain the role of <code>cargo</code> in a Rust project.</li>
+<li>Recognize the purpose of <code>Cargo.toml</code>, <code>Cargo.lock</code>, and <code>src/main.rs</code>.</li>
+<li>Build and run a Rust binary project.</li>
+<li>Read compiler diagnostics well enough to fix simple mistakes.</li>
+<li>Add a crate dependency and use it from the program.</li>
+<li>Distinguish between a minimal Rust program and a small command-line tool.</li>
+<li>Locate the relevant examples in this repository for further practice.</li>
+</ul>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<p>Participants should have:</p>
+<ul>
+<li>A working shell.</li>
+<li>Rust installed through <code>rustup</code> or the system package manager.</li>
+<li>Basic familiarity with editing source files.</li>
+<li>Basic command-line experience.</li>
+</ul>
+<p>Check the Rust installation with:</p>
+<pre><code class="language-bash">rustc --version
+cargo --version
+</code></pre>
+<p>If both commands report a version, the environment is ready for this module.</p>
+<h2 id="project-structure">Project Structure<a class="headerlink" href="#project-structure" title="Permanent link">&para;</a></h2>
+<p>A minimal Rust binary project has the following shape:</p>
+<pre><code class="language-text">project-name/
+├── Cargo.toml
+└── src/
+    └── main.rs
+</code></pre>
+<p>The important files are:</p>
+<ul>
+<li><code>Cargo.toml</code>: project metadata and dependency declarations.</li>
+<li><code>Cargo.lock</code>: exact dependency versions selected by Cargo.</li>
+<li><code>src/main.rs</code>: the entry point for a binary program.</li>
+</ul>
+<p>For the examples in this repository, each directory under <code>source-code/</code> is a
+separate Cargo project. That means commands such as <code>cargo run</code> and
+<code>cargo check</code> should normally be run from inside the example directory.</p>
+<h2 id="starting-your-own-project">Starting Your Own Project<a class="headerlink" href="#starting-your-own-project" title="Permanent link">&para;</a></h2>
+<p>Cargo can create the standard project structure for you.</p>
+<p>To create a new binary project in a new directory, use:</p>
+<pre><code class="language-bash">cargo new my-project
+cd my-project
+cargo run
+</code></pre>
+<p>This creates a directory containing <code>Cargo.toml</code> and <code>src/main.rs</code>, initializes
+a Git repository by default, and gives you a small program that can be built
+and run immediately.</p>
+<p>If you already have an existing directory and want to turn it into a Cargo
+project, use <code>cargo init</code> from inside that directory:</p>
+<pre><code class="language-bash">mkdir my-existing-project
+cd my-existing-project
+cargo init
+cargo run
+</code></pre>
+<p>The practical difference is:</p>
+<ul>
+<li><code>cargo new</code> creates a new project directory.</li>
+<li><code>cargo init</code> turns the current directory into a Cargo project.</li>
+</ul>
+<p>For the examples in this repository, the projects have already been created, so
+the usual workflow is to enter one of the existing directories and run Cargo
+commands there. For new experiments outside the repository, <code>cargo new</code> is
+usually the simplest starting point.</p>
+<h2 id="first-example-hello-world">First Example: Hello World<a class="headerlink" href="#first-example-hello-world" title="Permanent link">&para;</a></h2>
+<p>Start with the minimal example:</p>
+<pre><code class="language-bash">cd source-code/hello-world
+cargo run
+</code></pre>
+<p>The important parts of <code>src/main.rs</code> are:</p>
+<pre><code class="language-rust">fn main() {
+    println!(&quot;Hello, world!&quot;);
+}
+</code></pre>
+<p>This illustrates three basic ideas:</p>
+<ul>
+<li><code>main</code> is the function where a binary program starts.</li>
+<li><code>println!</code> writes formatted text to standard output.</li>
+<li>The <code>!</code> marks <code>println!</code> as a macro, not an ordinary function.</li>
+</ul>
+<p>Useful follow-up commands are:</p>
+<pre><code class="language-bash">cargo check
+cargo build
+cargo run
+</code></pre>
+<p><code>cargo check</code> is often the fastest command while developing because it checks
+whether the code compiles without producing a final executable.</p>
+<h2 id="reading-compiler-diagnostics">Reading Compiler Diagnostics<a class="headerlink" href="#reading-compiler-diagnostics" title="Permanent link">&para;</a></h2>
+<p>Rust compiler messages are an important part of the development workflow. They
+usually identify:</p>
+<ul>
+<li>The file and line where the compiler found a problem.</li>
+<li>The relevant expression or declaration.</li>
+<li>The reason the code is invalid.</li>
+<li>A suggested fix, when the compiler can infer one.</li>
+</ul>
+<p>For example, removing the semicolon from a statement or misspelling a function
+name will produce a diagnostic with a source location. Participants should get
+used to reading the first error carefully before changing several things at
+once.</p>
+<p>Suggested exercise:</p>
+<ol>
+<li>Introduce a small syntax error in <code>source-code/hello-world/src/main.rs</code>.</li>
+<li>Run <code>cargo check</code>.</li>
+<li>Read the diagnostic.</li>
+<li>Fix the error.</li>
+<li>Run <code>cargo check</code> again.</li>
+</ol>
+<h2 id="adding-command-line-arguments">Adding Command-Line Arguments<a class="headerlink" href="#adding-command-line-arguments" title="Permanent link">&para;</a></h2>
+<p>The next step is a small command-line program. This repository uses <code>clap</code> for
+examples that parse command-line options.</p>
+<p>See:</p>
+<pre><code class="language-text">source-code/hello-clap
+</code></pre>
+<p>Run it with:</p>
+<pre><code class="language-bash">cd source-code/hello-clap
+cargo run -- --help
+</code></pre>
+<p>The <code>--</code> separates arguments passed to Cargo from arguments passed to the
+program being run.</p>
+<p>For example:</p>
+<pre><code class="language-bash">cargo run -- --name Rust
+</code></pre>
+<p>The main project-level change is that <code>Cargo.toml</code> contains a dependency:</p>
+<pre><code class="language-toml">[dependencies]
+clap = { version = &quot;4&quot;, features = [&quot;derive&quot;] }
+</code></pre>
+<p>The corresponding Rust code derives a parser from a struct definition. This is
+an early example of an important Rust pattern: use a type to describe the shape
+of valid input, then let a library handle the repetitive parsing work.</p>
+<h2 id="cargo-commands-to-know">Cargo Commands To Know<a class="headerlink" href="#cargo-commands-to-know" title="Permanent link">&para;</a></h2>
+<p>The most useful Cargo commands at this stage are:</p>
+<pre><code class="language-bash">cargo check
+cargo build
+cargo run
+cargo test
+cargo fmt
+cargo doc --open
+</code></pre>
+<p>Their roles are:</p>
+<ul>
+<li><code>cargo check</code>: type-check and compile-check the project quickly.</li>
+<li><code>cargo build</code>: build the executable.</li>
+<li><code>cargo run</code>: build and run the executable.</li>
+<li><code>cargo test</code>: run tests.</li>
+<li><code>cargo fmt</code>: format Rust source code.</li>
+<li><code>cargo doc --open</code>: build and open local API documentation.</li>
+</ul>
+<p>For small examples, <code>cargo run</code> is often enough. For larger edits,
+<code>cargo check</code> gives a faster edit-check cycle.</p>
+<h2 id="dependencies-and-crates">Dependencies And Crates<a class="headerlink" href="#dependencies-and-crates" title="Permanent link">&para;</a></h2>
+<p>Rust packages are called crates. A project can depend on crates from
+<code>crates.io</code> or from other locations.</p>
+<p>In this training repository, examples use crates such as:</p>
+<ul>
+<li><code>clap</code> for command-line argument parsing.</li>
+<li><code>rand</code> for random number generation.</li>
+<li><code>serde</code>, <code>csv</code>, and <code>toml</code> for structured data.</li>
+<li><code>num-complex</code> for complex numbers.</li>
+<li><code>ndarray</code> for multidimensional arrays.</li>
+</ul>
+<p>Dependencies are declared in <code>Cargo.toml</code>. Cargo resolves versions and records
+the exact selected versions in <code>Cargo.lock</code>.</p>
+<p>Dependencies can be added by editing <code>Cargo.toml</code> directly, but <code>cargo add</code> is
+often more convenient because it updates the manifest using Cargo's normal
+dependency syntax. For example, a command-line example that uses <code>clap</code> with
+derive macros can add the dependency with:</p>
+<pre><code class="language-bash">cargo add clap --features derive
+</code></pre>
+<p>This adds the corresponding entry to <code>Cargo.toml</code> and updates <code>Cargo.lock</code>.
+Using <code>cargo add</code> is especially useful while learning because it avoids small
+formatting mistakes in dependency declarations and makes the dependency change
+explicit in the shell history.</p>
+<p>For applications and training examples, <code>Cargo.lock</code> should normally be kept in
+version control because it makes builds more reproducible.</p>
+<h2 id="suggested-hands-on-work">Suggested Hands-On Work<a class="headerlink" href="#suggested-hands-on-work" title="Permanent link">&para;</a></h2>
+<p>Use this sequence as a short practical lab.</p>
+<ol>
+<li>Run the minimal program.</li>
+</ol>
+<p><code>bash
+   cd source-code/hello-world
+   cargo run</code></p>
+<ol>
+<li>
+<p>Change the printed message and run it again.</p>
+</li>
+<li>
+<p>Introduce a small error, run <code>cargo check</code>, and interpret the diagnostic.</p>
+</li>
+<li>
+<p>Open <code>source-code/hello-clap</code> and run:</p>
+</li>
+</ol>
+<p><code>bash
+   cargo run -- --help</code></p>
+<ol>
+<li>
+<p>Run the same program with one or more command-line options.</p>
+</li>
+<li>
+<p>Inspect <code>Cargo.toml</code> and identify the dependency list.</p>
+</li>
+<li>
+<p>Run <code>cargo fmt</code> and <code>cargo check</code>.</p>
+</li>
+</ol>
+<h2 id="discussion-points">Discussion Points<a class="headerlink" href="#discussion-points" title="Permanent link">&para;</a></h2>
+<p>This module is a good place to discuss a few habits that carry through the rest
+of the training:</p>
+<ul>
+<li>Use <code>cargo check</code> frequently.</li>
+<li>Treat compiler diagnostics as part of the workflow, not as a last resort.</li>
+<li>Keep examples as small Cargo projects so they are easy to build and run.</li>
+<li>Prefer established crates for common tasks such as command-line parsing and
+  file formats.</li>
+<li>Make configuration and inputs explicit when moving from toy examples to
+  numerical programs.</li>
+</ul>
+<h2 id="connection-to-later-modules">Connection To Later Modules<a class="headerlink" href="#connection-to-later-modules" title="Permanent link">&para;</a></h2>
+<p>The project basics in this module are used throughout the rest of the material:</p>
+<ul>
+<li>Numeric examples build on the same <code>main.rs</code> structure.</li>
+<li>Control-flow examples remain small binary crates.</li>
+<li>Struct and trait examples add more files under <code>src/</code>.</li>
+<li>Julia set examples introduce more realistic dependencies and I/O.</li>
+<li>The N-body simulation combines command-line parsing, structured output,
+  modules, methods, and visualization scripts.</li>
+</ul>
+<p>Once participants are comfortable with this module, they are ready to move on
+to scalar types, arithmetic, functions, and control flow.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../learning-module-structure/" class="btn btn-neutral float-left" title="Module Structure"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../scalar-computation-and-numeric-basics/" class="btn btn-neutral float-right" title="2. Scalar Computation And Numeric Basics">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../learning-module-structure/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../scalar-computation-and-numeric-basics/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

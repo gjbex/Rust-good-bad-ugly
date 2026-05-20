@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>12. Integrated Numerical Example: Julia Set - Rust, the good, the bad, and the ugly</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "12. Integrated Numerical Example: Julia Set";
+        var mkdocs_page_input_path = "integrated-numerical-example-julia-set.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/rust.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/bash.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/toml.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Rust, the good, the bad, and the ugly
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../learning-module-structure/">Module Structure</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Learning Modules</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../getting-started-with-rust-projects/">1. Getting Started With Rust Projects</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scalar-computation-and-numeric-basics/">2. Scalar Computation And Numeric Basics</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../control-flow-and-program-structure/">3. Control Flow And Program Structure</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ownership-borrowing-and-mutation/">4. Ownership, Borrowing, And Mutation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-modeling-with-structs-and-methods/">5. Data Modeling With Structs And Methods</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reusable-abstractions-with-traits/">6. Reusable Abstractions With Traits</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../collections-iterators-and-text-data/">7. Collections, Iterators, And Text Data</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error-handling/">8. Error Handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../project-organization-libraries-and-tests/">9. Project Organization, Libraries, And Tests</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../randomness-and-reproducible-runs/">10. Randomness And Reproducible Runs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-parallelism-with-rayon/">11. Data Parallelism With Rayon</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">12. Integrated Numerical Example: Julia Set</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#learning-objectives">Learning Objectives</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#the-example-family">The Example Family</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#mathematical-core">Mathematical Core</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#complex-numbers">Complex Numbers</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#mapping-a-grid-to-the-complex-plane">Mapping A Grid To The Complex Plane</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#matrix-level-iteration">Matrix-Level Iteration</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#baseline-implementation">Baseline Implementation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#external-array-storage-with-mdarray">External Array Storage With mdarray</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#expression-evaluation-variant">Expression Evaluation Variant</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#toml-configuration-variant">TOML Configuration Variant</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#text-output-and-visualization">Text Output And Visualization</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#comparing-implementations">Comparing Implementations</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#suggested-hands-on-work">Suggested Hands-On Work</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#discussion-points">Discussion Points</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#connection-to-the-n-body-example">Connection To The N-Body Example</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-n-body-simulation/">13. Integrated Numerical Example: N-Body Simulation</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Rust, the good, the bad, and the ugly</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Learning Modules</li>
+      <li class="breadcrumb-item active">12. Integrated Numerical Example: Julia Set</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="integrated-numerical-example-julia-set">Integrated Numerical Example: Julia Set<a class="headerlink" href="#integrated-numerical-example-julia-set" title="Permanent link">&para;</a></h1>
+<p>This module uses the Julia set implementations as an integrated numerical
+example. Earlier modules introduced individual Rust concepts in isolation:
+numeric types, functions, control flow, ownership, structs, traits, iterators,
+error handling, project organization, and reproducibility. The Julia set
+examples combine many of those ideas in small but realistic programs.</p>
+<p>The goal is not to teach fractals in depth. The goal is to study how a
+numerical algorithm is represented as Rust code, and how different
+implementations make different design choices.</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>After completing this module, participants should be able to:</p>
+<ul>
+<li>Explain the main steps of the Julia set computation.</li>
+<li>Use complex numbers through <code>num-complex</code>.</li>
+<li>Map a two-dimensional pixel grid to points in the complex plane.</li>
+<li>Store numerical output in a matrix-like data structure.</li>
+<li>Compare a custom matrix type with an external array crate.</li>
+<li>Separate scalar iteration from matrix-level iteration.</li>
+<li>Use command-line parameters for numerical runs.</li>
+<li>Use a TOML configuration file for reproducible run parameters.</li>
+<li>Pipe numerical output into a visualization tool.</li>
+<li>Compare implementation variants of the same algorithm.</li>
+</ul>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<p>Participants should already be comfortable with:</p>
+<ul>
+<li>Complex numbers and floating-point arithmetic.</li>
+<li>Functions and loops.</li>
+<li>Structs and methods.</li>
+<li>Generic matrix-like storage.</li>
+<li>Command-line parsing with <code>clap</code>.</li>
+<li>Error handling with <code>Result</code> and <code>?</code>.</li>
+<li>Running release builds with Cargo.</li>
+</ul>
+<p>The example group used in this module is:</p>
+<ul>
+<li><code>source-code/julia-set</code></li>
+</ul>
+<h2 id="the-example-family">The Example Family<a class="headerlink" href="#the-example-family" title="Permanent link">&para;</a></h2>
+<p>The <code>source-code/julia-set</code> directory contains several implementations:</p>
+<ul>
+<li><code>julia-set-baseline</code>: custom matrix type and explicit nested loops.</li>
+<li><code>julia-set-mdarray</code>: <code>mdarray</code> storage with explicit nested loops.</li>
+<li><code>julia-set-mdarray-expr-eval</code>: <code>mdarray</code> expression evaluation.</li>
+<li><code>julia-set-toml-config</code>: custom matrix type with run parameters read from
+  TOML.</li>
+<li><code>julia-set-rayon</code>: custom matrix type with parallel result computation.  The
+  Rayon-specific details are discussed in the data-parallelism module.</li>
+<li><code>view-fractal.py</code>: Plotly visualization helper.</li>
+</ul>
+<p>All variants compute the same kind of output: for each point in a grid, count
+how many iterations are needed before the complex recurrence escapes.</p>
+<h2 id="mathematical-core">Mathematical Core<a class="headerlink" href="#mathematical-core" title="Permanent link">&para;</a></h2>
+<p>The Julia set iteration is based on the recurrence:</p>
+<pre><code class="language-text">z &lt;- z * z + c
+</code></pre>
+<p>Here, <code>z</code> and <code>c</code> are complex numbers. The parameter <code>c</code> is fixed for one run,
+while the initial value of <code>z</code> varies over a grid in the complex plane.</p>
+<p>The scalar iteration is implemented as:</p>
+<pre><code class="language-rust">fn iterate_z_value(z: Complex64, c: Complex64, max_iterations: usize) -&gt; usize {
+    let mut z_n = z;
+    for n in 0..max_iterations {
+        if z_n.norm() &gt; 2.0 {
+            return n;
+        }
+        z_n = z_n * z_n + c;
+    }
+    max_iterations
+}
+</code></pre>
+<p>This function is a good example of keeping the scalar numerical kernel small:</p>
+<ul>
+<li>it receives one complex starting value;</li>
+<li>it receives the fixed complex parameter <code>c</code>;</li>
+<li>it receives the maximum number of iterations;</li>
+<li>it returns the escape iteration count.</li>
+</ul>
+<h2 id="complex-numbers">Complex Numbers<a class="headerlink" href="#complex-numbers" title="Permanent link">&para;</a></h2>
+<p>Rust's standard library does not provide a complex number type. The examples
+use <code>num-complex</code>:</p>
+<pre><code class="language-rust">use num_complex::Complex64;
+</code></pre>
+<p>The fixed parameter is created from real and imaginary parts:</p>
+<pre><code class="language-rust">let c = Complex64::new(args.c_real, args.c_imag);
+</code></pre>
+<p>Complex arithmetic then uses ordinary operators:</p>
+<pre><code class="language-rust">z_n = z_n * z_n + c;
+</code></pre>
+<p>The escape condition uses the complex norm:</p>
+<pre><code class="language-rust">if z_n.norm() &gt; 2.0 {
+    return n;
+}
+</code></pre>
+<p>This illustrates a common Rust pattern for scientific computing: use a crate
+for domain-specific numeric types that are not part of the standard library.</p>
+<h2 id="mapping-a-grid-to-the-complex-plane">Mapping A Grid To The Complex Plane<a class="headerlink" href="#mapping-a-grid-to-the-complex-plane" title="Permanent link">&para;</a></h2>
+<p>The grid is defined by a number of rows and columns. Each grid position is
+mapped to a point in the square domain from <code>-2.0</code> to <code>2.0</code> in both directions:</p>
+<pre><code class="language-rust">fn initialize_z(rows: usize, cols: usize) -&gt; Matrix&lt;Complex64&gt; {
+    let mut z = Matrix::new(rows, cols, Complex64::new(0.0, 0.0));
+    let domain_min = -2.0;
+    let domain_max = 2.0;
+    let delta_re = (domain_max - domain_min) / (cols as f64);
+    let delta_im = (domain_max - domain_min) / (rows as f64);
+
+    for i in 0..rows {
+        for j in 0..cols {
+            let z_value = Complex64::new(
+                domain_min + j as f64 * delta_re,
+                domain_min + i as f64 * delta_im,
+            );
+            z.set(i, j, z_value)
+                .expect(&quot;loop indices should be in bounds&quot;);
+        }
+    }
+    z
+}
+</code></pre>
+<p>This combines several earlier topics:</p>
+<ul>
+<li>half-open ranges with <code>0..rows</code> and <code>0..cols</code>;</li>
+<li>explicit integer-to-floating-point conversion with <code>as f64</code>;</li>
+<li>nested loops over a rectangular grid;</li>
+<li>complex-number construction;</li>
+<li>mutable matrix updates.</li>
+</ul>
+<h2 id="matrix-level-iteration">Matrix-Level Iteration<a class="headerlink" href="#matrix-level-iteration" title="Permanent link">&para;</a></h2>
+<p>Once the initial complex grid has been created, the program computes an
+iteration count for every element:</p>
+<pre><code class="language-rust">fn iterate_z_matrix(z: &amp;Matrix&lt;Complex64&gt;, c: Complex64, max_iterations: usize) -&gt; Matrix&lt;usize&gt; {
+    let mut result = Matrix::new(z.rows(), z.cols(), 0);
+    for i in 0..z.rows() {
+        for j in 0..z.cols() {
+            let z_value = *z.get(i, j).expect(&quot;loop indices should be in bounds&quot;);
+            let iterations = iterate_z_value(z_value, c, max_iterations);
+            result.set(i, j, iterations)
+                .expect(&quot;loop indices should be in bounds&quot;);
+        }
+    }
+    result
+}
+</code></pre>
+<p>The input matrix is borrowed:</p>
+<pre><code class="language-rust">z: &amp;Matrix&lt;Complex64&gt;
+</code></pre>
+<p>The result matrix is owned and returned:</p>
+<pre><code class="language-rust">Matrix&lt;usize&gt;
+</code></pre>
+<p>This is a useful ownership pattern for numerical code: read from borrowed input
+data, construct new output data, and return ownership of the result.</p>
+<h2 id="baseline-implementation">Baseline Implementation<a class="headerlink" href="#baseline-implementation" title="Permanent link">&para;</a></h2>
+<p>The baseline implementation uses the custom matrix type introduced in earlier
+modules:</p>
+<pre><code class="language-text">source-code/julia-set/julia-set-baseline
+</code></pre>
+<p>Run it with:</p>
+<pre><code class="language-bash">cd source-code/julia-set/julia-set-baseline
+cargo run --release -- --width 800 --height 600 | ../view-fractal.py
+</code></pre>
+<p>The baseline is valuable because it is explicit:</p>
+<ul>
+<li>grid initialization is written with nested loops;</li>
+<li>matrix access goes through <code>get</code> and <code>set</code>;</li>
+<li>the scalar iteration function is separate from the matrix iteration function;</li>
+<li>command-line options configure the run.</li>
+</ul>
+<p>This implementation is a good reference point for comparing later variants.</p>
+<h2 id="external-array-storage-with-mdarray">External Array Storage With <code>mdarray</code><a class="headerlink" href="#external-array-storage-with-mdarray" title="Permanent link">&para;</a></h2>
+<p>The <code>julia-set-mdarray</code> implementation replaces the custom matrix with the
+<code>mdarray</code> crate:</p>
+<pre><code class="language-text">source-code/julia-set/julia-set-mdarray
+</code></pre>
+<p>It defines type aliases:</p>
+<pre><code class="language-rust">type MatrixC = DArray&lt;Complex64, 2&gt;;
+type MatrixCSlice = DSlice&lt;Complex64, 2&gt;;
+type MatrixI = DArray&lt;usize, 2&gt;;
+</code></pre>
+<p>The array is initialized with:</p>
+<pre><code class="language-rust">let mut z = MatrixC::from_elem([rows, cols], Complex64::new(0.0, 0.0));
+</code></pre>
+<p>Indexing uses array syntax:</p>
+<pre><code class="language-rust">z[[i, j]] = z_value;
+let z_value = z[[i, j]];
+</code></pre>
+<p>This version illustrates a common transition in scientific code: start with a
+small custom data structure to learn the mechanics, then use a dedicated array
+crate when the problem becomes more realistic.</p>
+<h2 id="expression-evaluation-variant">Expression Evaluation Variant<a class="headerlink" href="#expression-evaluation-variant" title="Permanent link">&para;</a></h2>
+<p>The <code>julia-set-mdarray-expr-eval</code> implementation keeps <code>mdarray</code> but uses
+expression evaluation for some matrix operations:</p>
+<pre><code class="language-text">source-code/julia-set/julia-set-mdarray-expr-eval
+</code></pre>
+<p>Grid initialization is expressed as a function over indices:</p>
+<pre><code class="language-rust">expr::from_fn([rows, cols], |idx| {
+    let i = idx[0];
+    let j = idx[1];
+
+    Complex64::new(
+        domain_min + j as f64 * delta_re,
+        domain_min + i as f64 * delta_im,
+    )
+})
+.eval()
+</code></pre>
+<p>The matrix iteration also becomes more expression-oriented:</p>
+<pre><code class="language-rust">z.expr()
+    .map(|&amp;z_value| iterate_z_value(z_value, c, max_iterations))
+    .eval()
+</code></pre>
+<p>This version is useful for comparison. It is shorter and more declarative, but
+it also relies more heavily on library abstractions. Learners can compare it
+with the explicit-loop implementation and discuss readability, control, and
+performance.</p>
+<h2 id="toml-configuration-variant">TOML Configuration Variant<a class="headerlink" href="#toml-configuration-variant" title="Permanent link">&para;</a></h2>
+<p>The <code>julia-set-toml-config</code> implementation reads run parameters from a TOML
+file instead of taking each parameter separately from the command line:</p>
+<pre><code class="language-text">source-code/julia-set/julia-set-toml-config
+</code></pre>
+<p>The command line selects the configuration file:</p>
+<pre><code class="language-bash">cd source-code/julia-set/julia-set-toml-config
+cargo run --release -- julia-set.toml | ../view-fractal.py
+</code></pre>
+<p>The configuration structure is:</p>
+<pre><code class="language-rust">#[derive(Debug, Deserialize)]
+struct Config {
+    max_iterations: usize,
+    width: usize,
+    height: usize,
+    c_real: f64,
+    c_imag: f64,
+}
+</code></pre>
+<p>The file is read and deserialized with:</p>
+<pre><code class="language-rust">fn read_config(path: PathBuf) -&gt; Result&lt;Config, Box&lt;dyn Error&gt;&gt; {
+    let config_text = fs::read_to_string(path)?;
+    let config = toml::from_str(&amp;config_text)?;
+    Ok(config)
+}
+</code></pre>
+<p>This combines several earlier topics:</p>
+<ul>
+<li><code>clap</code> for command-line parsing;</li>
+<li><code>serde</code> for deserialization;</li>
+<li><code>toml</code> for configuration files;</li>
+<li>fallible I/O with <code>Result</code>;</li>
+<li><code>?</code> for error propagation.</li>
+</ul>
+<p>Configuration files are useful when run parameters should be saved, edited,
+shared, or reused.</p>
+<h2 id="text-output-and-visualization">Text Output And Visualization<a class="headerlink" href="#text-output-and-visualization" title="Permanent link">&para;</a></h2>
+<p>The Rust programs print the iteration-count matrix as text. The visualization
+script reads that output and displays a heatmap:</p>
+<pre><code class="language-bash">cargo run --release -- --width 800 --height 600 | ../view-fractal.py
+</code></pre>
+<p>The Python helper can also read from a file:</p>
+<pre><code class="language-bash">./view-fractal.py julia-set-baseline/julia-set.txt
+</code></pre>
+<p>The script uses Plotly:</p>
+<pre><code class="language-python">go.Heatmap(
+    z=data,
+    colorscale=&quot;Viridis&quot;,
+    colorbar={&quot;title&quot;: &quot;Iterations&quot;},
+)
+</code></pre>
+<p>This division of labor is pragmatic: Rust computes the numerical data, and
+Python provides a lightweight visualization workflow.</p>
+<h2 id="comparing-implementations">Comparing Implementations<a class="headerlink" href="#comparing-implementations" title="Permanent link">&para;</a></h2>
+<p>Because the directory contains several variants of the same algorithm, it is a
+good place to discuss design tradeoffs:</p>
+<ul>
+<li>Custom matrix type versus external array crate.</li>
+<li>Explicit loops versus expression-style array operations.</li>
+<li>Command-line parameters versus configuration files.</li>
+<li>Minimal dependencies versus domain-specific crates.</li>
+<li>Code that exposes every step versus code that delegates more to libraries.</li>
+</ul>
+<p>No single variant is automatically best. The useful question is what each
+variant makes easier to read, test, modify, or reuse.</p>
+<h2 id="suggested-hands-on-work">Suggested Hands-On Work<a class="headerlink" href="#suggested-hands-on-work" title="Permanent link">&para;</a></h2>
+<p>Use this sequence as a practical lab.</p>
+<ol>
+<li>Run the baseline implementation and visualize the result:</li>
+</ol>
+<p><code>bash
+   cd source-code/julia-set/julia-set-baseline
+   cargo run --release -- --width 400 --height 300 | ../view-fractal.py</code></p>
+<ol>
+<li>Change <code>c_real</code> and <code>c_imag</code> on the command line and compare the image:</li>
+</ol>
+<p><code>bash
+   cargo run --release -- --width 400 --height 300 --c-real -0.8 --c-imag 0.156 | ../view-fractal.py</code></p>
+<ol>
+<li>
+<p>Inspect <code>initialize_z</code> and identify where integer indices are converted to
+   floating-point coordinates.</p>
+</li>
+<li>
+<p>Inspect <code>iterate_z_value</code> and explain why it returns early.</p>
+</li>
+<li>
+<p>Run the <code>mdarray</code> implementation with the same parameters and compare the
+   output visually.</p>
+</li>
+<li>
+<p>Compare the explicit-loop <code>mdarray</code> implementation with the expression
+   evaluation implementation.</p>
+</li>
+<li>
+<p>Run the TOML configuration implementation:</p>
+</li>
+</ol>
+<p><code>bash
+   cd ../julia-set-toml-config
+   cargo run --release -- julia-set.toml | ../view-fractal.py</code></p>
+<ol>
+<li>
+<p>Edit <code>julia-set.toml</code> to change the image size or complex parameter, then
+   rerun the program.</p>
+</li>
+<li>
+<p>Add one extra field to the TOML configuration, such as a different domain
+   limit, and discuss which functions would need to change.</p>
+</li>
+<li>
+<p>Compare the command used for a CLI-parameter run with the TOML-based run.
+    Discuss which is easier to reproduce later.</p>
+</li>
+</ol>
+<h2 id="discussion-points">Discussion Points<a class="headerlink" href="#discussion-points" title="Permanent link">&para;</a></h2>
+<p>This module is a good place to emphasize:</p>
+<ul>
+<li>Integrated examples reveal how small language features combine.</li>
+<li>Numerical kernels are easier to reason about when scalar and matrix-level
+  logic are separated.</li>
+<li>A custom type is useful for teaching, but established crates are usually
+  better for serious array work.</li>
+<li>Configuration files are a practical tool for reproducible numerical runs.</li>
+<li>Text output and shell pipelines are simple interfaces between tools.</li>
+<li>Comparing multiple implementations is often more instructive than studying
+  one implementation in isolation.</li>
+</ul>
+<h2 id="connection-to-the-n-body-example">Connection To The N-Body Example<a class="headerlink" href="#connection-to-the-n-body-example" title="Permanent link">&para;</a></h2>
+<p>The Julia set example prepares participants for the N-body integrated example:</p>
+<ul>
+<li>both examples use command-line configuration;</li>
+<li>both map numerical concepts to Rust structs, functions, and loops;</li>
+<li>both produce output that is visualized with Python;</li>
+<li>both benefit from separating numerical kernels from I/O and setup code.</li>
+</ul>
+<p>The Julia set is deterministic and compact, making it a good integrated example
+before moving on to the larger simulation code.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../data-parallelism-with-rayon/" class="btn btn-neutral float-left" title="11. Data Parallelism With Rayon"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../integrated-numerical-example-n-body-simulation/" class="btn btn-neutral float-right" title="13. Integrated Numerical Example: N-Body Simulation">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../data-parallelism-with-rayon/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../integrated-numerical-example-n-body-simulation/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

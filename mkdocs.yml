@@ -1,6 +1,6 @@
 site_name: Rust, the good, the bad, and the ugly
 site_description: Learning modules for Rust in scientific computing
-docs_dir: docs/learning-modules
+docs_dir: learning-modules
 site_dir: site
 
 theme:

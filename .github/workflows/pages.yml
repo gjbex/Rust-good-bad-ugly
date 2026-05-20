@@ -1,4 +1,4 @@
-name: Publish training site
+name: Build training site assets
 
 on:
   push:
@@ -12,9 +12,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: pages
@@ -37,57 +35,27 @@ jobs:
       - name: Install MkDocs
         run: python -m pip install mkdocs
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "3.3"
-          bundler-cache: true
-          working-directory: pages
-
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
 
-      - name: Build landing page
-        env:
-          PAGES_REPO_NWO: ${{ github.repository }}
-        run: |
-          mkdir -p "$RUNNER_TEMP/landing"
-          sed "s#{{GITHUB_REPOSITORY}}#${GITHUB_REPOSITORY}#g" pages/index.md > "$RUNNER_TEMP/landing/index.md"
-          cp pages/_config.yml "$RUNNER_TEMP/landing/_config.yml"
-          cp pages/Gemfile "$RUNNER_TEMP/landing/Gemfile"
-          cd "$RUNNER_TEMP/landing"
-          bundle install
-          bundle exec jekyll build --destination "$GITHUB_WORKSPACE/_site"
-
       - name: Build learning-module site
-        run: mkdocs build --strict --site-dir "$PWD/_site/learning-modules"
+        run: mkdocs build --strict --site-dir "$PWD/docs/learning-modules-site"
 
       - name: Build slide deck
         run: |
           quarto render slides-source/rust-good-bad-ugly.qmd --to revealjs --output-dir "$RUNNER_TEMP/slides"
-          mkdir -p _site/slides
-          cp -R "$RUNNER_TEMP/slides/." _site/slides/
+          mkdir -p docs/slides
+          cp -R "$RUNNER_TEMP/slides/." docs/slides/
 
-      - name: Configure GitHub Pages
+      - name: Commit generated assets
         if: github.event_name != 'pull_request'
-        uses: actions/configure-pages@v5
-
-      - name: Upload Pages artifact
-        if: github.event_name != 'pull_request'
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: _site
-
-  deploy:
-    name: Deploy to GitHub Pages
-    needs: build
-    if: github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-      - name: Deploy Pages artifact
-        id: deployment
-        uses: actions/deploy-pages@v4
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/learning-modules-site docs/slides
+          if git diff --cached --quiet; then
+            echo "No generated site changes to commit."
+          else
+            git commit -m "Build generated training site assets [skip ci]"
+            git push
+          fi

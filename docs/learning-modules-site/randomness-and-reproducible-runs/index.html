@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>10. Randomness And Reproducible Runs - Rust, the good, the bad, and the ugly</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "10. Randomness And Reproducible Runs";
+        var mkdocs_page_input_path = "randomness-and-reproducible-runs.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/rust.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/bash.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/toml.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Rust, the good, the bad, and the ugly
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../learning-module-structure/">Module Structure</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Learning Modules</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../getting-started-with-rust-projects/">1. Getting Started With Rust Projects</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scalar-computation-and-numeric-basics/">2. Scalar Computation And Numeric Basics</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../control-flow-and-program-structure/">3. Control Flow And Program Structure</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ownership-borrowing-and-mutation/">4. Ownership, Borrowing, And Mutation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-modeling-with-structs-and-methods/">5. Data Modeling With Structs And Methods</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reusable-abstractions-with-traits/">6. Reusable Abstractions With Traits</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../collections-iterators-and-text-data/">7. Collections, Iterators, And Text Data</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error-handling/">8. Error Handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../project-organization-libraries-and-tests/">9. Project Organization, Libraries, And Tests</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">10. Randomness And Reproducible Runs</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#learning-objectives">Learning Objectives</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#why-reproducibility-matters">Why Reproducibility Matters</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#choosing-an-rng">Choosing An RNG</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#command-line-parameters">Command-Line Parameters</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#cli-choices-with-valueenum">CLI Choices With ValueEnum</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#runtime-distribution-objects">Runtime Distribution Objects</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#sampling-from-a-distribution">Sampling From A Distribution</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#generating-a-stream-of-values">Generating A Stream Of Values</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#visualizing-a-distribution">Visualizing A Distribution</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#randomness-and-program-design">Randomness And Program Design</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#suggested-hands-on-work">Suggested Hands-On Work</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#discussion-points">Discussion Points</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#connection-to-later-modules">Connection To Later Modules</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-parallelism-with-rayon/">11. Data Parallelism With Rayon</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-julia-set/">12. Integrated Numerical Example: Julia Set</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-n-body-simulation/">13. Integrated Numerical Example: N-Body Simulation</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Rust, the good, the bad, and the ugly</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Learning Modules</li>
+      <li class="breadcrumb-item active">10. Randomness And Reproducible Runs</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="randomness-and-reproducible-runs">Randomness And Reproducible Runs<a class="headerlink" href="#randomness-and-reproducible-runs" title="Permanent link">&para;</a></h1>
+<p>This module introduces random number generation in Rust with an emphasis on
+reproducibility. Randomness is common in simulations, sampling, randomized
+algorithms, and synthetic data generation. For scientific and technical work,
+it is not enough to generate random values; a run should also be repeatable
+when the same inputs and seed are used.</p>
+<p>The example in this module generates samples from selected probability
+distributions and optionally visualizes the result with a small Python helper.</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>After completing this module, participants should be able to:</p>
+<ul>
+<li>Explain why reproducible random streams require explicit seeds.</li>
+<li>Choose a named random number generator.</li>
+<li>Construct a seedable RNG with <code>SeedableRng</code>.</li>
+<li>Generate values from a uniform distribution.</li>
+<li>Generate values from a normal distribution with <code>rand_distr</code>.</li>
+<li>Use a command-line enum to select a distribution.</li>
+<li>Separate CLI choices from runtime distribution objects.</li>
+<li>Write a method generic over RNG implementations.</li>
+<li>Generate data that can be piped into another tool.</li>
+<li>Visualize generated samples with a histogram.</li>
+</ul>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<p>Participants should already be comfortable with:</p>
+<ul>
+<li>Cargo projects and command-line arguments.</li>
+<li>Enums and <code>match</code>.</li>
+<li>Traits and trait bounds at a basic level.</li>
+<li>Error handling with <code>expect</code>.</li>
+<li>Running shell pipelines.</li>
+</ul>
+<p>The example used in this module is:</p>
+<ul>
+<li><code>source-code/random-numbers</code></li>
+</ul>
+<h2 id="why-reproducibility-matters">Why Reproducibility Matters<a class="headerlink" href="#why-reproducibility-matters" title="Permanent link">&para;</a></h2>
+<p>Random numbers are often used to explore variability, initialize simulations,
+or generate test data. In those settings, reproducibility matters because a run
+should be repeatable when investigating results.</p>
+<p>A seed is the input that initializes the random number generator. With the same
+RNG algorithm, same seed, and same sequence of sampling calls, the program
+produces the same stream of values.</p>
+<p>Run the example twice with the same seed:</p>
+<pre><code class="language-bash">cd source-code/random-numbers
+cargo run -- --count 5 --seed 42 --distribution uniform
+cargo run -- --count 5 --seed 42 --distribution uniform
+</code></pre>
+<p>The output should be the same. Changing the seed changes the stream:</p>
+<pre><code class="language-bash">cargo run -- --count 5 --seed 43 --distribution uniform
+</code></pre>
+<p>This is the basic reproducibility contract used throughout the module.</p>
+<h2 id="choosing-an-rng">Choosing An RNG<a class="headerlink" href="#choosing-an-rng" title="Permanent link">&para;</a></h2>
+<p>The example uses <code>ChaCha12Rng</code>:</p>
+<pre><code class="language-rust">use rand_chacha::ChaCha12Rng;
+</code></pre>
+<p>The RNG is constructed from a command-line seed:</p>
+<pre><code class="language-rust">let mut rng = ChaCha12Rng::seed_from_u64(args.seed);
+</code></pre>
+<p>Using a named RNG algorithm is important for reproducibility. If a program uses
+an unspecified default RNG, its exact behavior may change across crate versions
+or platforms. A named RNG makes the intended stream more explicit.</p>
+<p>The RNG is mutable because sampling advances its internal state.</p>
+<h2 id="command-line-parameters">Command-Line Parameters<a class="headerlink" href="#command-line-parameters" title="Permanent link">&para;</a></h2>
+<p>The example exposes three command-line parameters:</p>
+<pre><code class="language-rust">#[derive(Parser, Debug)]
+#[command(author, version, about=&quot;Random number generator&quot;)]
+struct Args {
+    /// The number of random numbers to generate
+    #[arg(short, long, default_value_t = 1)]
+    count: usize,
+
+    /// The seed for the random number generator
+    #[arg(short, long, default_value_t = 1234)]
+    seed: u64,
+
+    /// The distribution to sample from
+    #[arg(short, long, default_value = &quot;uniform&quot;)]
+    distribution: DistributionKind,
+}
+</code></pre>
+<p>This makes random generation configurable from the shell:</p>
+<pre><code class="language-bash">cargo run -- --count 5 --seed 42 --distribution normal
+</code></pre>
+<p>For scientific examples, the seed should be treated as part of the run
+configuration. It belongs in command-line arguments, configuration files, logs,
+or output metadata.</p>
+<h2 id="cli-choices-with-valueenum">CLI Choices With <code>ValueEnum</code><a class="headerlink" href="#cli-choices-with-valueenum" title="Permanent link">&para;</a></h2>
+<p>The available distribution choices are represented by an enum:</p>
+<pre><code class="language-rust">#[derive(Clone, ValueEnum, Debug)]
+enum DistributionKind {
+    Uniform,
+    Normal,
+}
+</code></pre>
+<p>Because it derives <code>ValueEnum</code>, <code>clap</code> can parse these values from the command
+line and show them in <code>--help</code> output:</p>
+<pre><code class="language-bash">cargo run -- --help
+</code></pre>
+<p>This keeps accepted values explicit. The program does not need to manually
+parse arbitrary strings such as <code>"uniform"</code> or <code>"normal"</code>.</p>
+<h2 id="runtime-distribution-objects">Runtime Distribution Objects<a class="headerlink" href="#runtime-distribution-objects" title="Permanent link">&para;</a></h2>
+<p>The command-line enum describes the user's choice, but the actual sampling code
+needs concrete distribution objects from the <code>rand_distr</code> crate:</p>
+<pre><code class="language-rust">enum RealDistribution {
+    Uniform(Uniform&lt;f64&gt;),
+    Normal(Normal&lt;f64&gt;),
+}
+</code></pre>
+<p>The conversion from command-line choice to runtime distribution object happens
+in one place:</p>
+<pre><code class="language-rust">impl RealDistribution {
+    fn from_kind(kind: DistributionKind) -&gt; Self {
+        match kind {
+            DistributionKind::Uniform =&gt; {
+                Self::Uniform(Uniform::new(0.0, 1.0).expect(&quot;valid uniform distribution&quot;))
+            }
+            DistributionKind::Normal =&gt; {
+                Self::Normal(Normal::new(0.0, 1.0).expect(&quot;valid normal distribution&quot;))
+            }
+        }
+    }
+}
+</code></pre>
+<p>This is a useful design pattern:</p>
+<ul>
+<li>one type represents the CLI choice;</li>
+<li>another type represents the runtime object used by the computation.</li>
+</ul>
+<p>The uniform distribution samples values in the half-open interval <code>[0.0, 1.0)</code>.
+The normal distribution uses mean <code>0.0</code> and standard deviation <code>1.0</code>.</p>
+<h2 id="sampling-from-a-distribution">Sampling From A Distribution<a class="headerlink" href="#sampling-from-a-distribution" title="Permanent link">&para;</a></h2>
+<p>The distribution enum provides a common sampling method:</p>
+<pre><code class="language-rust">fn sample&lt;R: Rng + ?Sized&gt;(&amp;self, rng: &amp;mut R) -&gt; f64 {
+    match self {
+        Self::Uniform(distribution) =&gt; distribution.sample(rng),
+        Self::Normal(distribution) =&gt; distribution.sample(rng),
+    }
+}
+</code></pre>
+<p>The method is generic over any RNG that implements <code>Rng</code>:</p>
+<pre><code class="language-rust">R: Rng + ?Sized
+</code></pre>
+<p>At this stage, the important idea is that the distribution does not need to
+know the exact RNG type. It only needs an RNG that supports the behavior
+required for sampling.</p>
+<p>The <code>?Sized</code> bound allows the method to work with RNG values that may be used
+behind references or trait objects. It is not central to the example, but it
+matches common Rust library patterns.</p>
+<h2 id="generating-a-stream-of-values">Generating A Stream Of Values<a class="headerlink" href="#generating-a-stream-of-values" title="Permanent link">&para;</a></h2>
+<p>The <code>main</code> function ties the pieces together:</p>
+<pre><code class="language-rust">let args = Args::parse();
+let mut rng = ChaCha12Rng::seed_from_u64(args.seed);
+let distribution = RealDistribution::from_kind(args.distribution);
+
+for _ in 0..args.count {
+    let random_number = distribution.sample(&amp;mut rng);
+    println!(&quot;{}&quot;, random_number);
+}
+</code></pre>
+<p>Each call to <code>sample</code> advances the RNG and prints one value. The program writes
+plain text to standard output, one sample per line. This makes it easy to
+inspect directly or pipe into another program.</p>
+<h2 id="visualizing-a-distribution">Visualizing A Distribution<a class="headerlink" href="#visualizing-a-distribution" title="Permanent link">&para;</a></h2>
+<p>The example includes a Python helper script:</p>
+<pre><code class="language-text">source-code/random-numbers/show-distribution.py
+</code></pre>
+<p>It reads numbers from standard input and displays a Plotly histogram. Use it
+with a shell pipeline:</p>
+<pre><code class="language-bash">cargo run -- --count 1000 --seed 42 --distribution normal | ./show-distribution.py
+</code></pre>
+<p>The Rust program generates the data. The Python script visualizes the data.
+This separation keeps the Rust example focused on reproducible generation and
+uses Python for interactive plotting.</p>
+<p>The script requires Plotly:</p>
+<pre><code class="language-bash">python3 -m pip install plotly
+</code></pre>
+<h2 id="randomness-and-program-design">Randomness And Program Design<a class="headerlink" href="#randomness-and-program-design" title="Permanent link">&para;</a></h2>
+<p>For small examples, constructing the RNG directly in <code>main</code> is fine. For larger
+programs, it is often better to pass an RNG into functions that need random
+values.</p>
+<p>For example, the design used in the distribution method:</p>
+<pre><code class="language-rust">fn sample&lt;R: Rng + ?Sized&gt;(&amp;self, rng: &amp;mut R) -&gt; f64
+</code></pre>
+<p>makes the source of randomness explicit. The function does not create its own
+hidden RNG. That improves reproducibility because the caller controls the seed
+and the order of random draws.</p>
+<p>This design habit is especially important for simulations. Hidden random
+number generators make it harder to reproduce a result or explain why two runs
+differ.</p>
+<h2 id="suggested-hands-on-work">Suggested Hands-On Work<a class="headerlink" href="#suggested-hands-on-work" title="Permanent link">&para;</a></h2>
+<p>Use this sequence as a practical lab.</p>
+<ol>
+<li>Run the example with the default settings:</li>
+</ol>
+<p><code>bash
+   cd source-code/random-numbers
+   cargo run</code></p>
+<ol>
+<li>Generate five uniform samples with an explicit seed:</li>
+</ol>
+<p><code>bash
+   cargo run -- --count 5 --seed 42 --distribution uniform</code></p>
+<ol>
+<li>
+<p>Run the same command again and verify that the output is identical.</p>
+</li>
+<li>
+<p>Change only the seed and compare the output.</p>
+</li>
+<li>
+<p>Generate normally distributed samples:</p>
+</li>
+</ol>
+<p><code>bash
+   cargo run -- --count 5 --seed 42 --distribution normal</code></p>
+<ol>
+<li>
+<p>Run <code>cargo run -- --help</code> and inspect the accepted distribution values.</p>
+</li>
+<li>
+<p>Change the normal distribution parameters in <code>RealDistribution::from_kind</code>,
+   for example to mean <code>10.0</code> and standard deviation <code>2.0</code>.</p>
+</li>
+<li>
+<p>Add a new distribution choice to <code>DistributionKind</code>, such as an exponential
+   distribution from <code>rand_distr</code>, then add the corresponding variant to
+   <code>RealDistribution</code>.</p>
+</li>
+<li>
+<p>Generate a larger sample and visualize it:</p>
+</li>
+</ol>
+<p><code>bash
+   cargo run -- --count 1000 --seed 42 --distribution normal | ./show-distribution.py</code></p>
+<ol>
+<li>Record the command used to generate a plot and rerun it to confirm that the
+    same seed reproduces the same data.</li>
+</ol>
+<h2 id="discussion-points">Discussion Points<a class="headerlink" href="#discussion-points" title="Permanent link">&para;</a></h2>
+<p>This module is a good place to emphasize:</p>
+<ul>
+<li>Reproducibility requires controlling the seed and RNG algorithm.</li>
+<li>Randomness should be part of the run configuration, not hidden global state.</li>
+<li>The RNG is mutable because sampling advances its state.</li>
+<li>CLI enums make accepted random-distribution choices explicit.</li>
+<li>Separating CLI choices from runtime distribution objects keeps the design
+  flexible.</li>
+<li>Text output and shell pipelines are simple but powerful for generated data.</li>
+<li>Visualization is useful for sanity-checking random samples.</li>
+</ul>
+<h2 id="connection-to-later-modules">Connection To Later Modules<a class="headerlink" href="#connection-to-later-modules" title="Permanent link">&para;</a></h2>
+<p>Randomness appears in larger examples as input generation and initialization:</p>
+<ul>
+<li>The <code>hashmap-hashset</code> example uses seeded randomness to generate and corrupt
+  DNA-like sequence data.</li>
+<li>Julia set examples do not require randomness, which makes them useful for
+  deterministic numerical comparison.</li>
+<li>The N-body example uses random initialization, where seeds and distribution
+  choices are important for reproducible simulations.</li>
+</ul>
+<p>Once participants are comfortable with reproducible random generation, they are
+ready to study the integrated Julia set example and then the larger simulation
+example.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../project-organization-libraries-and-tests/" class="btn btn-neutral float-left" title="9. Project Organization, Libraries, And Tests"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../data-parallelism-with-rayon/" class="btn btn-neutral float-right" title="11. Data Parallelism With Rayon">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../project-organization-libraries-and-tests/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../data-parallelism-with-rayon/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

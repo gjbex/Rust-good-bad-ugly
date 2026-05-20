@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Module Structure - Rust, the good, the bad, and the ugly</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Module Structure";
+        var mkdocs_page_input_path = "learning-module-structure.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/rust.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/bash.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/toml.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Rust, the good, the bad, and the ugly
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Module Structure</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#module-1-getting-started-with-rust-projects">Module 1: Getting Started With Rust Projects</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#module-2-scalar-computation-and-numeric-basics">Module 2: Scalar Computation And Numeric Basics</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#module-3-control-flow-and-program-structure">Module 3: Control Flow And Program Structure</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#module-4-ownership-borrowing-and-mutation">Module 4: Ownership, Borrowing, And Mutation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#module-5-data-modeling-with-structs-and-methods">Module 5: Data Modeling With Structs And Methods</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#module-6-reusable-abstractions-with-traits">Module 6: Reusable Abstractions With Traits</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#module-7-collections-iterators-and-text-data">Module 7: Collections, Iterators, And Text Data</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#module-8-error-handling">Module 8: Error Handling</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#module-9-project-organization-libraries-and-tests">Module 9: Project Organization, Libraries, And Tests</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#module-10-randomness-and-reproducible-runs">Module 10: Randomness And Reproducible Runs</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#module-11-data-parallelism-with-rayon">Module 11: Data Parallelism With Rayon</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#module-12-integrated-numerical-example-julia-set">Module 12: Integrated Numerical Example: Julia Set</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#module-13-integrated-numerical-example-n-body-simulation">Module 13: Integrated Numerical Example: N-Body Simulation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#optional-module-rust-by-contrast-with-c">Optional Module: Rust By Contrast With C++</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#suggested-teaching-order">Suggested Teaching Order</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Learning Modules</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../getting-started-with-rust-projects/">1. Getting Started With Rust Projects</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scalar-computation-and-numeric-basics/">2. Scalar Computation And Numeric Basics</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../control-flow-and-program-structure/">3. Control Flow And Program Structure</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ownership-borrowing-and-mutation/">4. Ownership, Borrowing, And Mutation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-modeling-with-structs-and-methods/">5. Data Modeling With Structs And Methods</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reusable-abstractions-with-traits/">6. Reusable Abstractions With Traits</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../collections-iterators-and-text-data/">7. Collections, Iterators, And Text Data</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error-handling/">8. Error Handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../project-organization-libraries-and-tests/">9. Project Organization, Libraries, And Tests</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../randomness-and-reproducible-runs/">10. Randomness And Reproducible Runs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-parallelism-with-rayon/">11. Data Parallelism With Rayon</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-julia-set/">12. Integrated Numerical Example: Julia Set</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-n-body-simulation/">13. Integrated Numerical Example: N-Body Simulation</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Rust, the good, the bad, and the ugly</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Module Structure</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="learning-module-structure">Learning Module Structure<a class="headerlink" href="#learning-module-structure" title="Permanent link">&para;</a></h1>
+<p>This document proposes a learning path for the Rust training material in this
+repository. The structure follows the existing examples in <code>source-code/</code>, but
+groups them into teaching modules rather than treating the directory order as
+the curriculum itself.</p>
+<p>The intended audience is learners who know how to program, but are new to Rust
+or new to using Rust for scientific and technical computing.</p>
+<h2 id="module-1-getting-started-with-rust-projects">Module 1: Getting Started With Rust Projects<a class="headerlink" href="#module-1-getting-started-with-rust-projects" title="Permanent link">&para;</a></h2>
+<p>Primary examples:</p>
+<ul>
+<li><code>source-code/hello-world</code></li>
+<li><code>source-code/hello-clap</code></li>
+</ul>
+<p>Topics:</p>
+<ul>
+<li>Rust project layout.</li>
+<li><code>Cargo.toml</code>, <code>Cargo.lock</code>, and <code>src/main.rs</code>.</li>
+<li><code>cargo check</code>, <code>cargo build</code>, and <code>cargo run</code>.</li>
+<li>Adding dependencies with <code>cargo add</code>.</li>
+<li>Basic command-line parsing with <code>clap</code>.</li>
+<li>Reading compiler diagnostics.</li>
+</ul>
+<p>Goal:</p>
+<p>Participants should be able to open, build, run, and lightly modify a small
+Rust binary project.</p>
+<p>Related module text:</p>
+<ul>
+<li><code>learning-modules/getting-started-with-rust-projects.md</code></li>
+</ul>
+<h2 id="module-2-scalar-computation-and-numeric-basics">Module 2: Scalar Computation And Numeric Basics<a class="headerlink" href="#module-2-scalar-computation-and-numeric-basics" title="Permanent link">&para;</a></h2>
+<p>Primary examples:</p>
+<ul>
+<li><code>source-code/basic-types</code></li>
+<li><code>source-code/math</code></li>
+<li><code>source-code/numerical-function</code></li>
+<li><code>source-code/no-double-promotion</code></li>
+<li><code>source-code/complex-numbers</code></li>
+</ul>
+<p>Topics:</p>
+<ul>
+<li>Integer and floating-point types.</li>
+<li>Type inference and explicit type annotations.</li>
+<li>Numeric literals.</li>
+<li>Arithmetic operators.</li>
+<li>Integer division and remainder.</li>
+<li>Floating-point functions and constants.</li>
+<li>Complex numbers through <code>num-complex</code>.</li>
+<li>Differences from C and C++ numeric promotion rules.</li>
+</ul>
+<p>Goal:</p>
+<p>Participants should understand how Rust represents scalar values and how to
+write small numerical expressions without relying on implicit conversions.</p>
+<p>Related module text:</p>
+<ul>
+<li><code>learning-modules/scalar-computation-and-numeric-basics.md</code></li>
+</ul>
+<h2 id="module-3-control-flow-and-program-structure">Module 3: Control Flow And Program Structure<a class="headerlink" href="#module-3-control-flow-and-program-structure" title="Permanent link">&para;</a></h2>
+<p>Primary examples:</p>
+<ul>
+<li><code>source-code/control-flow</code></li>
+<li><code>source-code/numerical-function</code></li>
+<li><code>source-code/enum-match</code></li>
+</ul>
+<p>Topics:</p>
+<ul>
+<li><code>if</code> and <code>else</code>.</li>
+<li><code>while</code> loops.</li>
+<li><code>for</code> loops over ranges and collections.</li>
+<li>Function definitions.</li>
+<li>Return values.</li>
+<li>Enums.</li>
+<li><code>match</code>.</li>
+<li>Introductory source modules.</li>
+</ul>
+<p>Goal:</p>
+<p>Participants should be able to write small programs with explicit control flow
+and factor repeated work into functions.</p>
+<p>Related module text:</p>
+<ul>
+<li><code>learning-modules/control-flow-and-program-structure.md</code></li>
+</ul>
+<h2 id="module-4-ownership-borrowing-and-mutation">Module 4: Ownership, Borrowing, And Mutation<a class="headerlink" href="#module-4-ownership-borrowing-and-mutation" title="Permanent link">&para;</a></h2>
+<p>Primary examples:</p>
+<ul>
+<li><code>source-code/mutable-variables</code></li>
+<li><code>source-code/copy-vs-move</code></li>
+<li><code>source-code/borrowing-vectors</code></li>
+<li><code>source-code/mutable-borrowing</code></li>
+</ul>
+<p>Topics:</p>
+<ul>
+<li>Immutable bindings by default.</li>
+<li>Mutable bindings.</li>
+<li>Move semantics.</li>
+<li>Copy types.</li>
+<li>Shared references.</li>
+<li>Mutable references.</li>
+<li>Borrowing slices instead of whole owned containers.</li>
+</ul>
+<p>Goal:</p>
+<p>Participants should develop a working mental model for ownership and borrowing
+before moving on to larger data structures.</p>
+<p>Related module text:</p>
+<ul>
+<li><code>learning-modules/ownership-borrowing-and-mutation.md</code></li>
+</ul>
+<p>Optional contrast:</p>
+<ul>
+<li><code>source-code/cpp-pitfalls</code></li>
+</ul>
+<p>This material can be used to show the kinds of memory-safety and concurrency
+issues Rust's ownership model is designed to prevent or make explicit.</p>
+<h2 id="module-5-data-modeling-with-structs-and-methods">Module 5: Data Modeling With Structs And Methods<a class="headerlink" href="#module-5-data-modeling-with-structs-and-methods" title="Permanent link">&para;</a></h2>
+<p>Primary examples:</p>
+<ul>
+<li><code>source-code/structs-and-methods</code></li>
+<li><code>source-code/generic-structs</code></li>
+</ul>
+<p>Topics:</p>
+<ul>
+<li>Defining structs.</li>
+<li>Implementing methods with <code>impl</code>.</li>
+<li>Associated functions.</li>
+<li>Encapsulation through methods.</li>
+<li>Generic structs.</li>
+<li>Trait bounds on implementations.</li>
+</ul>
+<p>Goal:</p>
+<p>Participants should be able to define small domain types and attach behavior to
+those types using methods.</p>
+<p>Related module text:</p>
+<ul>
+<li><code>learning-modules/data-modeling-with-structs-and-methods.md</code></li>
+</ul>
+<h2 id="module-6-reusable-abstractions-with-traits">Module 6: Reusable Abstractions With Traits<a class="headerlink" href="#module-6-reusable-abstractions-with-traits" title="Permanent link">&para;</a></h2>
+<p>Primary examples:</p>
+<ul>
+<li><code>source-code/traits</code></li>
+<li><code>source-code/user-defined-trait</code></li>
+<li><code>source-code/generic-structs</code></li>
+</ul>
+<p>Topics:</p>
+<ul>
+<li>Standard trait implementations.</li>
+<li><code>Display</code>, <code>Index</code>, <code>IndexMut</code>, and <code>TryFrom</code>.</li>
+<li>User-defined traits.</li>
+<li>Trait bounds.</li>
+<li>Trait objects.</li>
+<li><code>dyn Trait</code>.</li>
+<li>Static and dynamic dispatch at a conceptual level.</li>
+</ul>
+<p>Goal:</p>
+<p>Participants should understand how Rust expresses shared behavior without
+classical inheritance.</p>
+<p>Related module text:</p>
+<ul>
+<li><code>learning-modules/reusable-abstractions-with-traits.md</code></li>
+</ul>
+<h2 id="module-7-collections-iterators-and-text-data">Module 7: Collections, Iterators, And Text Data<a class="headerlink" href="#module-7-collections-iterators-and-text-data" title="Permanent link">&para;</a></h2>
+<p>Primary examples:</p>
+<ul>
+<li><code>source-code/iterators</code></li>
+<li><code>source-code/hashmap-hashset</code></li>
+</ul>
+<p>Topics:</p>
+<ul>
+<li>Vectors.</li>
+<li>Iterator adapters.</li>
+<li><code>map</code>, <code>filter</code>, <code>fold</code>, and <code>scan</code>.</li>
+<li>Hash maps and hash sets.</li>
+<li>Reading and writing text files.</li>
+<li>Buffered I/O.</li>
+</ul>
+<p>Goal:</p>
+<p>Participants should be able to process collections and simple text data using
+idiomatic iterator-based Rust.</p>
+<p>Related module text:</p>
+<ul>
+<li><code>learning-modules/collections-iterators-and-text-data.md</code></li>
+</ul>
+<h2 id="module-8-error-handling">Module 8: Error Handling<a class="headerlink" href="#module-8-error-handling" title="Permanent link">&para;</a></h2>
+<p>Primary example:</p>
+<ul>
+<li><code>source-code/error-handling</code></li>
+</ul>
+<p>Topics:</p>
+<ul>
+<li><code>Option</code>.</li>
+<li><code>Result</code>.</li>
+<li>The <code>?</code> operator.</li>
+<li>Propagating errors from functions.</li>
+<li>Converting from simple examples to fallible command-line programs.</li>
+</ul>
+<p>Goal:</p>
+<p>Participants should be able to recognize and write Rust code that handles
+missing values and recoverable errors explicitly.</p>
+<p>Related module text:</p>
+<ul>
+<li><code>learning-modules/error-handling.md</code></li>
+</ul>
+<h2 id="module-9-project-organization-libraries-and-tests">Module 9: Project Organization, Libraries, And Tests<a class="headerlink" href="#module-9-project-organization-libraries-and-tests" title="Permanent link">&para;</a></h2>
+<p>Primary examples:</p>
+<ul>
+<li><code>source-code/hashmap-hashset</code></li>
+<li><code>source-code/enum-match</code></li>
+<li><code>source-code/traits</code></li>
+</ul>
+<p>Topics:</p>
+<ul>
+<li>Shared library code in <code>src/lib.rs</code>.</li>
+<li>Multiple executables in one Cargo package.</li>
+<li><code>[[bin]]</code> entries in <code>Cargo.toml</code>.</li>
+<li>Reusing library code from several binaries.</li>
+<li>Unit tests.</li>
+<li><code>#[cfg(test)]</code> test modules.</li>
+<li>Numerical checks with tolerances.</li>
+</ul>
+<p>Goal:</p>
+<p>Participants should understand how a Cargo package can grow beyond a single
+<code>main.rs</code>, and how to keep shared code and tests organized as examples become
+larger.</p>
+<p>Related module text:</p>
+<ul>
+<li><code>learning-modules/project-organization-libraries-and-tests.md</code></li>
+</ul>
+<h2 id="module-10-randomness-and-reproducible-runs">Module 10: Randomness And Reproducible Runs<a class="headerlink" href="#module-10-randomness-and-reproducible-runs" title="Permanent link">&para;</a></h2>
+<p>Primary example:</p>
+<ul>
+<li><code>source-code/random-numbers</code></li>
+</ul>
+<p>Topics:</p>
+<ul>
+<li>Random number generators.</li>
+<li>Distributions.</li>
+<li>Seeding.</li>
+<li>Reproducibility.</li>
+<li>Producing data for visualization.</li>
+</ul>
+<p>Goal:</p>
+<p>Participants should understand how to generate random data in a controlled way
+and why explicit seeds matter for scientific examples.</p>
+<p>Related module text:</p>
+<ul>
+<li><code>learning-modules/randomness-and-reproducible-runs.md</code></li>
+</ul>
+<h2 id="module-11-data-parallelism-with-rayon">Module 11: Data Parallelism With Rayon<a class="headerlink" href="#module-11-data-parallelism-with-rayon" title="Permanent link">&para;</a></h2>
+<p>Primary example:</p>
+<ul>
+<li><code>source-code/julia-set/julia-set-rayon</code></li>
+</ul>
+<p>Topics:</p>
+<ul>
+<li>Data parallelism.</li>
+<li>Rayon parallel iterators.</li>
+<li><code>into_par_iter</code>.</li>
+<li>Parallel <code>map</code> and <code>collect</code>.</li>
+<li>Avoiding shared mutable state.</li>
+<li>Controlling worker threads with <code>RAYON_NUM_THREADS</code>.</li>
+<li>Benchmarking serial and parallel implementations.</li>
+</ul>
+<p>Goal:</p>
+<p>Participants should understand how to use Rayon for independent per-element
+work, and how to reason about when data parallelism is likely to help.</p>
+<p>Related module text:</p>
+<ul>
+<li><code>learning-modules/data-parallelism-with-rayon.md</code></li>
+</ul>
+<h2 id="module-12-integrated-numerical-example-julia-set">Module 12: Integrated Numerical Example: Julia Set<a class="headerlink" href="#module-12-integrated-numerical-example-julia-set" title="Permanent link">&para;</a></h2>
+<p>Primary example group:</p>
+<ul>
+<li><code>source-code/julia-set</code></li>
+</ul>
+<p>Topics:</p>
+<ul>
+<li>Complex arithmetic.</li>
+<li>Arrays and matrices.</li>
+<li>Command-line configuration.</li>
+<li>TOML configuration files.</li>
+<li>Image-like numerical output.</li>
+<li>Multiple implementations of the same algorithm.</li>
+<li>Comparing implementation styles.</li>
+</ul>
+<p>Goal:</p>
+<p>Participants should see how the earlier language features combine in a compact
+scientific-computing example.</p>
+<p>Related module text:</p>
+<ul>
+<li><code>learning-modules/integrated-numerical-example-julia-set.md</code></li>
+</ul>
+<p>Suggested placement:</p>
+<p>This module works well after the core language modules, alongside the other
+integrated numerical examples.</p>
+<h2 id="module-13-integrated-numerical-example-n-body-simulation">Module 13: Integrated Numerical Example: N-Body Simulation<a class="headerlink" href="#module-13-integrated-numerical-example-n-body-simulation" title="Permanent link">&para;</a></h2>
+<p>Primary example:</p>
+<ul>
+<li><code>source-code/n-body-simulation/rust</code></li>
+</ul>
+<p>Topics:</p>
+<ul>
+<li>Structs and methods in a larger example.</li>
+<li>Random initialization.</li>
+<li>Command-line parameters.</li>
+<li>CSV output.</li>
+<li>Time integration.</li>
+<li>Energy diagnostics.</li>
+<li>Python visualization helpers.</li>
+<li>Separating simulation state, output, and analysis.</li>
+</ul>
+<p>Goal:</p>
+<p>Participants should see a small but realistic scientific program that combines
+many of the earlier concepts in one place.</p>
+<p>Related module text:</p>
+<ul>
+<li><code>learning-modules/integrated-numerical-example-n-body-simulation.md</code></li>
+</ul>
+<p>Suggested placement:</p>
+<p>This module should be treated as an integrated numerical example, similar in
+role to the Julia set module, rather than as part of the initial feature-by-feature
+sequence.</p>
+<h2 id="optional-module-rust-by-contrast-with-c">Optional Module: Rust By Contrast With C++<a class="headerlink" href="#optional-module-rust-by-contrast-with-c" title="Permanent link">&para;</a></h2>
+<p>Primary example:</p>
+<ul>
+<li><code>source-code/cpp-pitfalls</code></li>
+</ul>
+<p>Topics:</p>
+<ul>
+<li>Memory safety.</li>
+<li>Dangling references.</li>
+<li>Data races.</li>
+<li>Numeric conversions.</li>
+<li>The difference between preventing errors and documenting discipline.</li>
+</ul>
+<p>Goal:</p>
+<p>Participants with a C or C++ background should get a concrete sense of which
+problems Rust is designed to move from run time to compile time.</p>
+<p>This module can be used near the beginning for motivation or later as a
+reflective comparison after ownership and borrowing have been introduced.</p>
+<h2 id="suggested-teaching-order">Suggested Teaching Order<a class="headerlink" href="#suggested-teaching-order" title="Permanent link">&para;</a></h2>
+<p>A compact course can use this order:</p>
+<ol>
+<li>Getting Started With Rust Projects.</li>
+<li>Scalar Computation And Numeric Basics.</li>
+<li>Control Flow And Program Structure.</li>
+<li>Ownership, Borrowing, And Mutation.</li>
+<li>Data Modeling With Structs And Methods.</li>
+<li>Reusable Abstractions With Traits.</li>
+<li>Collections, Iterators, And Text Data.</li>
+<li>Error Handling.</li>
+<li>Project Organization, Libraries, And Tests.</li>
+<li>Randomness And Reproducible Runs.</li>
+<li>Data Parallelism With Rayon.</li>
+<li>Integrated Numerical Example: Julia Set.</li>
+<li>Integrated Numerical Example: N-Body Simulation.</li>
+</ol>
+<p>For a shorter course, the Julia set example can be used as the main integrated
+example and the N-body simulation can be left as an additional integrated
+example.</p>
+<p>For a course aimed at scientific programmers, the numerical, randomness, Julia
+set, and N-body modules should receive more time than the purely syntactic
+examples.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href=".." class="btn btn-neutral float-left" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../getting-started-with-rust-projects/" class="btn btn-neutral float-right" title="1. Getting Started With Rust Projects">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href=".." style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../getting-started-with-rust-projects/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

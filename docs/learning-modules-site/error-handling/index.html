@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>8. Error Handling - Rust, the good, the bad, and the ugly</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "8. Error Handling";
+        var mkdocs_page_input_path = "error-handling.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/rust.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/bash.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/toml.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Rust, the good, the bad, and the ugly
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../learning-module-structure/">Module Structure</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Learning Modules</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../getting-started-with-rust-projects/">1. Getting Started With Rust Projects</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scalar-computation-and-numeric-basics/">2. Scalar Computation And Numeric Basics</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../control-flow-and-program-structure/">3. Control Flow And Program Structure</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ownership-borrowing-and-mutation/">4. Ownership, Borrowing, And Mutation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-modeling-with-structs-and-methods/">5. Data Modeling With Structs And Methods</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reusable-abstractions-with-traits/">6. Reusable Abstractions With Traits</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../collections-iterators-and-text-data/">7. Collections, Iterators, And Text Data</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">8. Error Handling</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#learning-objectives">Learning Objectives</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#missing-values-with-option">Missing Values With Option</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#transforming-option-with-map">Transforming Option With map</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#recoverable-failure-with-result">Recoverable Failure With Result</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#converting-option-to-result">Converting Option To Result</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#the-operator">The ? Operator</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#handling-errors-at-the-call-site">Handling Errors At The Call Site</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#option-or-result">Option Or Result?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#panics-versus-recoverable-errors">Panics Versus Recoverable Errors</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#toward-fallible-programs">Toward Fallible Programs</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#suggested-hands-on-work">Suggested Hands-On Work</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#discussion-points">Discussion Points</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#connection-to-later-modules">Connection To Later Modules</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../project-organization-libraries-and-tests/">9. Project Organization, Libraries, And Tests</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../randomness-and-reproducible-runs/">10. Randomness And Reproducible Runs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-parallelism-with-rayon/">11. Data Parallelism With Rayon</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-julia-set/">12. Integrated Numerical Example: Julia Set</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-n-body-simulation/">13. Integrated Numerical Example: N-Body Simulation</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Rust, the good, the bad, and the ugly</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Learning Modules</li>
+      <li class="breadcrumb-item active">8. Error Handling</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="error-handling">Error Handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h1>
+<p>This module introduces Rust's explicit approach to missing values and
+recoverable errors. Instead of using null values or exceptions for ordinary
+control flow, Rust programs commonly use <code>Option&lt;T&gt;</code> and <code>Result&lt;T, E&gt;</code>.</p>
+<p>The main example extends the matrix type from earlier modules with checked
+indexing. The goal is to make out-of-bounds access visible in the type
+signature instead of silently producing invalid behavior.</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>After completing this module, participants should be able to:</p>
+<ul>
+<li>Use <code>Option&lt;T&gt;</code> to represent a value that may be absent.</li>
+<li>Use <code>Result&lt;T, E&gt;</code> to represent an operation that may fail.</li>
+<li>Explain the difference between <code>Some</code>, <code>None</code>, <code>Ok</code>, and <code>Err</code>.</li>
+<li>Convert an <code>Option</code> into a <code>Result</code> with <code>ok_or_else</code>.</li>
+<li>Transform the value inside an <code>Option</code> with <code>map</code>.</li>
+<li>Use the <code>?</code> operator to return early from a failing operation.</li>
+<li>Handle errors at the call site with <code>expect</code> when failure indicates a bug.</li>
+<li>Decide whether a function should return <code>Option</code> or <code>Result</code>.</li>
+<li>Recognize when panicking is less appropriate than returning an error.</li>
+</ul>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<p>Participants should already be comfortable with:</p>
+<ul>
+<li>Defining structs and methods.</li>
+<li>Shared and mutable references.</li>
+<li>Basic enum syntax.</li>
+<li>Closures.</li>
+<li>Matrix indexing concepts from the structs and traits modules.</li>
+</ul>
+<p>The main example used in this module is:</p>
+<ul>
+<li><code>source-code/error-handling</code></li>
+</ul>
+<h2 id="missing-values-with-option">Missing Values With <code>Option</code><a class="headerlink" href="#missing-values-with-option" title="Permanent link">&para;</a></h2>
+<p><code>Option&lt;T&gt;</code> represents either a value of type <code>T</code> or no value:</p>
+<pre><code class="language-rust">Some(value)
+None
+</code></pre>
+<p>The matrix example uses <code>Option&lt;usize&gt;</code> for checked index calculation:</p>
+<pre><code class="language-rust">fn index(&amp;self, row: usize, col: usize) -&gt; Option&lt;usize&gt; {
+    if row &lt; self.rows &amp;&amp; col &lt; self.cols {
+        Some(row * self.cols + col)
+    } else {
+        None
+    }
+}
+</code></pre>
+<p>This function returns <code>Some(flat_index)</code> when the row and column are valid. It
+returns <code>None</code> when the requested element is outside the matrix.</p>
+<p>Run the example with:</p>
+<pre><code class="language-bash">cd source-code/error-handling
+cargo run -- --help
+</code></pre>
+<h2 id="transforming-option-with-map">Transforming <code>Option</code> With <code>map</code><a class="headerlink" href="#transforming-option-with-map" title="Permanent link">&para;</a></h2>
+<p>The <code>get</code> method uses the checked index to return a matrix value:</p>
+<pre><code class="language-rust">pub fn get(&amp;self, row: usize, col: usize) -&gt; Option&lt;f64&gt; {
+    self.index(row, col).map(|index| self.data[index])
+}
+</code></pre>
+<p>The <code>map</code> call transforms the value inside <code>Some</code>:</p>
+<ul>
+<li>If <code>index(row, col)</code> returns <code>Some(index)</code>, <code>map</code> applies the closure and
+  returns <code>Some(self.data[index])</code>.</li>
+<li>If <code>index(row, col)</code> returns <code>None</code>, <code>map</code> leaves it as <code>None</code>.</li>
+</ul>
+<p>This avoids a manual <code>match</code> for a simple transformation.</p>
+<p>The return type communicates the possibility of absence:</p>
+<pre><code class="language-rust">Option&lt;f64&gt;
+</code></pre>
+<p>A caller cannot ignore that possibility accidentally.</p>
+<h2 id="recoverable-failure-with-result">Recoverable Failure With <code>Result</code><a class="headerlink" href="#recoverable-failure-with-result" title="Permanent link">&para;</a></h2>
+<p><code>Result&lt;T, E&gt;</code> represents either success or failure:</p>
+<pre><code class="language-rust">Ok(value)
+Err(error)
+</code></pre>
+<p>The matrix <code>set</code> method can fail if the requested index is out of bounds:</p>
+<pre><code class="language-rust">pub fn set(&amp;mut self, row: usize, col: usize, value: f64) -&gt; Result&lt;(), String&gt; {
+    let index = self
+        .index(row, col)
+        .ok_or_else(|| format!(&quot;matrix index ({row}, {col}) is out of bounds&quot;))?;
+    self.data[index] = value;
+    Ok(())
+}
+</code></pre>
+<p>The success type is <code>()</code> because a successful <code>set</code> operation does not need to
+return a meaningful value. It only needs to signal that the mutation succeeded.</p>
+<p>The error type is <code>String</code> because the example returns a human-readable error
+message.</p>
+<h2 id="converting-option-to-result">Converting <code>Option</code> To <code>Result</code><a class="headerlink" href="#converting-option-to-result" title="Permanent link">&para;</a></h2>
+<p>The <code>index</code> helper returns <code>Option&lt;usize&gt;</code>, but <code>set</code> wants to return a
+<code>Result&lt;(), String&gt;</code>. The conversion happens here:</p>
+<pre><code class="language-rust">.ok_or_else(|| format!(&quot;matrix index ({row}, {col}) is out of bounds&quot;))?
+</code></pre>
+<p><code>ok_or_else</code> converts:</p>
+<ul>
+<li><code>Some(index)</code> into <code>Ok(index)</code>;</li>
+<li><code>None</code> into <code>Err(message)</code>.</li>
+</ul>
+<p>The closure:</p>
+<pre><code class="language-rust">|| format!(&quot;matrix index ({row}, {col}) is out of bounds&quot;)
+</code></pre>
+<p>constructs the error message only when it is needed.</p>
+<p>Use this pattern when absence is detected by one helper function, but the
+public operation should report a recoverable error with context.</p>
+<h2 id="the-operator">The <code>?</code> Operator<a class="headerlink" href="#the-operator" title="Permanent link">&para;</a></h2>
+<p>The <code>?</code> operator propagates an error from the current function:</p>
+<pre><code class="language-rust">let index = self
+    .index(row, col)
+    .ok_or_else(|| format!(&quot;matrix index ({row}, {col}) is out of bounds&quot;))?;
+</code></pre>
+<p>If the expression before <code>?</code> is <code>Ok(index)</code>, the <code>index</code> value is extracted and
+execution continues.</p>
+<p>If it is <code>Err(error)</code>, the current function returns early with that error.</p>
+<p>This keeps the successful path readable while still handling failure
+explicitly. Without <code>?</code>, the same code would need a <code>match</code>:</p>
+<pre><code class="language-rust">let index = match self
+    .index(row, col)
+    .ok_or_else(|| format!(&quot;matrix index ({row}, {col}) is out of bounds&quot;))
+{
+    Ok(index) =&gt; index,
+    Err(error) =&gt; return Err(error),
+};
+</code></pre>
+<p>The <code>?</code> operator is one of the main reasons Rust error-handling code can remain
+compact without hiding the fact that a function can fail.</p>
+<h2 id="handling-errors-at-the-call-site">Handling Errors At The Call Site<a class="headerlink" href="#handling-errors-at-the-call-site" title="Permanent link">&para;</a></h2>
+<p>The example fills the matrix using loop indices that are known to be in bounds:</p>
+<pre><code class="language-rust">for i in 0..matrix.rows() {
+    for j in 0..matrix.cols() {
+        matrix
+            .set(i, j, (i * matrix.cols() + j) as f64)
+            .expect(&quot;loop indices should be in bounds&quot;);
+    }
+}
+</code></pre>
+<p>The call to <code>expect</code> says: if this operation fails, stop the program and print
+this message.</p>
+<p>That is acceptable here because failure would indicate a programming mistake in
+the loop bounds. The loops use <code>0..matrix.rows()</code> and <code>0..matrix.cols()</code>, so
+the indices should be valid.</p>
+<p>The same pattern appears when reading values back:</p>
+<pre><code class="language-rust">let value = matrix.get(i, j).expect(&quot;loop indices should be in bounds&quot;);
+</code></pre>
+<p>Use <code>expect</code> when failure would mean the programmer's assumptions are wrong.
+For ordinary user input or file-system errors, returning or reporting the error
+is usually better than panicking.</p>
+<h2 id="option-or-result"><code>Option</code> Or <code>Result</code>?<a class="headerlink" href="#option-or-result" title="Permanent link">&para;</a></h2>
+<p>Use <code>Option&lt;T&gt;</code> when absence is expected and no additional explanation is
+needed:</p>
+<pre><code class="language-rust">fn index(&amp;self, row: usize, col: usize) -&gt; Option&lt;usize&gt;
+</code></pre>
+<p>The caller only needs to know whether the index exists.</p>
+<p>Use <code>Result&lt;T, E&gt;</code> when failure should carry information:</p>
+<pre><code class="language-rust">fn set(&amp;mut self, row: usize, col: usize, value: f64) -&gt; Result&lt;(), String&gt;
+</code></pre>
+<p>Here, an out-of-bounds write is a failed operation and the error message can
+explain what went wrong.</p>
+<p>As examples grow, <code>Result</code> becomes especially important for:</p>
+<ul>
+<li>opening files;</li>
+<li>reading data;</li>
+<li>parsing input;</li>
+<li>validating command-line parameters;</li>
+<li>writing output;</li>
+<li>reporting invalid configuration.</li>
+</ul>
+<h2 id="panics-versus-recoverable-errors">Panics Versus Recoverable Errors<a class="headerlink" href="#panics-versus-recoverable-errors" title="Permanent link">&para;</a></h2>
+<p>Rust also has panics. A panic stops normal execution, usually because the
+program has reached a state it cannot sensibly recover from.</p>
+<p>Panics are appropriate for programming errors and violated internal
+assumptions. Recoverable errors are better represented with <code>Result</code>.</p>
+<p>In this repository, both styles appear for teaching purposes:</p>
+<ul>
+<li>checked methods such as <code>get</code> and <code>set</code> return <code>Option</code> or <code>Result</code>;</li>
+<li>indexing syntax in the trait example panics for out-of-bounds access, similar
+  to Rust slices;</li>
+<li><code>expect</code> is used where the example knows loop indices should be valid.</li>
+</ul>
+<p>The practical habit is to make expected failure explicit and reserve panics for
+bugs or unrecoverable internal assumptions.</p>
+<h2 id="toward-fallible-programs">Toward Fallible Programs<a class="headerlink" href="#toward-fallible-programs" title="Permanent link">&para;</a></h2>
+<p>Many real command-line programs have a fallible <code>main</code> function:</p>
+<pre><code class="language-rust">fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
+    // fallible work
+    Ok(())
+}
+</code></pre>
+<p>This allows <code>?</code> to be used in <code>main</code> when opening files, reading data, parsing
+input, or writing output.</p>
+<p>The iterator module already uses this style when reading CSV data:</p>
+<pre><code class="language-rust">fn main() -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
+    let mut reader = csv::Reader::from_path(args.file)?;
+    for result in reader.deserialize() {
+        let value: Values = result?;
+        // use value
+    }
+    Ok(())
+}
+</code></pre>
+<p>The exact error type can be refined later. At this stage, the important point
+is that errors are part of the function signature and can be propagated with
+<code>?</code>.</p>
+<h2 id="suggested-hands-on-work">Suggested Hands-On Work<a class="headerlink" href="#suggested-hands-on-work" title="Permanent link">&para;</a></h2>
+<p>Use this sequence as a practical lab.</p>
+<ol>
+<li>Run the matrix error-handling example:</li>
+</ol>
+<p><code>bash
+   cd source-code/error-handling
+   cargo run -- --rows 3 --cols 4</code></p>
+<ol>
+<li>
+<p>Open <code>source-code/error-handling/src/matrix.rs</code> and identify the methods
+   that return <code>Option</code> and <code>Result</code>.</p>
+</li>
+<li>
+<p>Change the <code>get</code> method locally to use a manual <code>match</code> instead of <code>map</code>.</p>
+</li>
+<li>
+<p>Add a call in <code>main.rs</code> that tries to read an out-of-bounds element and
+   handles the <code>None</code> case with <code>match</code>.</p>
+</li>
+<li>
+<p>Add a call in <code>main.rs</code> that tries to write an out-of-bounds element and
+   prints the error message instead of using <code>expect</code>.</p>
+</li>
+<li>
+<p>Temporarily remove the <code>?</code> from <code>set</code> and rewrite the error propagation with
+   a manual <code>match</code>.</p>
+</li>
+<li>
+<p>Change the error message in <code>ok_or_else</code> to include the valid matrix shape.</p>
+</li>
+<li>
+<p>Compare the API of <code>get</code> with the API of <code>set</code>: discuss why one returns
+   <code>Option&lt;f64&gt;</code> and the other returns <code>Result&lt;(), String&gt;</code>.</p>
+</li>
+</ol>
+<h2 id="discussion-points">Discussion Points<a class="headerlink" href="#discussion-points" title="Permanent link">&para;</a></h2>
+<p>This module is a good place to emphasize:</p>
+<ul>
+<li><code>Option</code> and <code>Result</code> make uncertainty visible in types.</li>
+<li>Absence and failure are related but not identical concepts.</li>
+<li><code>map</code> is useful when transforming a successful <code>Option</code> value.</li>
+<li><code>ok_or_else</code> is useful when converting absence into a meaningful error.</li>
+<li><code>?</code> keeps the successful path readable while still propagating errors.</li>
+<li><code>expect</code> is best reserved for cases where failure indicates a bug.</li>
+<li>Fallible <code>main</code> functions are common in programs that do I/O.</li>
+</ul>
+<h2 id="connection-to-later-modules">Connection To Later Modules<a class="headerlink" href="#connection-to-later-modules" title="Permanent link">&para;</a></h2>
+<p>Error handling becomes more important as examples grow:</p>
+<ul>
+<li>Project-organization examples use shared functions that should report
+  failures consistently.</li>
+<li>Randomness and data-generation examples involve file creation and output.</li>
+<li>Julia set examples read command-line arguments or TOML configuration files.</li>
+<li>The N-body example writes CSV output and handles optional output files.</li>
+</ul>
+<p>Once participants are comfortable with <code>Option</code>, <code>Result</code>, and <code>?</code>, they are
+ready to study how larger Cargo packages organize shared code and tests.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../collections-iterators-and-text-data/" class="btn btn-neutral float-left" title="7. Collections, Iterators, And Text Data"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../project-organization-libraries-and-tests/" class="btn btn-neutral float-right" title="9. Project Organization, Libraries, And Tests">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../collections-iterators-and-text-data/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../project-organization-libraries-and-tests/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

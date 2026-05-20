@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>3. Control Flow And Program Structure - Rust, the good, the bad, and the ugly</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "3. Control Flow And Program Structure";
+        var mkdocs_page_input_path = "control-flow-and-program-structure.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/rust.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/bash.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/toml.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Rust, the good, the bad, and the ugly
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../learning-module-structure/">Module Structure</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Learning Modules</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../getting-started-with-rust-projects/">1. Getting Started With Rust Projects</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scalar-computation-and-numeric-basics/">2. Scalar Computation And Numeric Basics</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">3. Control Flow And Program Structure</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#learning-objectives">Learning Objectives</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#branches-with-if-and-else">Branches With if And else</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#loops-with-while">Loops With while</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#loops-with-for-and-ranges">Loops With for And Ranges</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#functions">Functions</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#blocks-and-expressions">Blocks And Expressions</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#tuples">Tuples</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#enums-as-a-set-of-choices">Enums As A Set Of Choices</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#selecting-behavior-with-match">Selecting Behavior With match</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#passing-functions-and-closures">Passing Functions And Closures</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#splitting-code-into-modules">Splitting Code Into Modules</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#suggested-hands-on-work">Suggested Hands-On Work</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#discussion-points">Discussion Points</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#connection-to-later-modules">Connection To Later Modules</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ownership-borrowing-and-mutation/">4. Ownership, Borrowing, And Mutation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-modeling-with-structs-and-methods/">5. Data Modeling With Structs And Methods</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reusable-abstractions-with-traits/">6. Reusable Abstractions With Traits</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../collections-iterators-and-text-data/">7. Collections, Iterators, And Text Data</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error-handling/">8. Error Handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../project-organization-libraries-and-tests/">9. Project Organization, Libraries, And Tests</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../randomness-and-reproducible-runs/">10. Randomness And Reproducible Runs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-parallelism-with-rayon/">11. Data Parallelism With Rayon</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-julia-set/">12. Integrated Numerical Example: Julia Set</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-n-body-simulation/">13. Integrated Numerical Example: N-Body Simulation</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Rust, the good, the bad, and the ugly</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Learning Modules</li>
+      <li class="breadcrumb-item active">3. Control Flow And Program Structure</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="control-flow-and-program-structure">Control Flow And Program Structure<a class="headerlink" href="#control-flow-and-program-structure" title="Permanent link">&para;</a></h1>
+<p>This module introduces the basic building blocks used to organize Rust
+programs: branches, loops, functions, enums, pattern matching, source modules,
+and reusable computations. It builds on the scalar values and numeric expressions from
+<code>learning-modules/scalar-computation-and-numeric-basics.md</code>.</p>
+<p>The goal is to move from straight-line programs to programs that make choices,
+repeat work, name reusable computations, and select behavior from a small set
+of well-defined alternatives.</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>After completing this module, participants should be able to:</p>
+<ul>
+<li>Use <code>if</code> and <code>else</code> to choose between branches.</li>
+<li>Use <code>while</code> for condition-controlled loops.</li>
+<li>Use <code>for</code> loops over integer ranges.</li>
+<li>Use inclusive ranges with <code>..=</code>.</li>
+<li>Define functions with typed parameters and return values.</li>
+<li>Use mutable function parameters when an algorithm updates local state.</li>
+<li>Create, access, and destructure small tuples.</li>
+<li>Define an enum to represent a fixed set of choices.</li>
+<li>Use <code>match</code> to select behavior based on an enum variant.</li>
+<li>Split code across multiple source files with <code>mod</code>.</li>
+</ul>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<p>Participants should already be comfortable with:</p>
+<ul>
+<li>Running Cargo examples.</li>
+<li>Reading and editing <code>src/main.rs</code>.</li>
+<li>Basic scalar types such as <code>i32</code>, <code>usize</code>, and <code>f64</code>.</li>
+<li>Integer ranges and simple arithmetic expressions.</li>
+</ul>
+<p>The examples used in this module are:</p>
+<ul>
+<li><code>source-code/control-flow</code></li>
+<li><code>source-code/numerical-function</code></li>
+<li><code>source-code/enum-match</code></li>
+</ul>
+<h2 id="branches-with-if-and-else">Branches With <code>if</code> And <code>else</code><a class="headerlink" href="#branches-with-if-and-else" title="Permanent link">&para;</a></h2>
+<p>The <code>control-flow</code> example computes greatest common divisors using a
+subtraction-based Euclidean algorithm:</p>
+<pre><code class="language-bash">cd source-code/control-flow
+cargo run
+</code></pre>
+<p>The key function is:</p>
+<pre><code class="language-rust">fn gcd(mut a: i32, mut b: i32) -&gt; i32 {
+    while a != b {
+        if a &gt; b {
+            a -= b;
+        } else {
+            b -= a;
+        }
+    }
+    a
+}
+</code></pre>
+<p>The <code>if</code> expression chooses which value to update:</p>
+<ul>
+<li>If <code>a &gt; b</code>, subtract <code>b</code> from <code>a</code>.</li>
+<li>Otherwise, subtract <code>a</code> from <code>b</code>.</li>
+</ul>
+<p>In Rust, the condition must be a <code>bool</code>. Integers are not accepted as
+conditions. This is different from C and C++, where zero and nonzero integer
+values are often used as false and true.</p>
+<h2 id="loops-with-while">Loops With <code>while</code><a class="headerlink" href="#loops-with-while" title="Permanent link">&para;</a></h2>
+<p>A <code>while</code> loop repeats as long as its condition is true:</p>
+<pre><code class="language-rust">while a != b {
+    // update a or b
+}
+</code></pre>
+<p>The <code>gcd</code> function continues until the two values are equal. At that point, the
+common value is the greatest common divisor and the function returns it.</p>
+<p>The parameters are written as <code>mut</code> because the algorithm updates local copies
+of <code>a</code> and <code>b</code>:</p>
+<pre><code class="language-rust">fn gcd(mut a: i32, mut b: i32) -&gt; i32
+</code></pre>
+<p>The <code>mut</code> applies to the local bindings inside the function. It does not mean
+that the caller's variables are changed.</p>
+<h2 id="loops-with-for-and-ranges">Loops With <code>for</code> And Ranges<a class="headerlink" href="#loops-with-for-and-ranges" title="Permanent link">&para;</a></h2>
+<p>Rust's <code>for</code> loop iterates over values produced by an iterator. A common early
+example is a half-open integer range:</p>
+<pre><code class="language-rust">for i in 0..n {
+    println!(&quot;{i}&quot;);
+}
+</code></pre>
+<p>The range <code>0..n</code> includes <code>0</code> and stops before <code>n</code>. This is the most common
+form when looping over indices or repeating something <code>n</code> times.</p>
+<p>Rust also has inclusive ranges. The <code>control-flow</code> example uses <code>..=</code> so that
+both endpoints are included:</p>
+<pre><code class="language-rust">for a in 1..=a_max {
+    for b in 1..=b_max {
+        println!(&quot;gcd({a}, {b}) = {}&quot;, gcd(a, b));
+    }
+}
+</code></pre>
+<p>The range <code>1..=a_max</code> includes both <code>1</code> and <code>a_max</code>. By contrast, <code>1..a_max</code>
+would stop before <code>a_max</code>.</p>
+<p>Nested loops are useful for small tables or grid-like computations. Here they
+compute <code>gcd(a, b)</code> for every pair of values in a small square domain.</p>
+<h2 id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h2>
+<p>The <code>numerical-function</code> example shows a function with several floating-point
+parameters and a floating-point return value:</p>
+<pre><code class="language-bash">cd source-code/numerical-function
+cargo run -- --help
+</code></pre>
+<p>The polynomial function is:</p>
+<pre><code class="language-rust">fn polynomial(x: f64, a: f64, b: f64, c: f64) -&gt; f64 {
+    a * x.powi(2) + b * x + c
+}
+</code></pre>
+<p>The parameter types are written explicitly. The return type appears after
+<code>-&gt;</code>.</p>
+<p>The final expression in the function body is returned because it has no
+semicolon:</p>
+<pre><code class="language-rust">a * x.powi(2) + b * x + c
+</code></pre>
+<p>Adding a semicolon would turn the expression into a statement, and the function
+would no longer return the computed value.</p>
+<h2 id="blocks-and-expressions">Blocks And Expressions<a class="headerlink" href="#blocks-and-expressions" title="Permanent link">&para;</a></h2>
+<p>Rust uses blocks delimited by braces:</p>
+<pre><code class="language-rust">{
+    let x = 2.0;
+    x * x
+}
+</code></pre>
+<p>Many Rust constructs are expressions, including blocks and <code>if</code> expressions.
+That means they can produce values. For example:</p>
+<pre><code class="language-rust">let weight = if i % 2 == 0 { 2.0 } else { 4.0 };
+</code></pre>
+<p>This pattern appears in the Simpson quadrature implementation used by the
+<code>enum-match</code> example. Both branches must produce compatible types, because the
+whole <code>if</code> expression has one resulting type.</p>
+<h2 id="tuples">Tuples<a class="headerlink" href="#tuples" title="Permanent link">&para;</a></h2>
+<p>A tuple groups a fixed number of values together without defining a named
+struct type. Tuple types are written with parentheses:</p>
+<pre><code class="language-rust">let point: (f64, f64) = (1.0, 2.0);
+</code></pre>
+<p>This is a 2-tuple containing two <code>f64</code> values. Rust does not have a separate
+standard <code>pair</code> type like C++ has <code>std::pair</code>; a pair of values is normally
+represented as a 2-tuple.</p>
+<p>Tuple fields can be accessed by position:</p>
+<pre><code class="language-rust">let x = point.0;
+let y = point.1;
+</code></pre>
+<p>Tuples can also be destructured into separate bindings:</p>
+<pre><code class="language-rust">let (x, y) = point;
+</code></pre>
+<p>Destructuring is useful when a function, iterator, or pattern produces a tuple
+and the code wants to name the individual components.</p>
+<p>For example, a matrix index can be represented as a 2-tuple:</p>
+<pre><code class="language-rust">let index: (usize, usize) = (2, 3);
+let (row, col) = index;
+</code></pre>
+<p>Tuples are best for small, local groupings where the meaning of each position
+is obvious from context. If the grouped values represent a concept that appears
+throughout a program, a <code>struct</code> with named fields is usually clearer.</p>
+<h2 id="enums-as-a-set-of-choices">Enums As A Set Of Choices<a class="headerlink" href="#enums-as-a-set-of-choices" title="Permanent link">&para;</a></h2>
+<p>The <code>enum-match</code> example computes a numerical integral using one of two
+quadrature methods:</p>
+<pre><code class="language-bash">cd source-code/enum-match
+cargo run
+cargo run -- --method gauss
+</code></pre>
+<p>The available methods are represented by an enum:</p>
+<pre><code class="language-rust">#[derive(Clone, ValueEnum)]
+enum QuadratureMethod {
+    Simpson,
+    Gauss,
+}
+</code></pre>
+<p>An enum is a type whose value is one of a fixed set of variants. Here, a
+<code>QuadratureMethod</code> is either <code>QuadratureMethod::Simpson</code> or
+<code>QuadratureMethod::Gauss</code>.</p>
+<p>This is more precise than using a string throughout the program. Once command
+line parsing has succeeded, the rest of the program works with a real Rust
+type.</p>
+<h2 id="selecting-behavior-with-match">Selecting Behavior With <code>match</code><a class="headerlink" href="#selecting-behavior-with-match" title="Permanent link">&para;</a></h2>
+<p>The selected quadrature method is handled with <code>match</code>:</p>
+<pre><code class="language-rust">let result = match args.method {
+    QuadratureMethod::Simpson =&gt; simpson::quad(f, a, b, 1000),
+    QuadratureMethod::Gauss =&gt; gauss::quad(f, a, b),
+};
+</code></pre>
+<p>Each arm handles one enum variant. This has two useful properties:</p>
+<ul>
+<li>The code says explicitly what happens for each method.</li>
+<li>The compiler can check whether all variants are covered.</li>
+</ul>
+<p>The value produced by the selected arm becomes the value assigned to <code>result</code>.
+As with <code>if</code>, the arms must produce compatible types.</p>
+<h2 id="passing-functions-and-closures">Passing Functions And Closures<a class="headerlink" href="#passing-functions-and-closures" title="Permanent link">&para;</a></h2>
+<p>The <code>enum-match</code> example defines the function to integrate as a closure:</p>
+<pre><code class="language-rust">let f = |x: f64| x.sin();
+</code></pre>
+<p>The quadrature functions accept any callable value with the type <code>Fn(f64) -&gt;
+f64</code>:</p>
+<pre><code class="language-rust">pub fn quad&lt;F&gt;(f: F, a: f64, b: f64, n: usize) -&gt; f64
+where
+    F: Fn(f64) -&gt; f64,
+{
+    // implementation
+}
+</code></pre>
+<p>This allows the quadrature code to work with different mathematical functions
+without rewriting the integration algorithm.</p>
+<p>At this stage, the important idea is that functions can receive behavior as an
+argument. The generic syntax and trait bound can be treated as a preview of the
+later modules on generics and traits.</p>
+<h2 id="splitting-code-into-modules">Splitting Code Into Modules<a class="headerlink" href="#splitting-code-into-modules" title="Permanent link">&para;</a></h2>
+<p>The <code>enum-match</code> example is split across several files:</p>
+<pre><code class="language-text">src/
+├── main.rs
+├── simpson.rs
+└── gauss.rs
+</code></pre>
+<p>The modules are declared at the top of <code>main.rs</code>:</p>
+<pre><code class="language-rust">mod simpson;
+mod gauss;
+</code></pre>
+<p>This tells Rust to compile <code>src/simpson.rs</code> and <code>src/gauss.rs</code> as modules of
+the current crate. Public functions from those modules can then be called with
+qualified names:</p>
+<pre><code class="language-rust">simpson::quad(f, a, b, 1000)
+gauss::quad(f, a, b)
+</code></pre>
+<p>Splitting source files this way keeps <code>main.rs</code> focused on program setup and
+dispatch, while the numerical algorithms live in separate files.</p>
+<h2 id="suggested-hands-on-work">Suggested Hands-On Work<a class="headerlink" href="#suggested-hands-on-work" title="Permanent link">&para;</a></h2>
+<p>Use this sequence as a practical lab.</p>
+<ol>
+<li>
+<p>Run <code>source-code/control-flow</code> and inspect the table of greatest common
+   divisors.</p>
+</li>
+<li>
+<p>Change <code>a_max</code> and <code>b_max</code> in <code>source-code/control-flow/src/main.rs</code> and run
+   the program again.</p>
+</li>
+<li>
+<p>Modify the <code>gcd</code> function to print the intermediate values of <code>a</code> and <code>b</code>
+   for one small input pair.</p>
+</li>
+<li>
+<p>Replace the inclusive range <code>1..=a_max</code> with <code>1..a_max</code> and observe how the
+   output changes.</p>
+</li>
+<li>
+<p>Run <code>source-code/numerical-function</code> with different coefficients:</p>
+</li>
+</ol>
+<p><code>bash
+   cargo run -- --a 1.0 --b 2.0 --c -3.0</code></p>
+<ol>
+<li>
+<p>Add a second function to <code>source-code/numerical-function</code>, such as a cubic
+   polynomial, and call it from <code>main</code>.</p>
+</li>
+<li>
+<p>Run <code>source-code/enum-match</code> with both quadrature methods:</p>
+</li>
+</ol>
+<p><code>bash
+   cargo run
+   cargo run -- --method gauss</code></p>
+<ol>
+<li>
+<p>Change the function being integrated in <code>source-code/enum-match/src/main.rs</code>
+   from <code>sin(x)</code> to <code>cos(x)</code> and run both quadrature methods again.</p>
+</li>
+<li>
+<p>Add a new enum variant name in <code>QuadratureMethod</code> without adding a matching
+   <code>match</code> arm, then run <code>cargo check</code> and read the compiler diagnostic. Restore
+   the original code afterward.</p>
+</li>
+</ol>
+<h2 id="discussion-points">Discussion Points<a class="headerlink" href="#discussion-points" title="Permanent link">&para;</a></h2>
+<p>This module is a good place to emphasize:</p>
+<ul>
+<li><code>if</code>, <code>while</code>, and <code>for</code> require explicit conditions and iteration sources.</li>
+<li>Function signatures document the types flowing into and out of a computation.</li>
+<li>The absence or presence of a semicolon can change whether an expression is
+  returned.</li>
+<li>Enums make small sets of choices explicit in the type system.</li>
+<li><code>match</code> is useful when different variants require different behavior.</li>
+<li>Modules help keep source files focused as examples grow.</li>
+</ul>
+<h2 id="connection-to-later-modules">Connection To Later Modules<a class="headerlink" href="#connection-to-later-modules" title="Permanent link">&para;</a></h2>
+<p>The ideas in this module are used throughout the rest of the training:</p>
+<ul>
+<li>Ownership examples use functions to show moves and borrows.</li>
+<li>Struct examples attach behavior to data through methods.</li>
+<li>Trait examples generalize the enum-based quadrature design.</li>
+<li>Iterator examples replace some explicit loops with iterator pipelines.</li>
+<li>Julia set and N-body examples use branches, loops, functions, modules, and
+  larger program structure in more realistic programs.</li>
+</ul>
+<p>Once participants are comfortable with control flow and program structure, they
+are ready to focus on ownership, borrowing, and mutation.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../scalar-computation-and-numeric-basics/" class="btn btn-neutral float-left" title="2. Scalar Computation And Numeric Basics"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../ownership-borrowing-and-mutation/" class="btn btn-neutral float-right" title="4. Ownership, Borrowing, And Mutation">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../scalar-computation-and-numeric-basics/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../ownership-borrowing-and-mutation/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

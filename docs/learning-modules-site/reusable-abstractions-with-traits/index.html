@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>6. Reusable Abstractions With Traits - Rust, the good, the bad, and the ugly</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "6. Reusable Abstractions With Traits";
+        var mkdocs_page_input_path = "reusable-abstractions-with-traits.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/rust.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/bash.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/toml.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Rust, the good, the bad, and the ugly
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../learning-module-structure/">Module Structure</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Learning Modules</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../getting-started-with-rust-projects/">1. Getting Started With Rust Projects</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scalar-computation-and-numeric-basics/">2. Scalar Computation And Numeric Basics</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../control-flow-and-program-structure/">3. Control Flow And Program Structure</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ownership-borrowing-and-mutation/">4. Ownership, Borrowing, And Mutation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-modeling-with-structs-and-methods/">5. Data Modeling With Structs And Methods</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">6. Reusable Abstractions With Traits</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#learning-objectives">Learning Objectives</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#what-is-a-trait">What Is A Trait?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#standard-traits-for-a-matrix-type">Standard Traits For A Matrix Type</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#indexing-with-index">Indexing With Index</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#mutable-indexing-with-indexmut">Mutable Indexing With IndexMut</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#formatting-with-display">Formatting With Display</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fallible-conversion-with-tryfrom">Fallible Conversion With TryFrom</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#iteration-with-intoiterator">Iteration With IntoIterator</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#user-defined-traits">User-Defined Traits</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#implementing-a-user-defined-trait">Implementing A User-Defined Trait</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#trait-objects-and-dyn-trait">Trait Objects And dyn Trait</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#static-and-dynamic-dispatch">Static And Dynamic Dispatch</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#suggested-hands-on-work">Suggested Hands-On Work</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#discussion-points">Discussion Points</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#connection-to-later-modules">Connection To Later Modules</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../collections-iterators-and-text-data/">7. Collections, Iterators, And Text Data</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error-handling/">8. Error Handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../project-organization-libraries-and-tests/">9. Project Organization, Libraries, And Tests</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../randomness-and-reproducible-runs/">10. Randomness And Reproducible Runs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-parallelism-with-rayon/">11. Data Parallelism With Rayon</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-julia-set/">12. Integrated Numerical Example: Julia Set</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-n-body-simulation/">13. Integrated Numerical Example: N-Body Simulation</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Rust, the good, the bad, and the ugly</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Learning Modules</li>
+      <li class="breadcrumb-item active">6. Reusable Abstractions With Traits</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="reusable-abstractions-with-traits">Reusable Abstractions With Traits<a class="headerlink" href="#reusable-abstractions-with-traits" title="Permanent link">&para;</a></h1>
+<p>This module introduces traits as Rust's main mechanism for shared behavior.
+Structs let you define new data types; traits let you define what a type can
+do. A type implements a trait when it provides the behavior required by that
+trait.</p>
+<p>The examples in this module show two complementary uses of traits:</p>
+<ul>
+<li>implementing standard library traits so a custom type works with familiar
+  Rust syntax;</li>
+<li>defining a project-specific trait to express a shared numerical interface.</li>
+</ul>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>After completing this module, participants should be able to:</p>
+<ul>
+<li>Explain what a trait represents.</li>
+<li>Implement standard traits for a custom type.</li>
+<li>Use <code>Index</code> and <code>IndexMut</code> to support indexing syntax.</li>
+<li>Use <code>Display</code> to control formatted output with <code>{}</code>.</li>
+<li>Use <code>TryFrom</code> for fallible conversion.</li>
+<li>Recognize associated types in trait implementations.</li>
+<li>Define a user-defined trait.</li>
+<li>Implement the same trait for multiple concrete types.</li>
+<li>Use trait bounds to require behavior from a generic type.</li>
+<li>Explain the role of <code>dyn Trait</code> in a trait object.</li>
+<li>Distinguish static dispatch from dynamic dispatch at a conceptual level.</li>
+</ul>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<p>Participants should already be comfortable with:</p>
+<ul>
+<li>Defining structs and methods.</li>
+<li>Generic structs such as <code>Matrix&lt;T&gt;</code>.</li>
+<li>Shared and mutable references.</li>
+<li><code>Option</code> and <code>Result</code> at a basic level.</li>
+<li>Enums and <code>match</code>.</li>
+<li>Closures as function arguments at a basic level.</li>
+</ul>
+<p>The examples used in this module are:</p>
+<ul>
+<li><code>source-code/generic-structs</code></li>
+<li><code>source-code/traits</code></li>
+<li><code>source-code/user-defined-trait</code></li>
+</ul>
+<h2 id="what-is-a-trait">What Is A Trait?<a class="headerlink" href="#what-is-a-trait" title="Permanent link">&para;</a></h2>
+<p>A trait is a named set of behavior. It describes methods, associated types, or
+other requirements that an implementing type must provide.</p>
+<p>For example, a type that implements <code>Display</code> defines how it should be printed
+with <code>{}</code>:</p>
+<pre><code class="language-rust">println!(&quot;{value}&quot;);
+</code></pre>
+<p>A type that implements <code>Index</code> can be indexed with square brackets:</p>
+<pre><code class="language-rust">matrix[(row, col)]
+</code></pre>
+<p>Traits are not inheritance. They do not say that one type is a subclass of
+another type. They say that a type supports a particular behavior.</p>
+<h2 id="standard-traits-for-a-matrix-type">Standard Traits For A Matrix Type<a class="headerlink" href="#standard-traits-for-a-matrix-type" title="Permanent link">&para;</a></h2>
+<p>The <code>traits</code> example extends the generic matrix from the previous module:</p>
+<pre><code class="language-bash">cd source-code/traits
+cargo run
+</code></pre>
+<p>The matrix type is still a generic struct:</p>
+<pre><code class="language-rust">pub struct Matrix&lt;T&gt; {
+    rows: usize,
+    cols: usize,
+    data: Vec&lt;T&gt;,
+}
+</code></pre>
+<p>The difference is that it now implements several standard traits:</p>
+<ul>
+<li><code>Index</code></li>
+<li><code>IndexMut</code></li>
+<li><code>Display</code></li>
+<li><code>TryFrom</code></li>
+<li><code>IntoIterator</code></li>
+</ul>
+<p>These implementations let the type participate in familiar Rust syntax instead
+of requiring every operation to be called as a named method.</p>
+<h2 id="indexing-with-index">Indexing With <code>Index</code><a class="headerlink" href="#indexing-with-index" title="Permanent link">&para;</a></h2>
+<p>The <code>Index</code> trait defines immutable indexing. For the matrix, the index is a
+pair of <code>usize</code> values:</p>
+<pre><code class="language-rust">impl&lt;T&gt; Index&lt;(usize, usize)&gt; for Matrix&lt;T&gt; {
+    type Output = T;
+
+    fn index(&amp;self, index: (usize, usize)) -&gt; &amp;Self::Output {
+        let (row, col) = index;
+        let flat_index = self
+            .flat_index(row, col)
+            .unwrap_or_else(|| panic!(&quot;matrix index ({row}, {col}) is out of bounds&quot;));
+        &amp;self.data[flat_index]
+    }
+}
+</code></pre>
+<p>The associated type:</p>
+<pre><code class="language-rust">type Output = T;
+</code></pre>
+<p>tells Rust what kind of value is produced by indexing. The method returns a
+shared reference to that value:</p>
+<pre><code class="language-rust">&amp;Self::Output
+</code></pre>
+<p>After implementing <code>Index</code>, users can write:</p>
+<pre><code class="language-rust">let value = matrix[(row, col)];
+</code></pre>
+<p>The indexing implementation panics for out-of-bounds indices, matching the
+behavior of Rust slices. A fallible API can still be provided separately with a
+method returning <code>Option</code> or <code>Result</code>.</p>
+<h2 id="mutable-indexing-with-indexmut">Mutable Indexing With <code>IndexMut</code><a class="headerlink" href="#mutable-indexing-with-indexmut" title="Permanent link">&para;</a></h2>
+<p>The <code>IndexMut</code> trait enables assignment through indexing:</p>
+<pre><code class="language-rust">impl&lt;T&gt; IndexMut&lt;(usize, usize)&gt; for Matrix&lt;T&gt; {
+    fn index_mut(&amp;mut self, index: (usize, usize)) -&gt; &amp;mut Self::Output {
+        let (row, col) = index;
+        let flat_index = self
+            .flat_index(row, col)
+            .unwrap_or_else(|| panic!(&quot;matrix index ({row}, {col}) is out of bounds&quot;));
+        &amp;mut self.data[flat_index]
+    }
+}
+</code></pre>
+<p>The method takes <code>&amp;mut self</code> and returns a mutable reference to the selected
+element. This allows code such as:</p>
+<pre><code class="language-rust">matrix[(row, col)] = (row * matrix.cols() + col) as f64;
+</code></pre>
+<p>This should feel connected to the previous ownership module: mutable indexing
+works because the matrix is mutably borrowed for the assignment.</p>
+<h2 id="formatting-with-display">Formatting With <code>Display</code><a class="headerlink" href="#formatting-with-display" title="Permanent link">&para;</a></h2>
+<p>The <code>Display</code> trait defines how a value is formatted with <code>{}</code>:</p>
+<pre><code class="language-rust">impl&lt;T: Display&gt; Display for Matrix&lt;T&gt; {
+    fn fmt(&amp;self, formatter: &amp;mut fmt::Formatter&lt;'_&gt;) -&gt; fmt::Result {
+        for row in 0..self.rows {
+            for col in 0..self.cols {
+                if col &gt; 0 {
+                    write!(formatter, &quot; &quot;)?;
+                }
+                write!(formatter, &quot;{}&quot;, self[(row, col)])?;
+            }
+            if row + 1 &lt; self.rows {
+                writeln!(formatter)?;
+            }
+        }
+        Ok(())
+    }
+}
+</code></pre>
+<p>The implementation has a trait bound:</p>
+<pre><code class="language-rust">T: Display
+</code></pre>
+<p>This is needed because printing a <code>Matrix&lt;T&gt;</code> requires printing each element.
+Rust cannot format arbitrary <code>T</code> values unless <code>T</code> itself implements
+<code>Display</code>.</p>
+<p>After implementing <code>Display</code>, the matrix can be printed directly:</p>
+<pre><code class="language-rust">println!(&quot;{matrix}&quot;);
+</code></pre>
+<h2 id="fallible-conversion-with-tryfrom">Fallible Conversion With <code>TryFrom</code><a class="headerlink" href="#fallible-conversion-with-tryfrom" title="Permanent link">&para;</a></h2>
+<p>The <code>TryFrom</code> trait expresses a conversion that can fail. The matrix example
+uses it to build a matrix from nested vectors:</p>
+<pre><code class="language-rust">impl&lt;T&gt; TryFrom&lt;Vec&lt;Vec&lt;T&gt;&gt;&gt; for Matrix&lt;T&gt; {
+    type Error = String;
+
+    fn try_from(rows: Vec&lt;Vec&lt;T&gt;&gt;) -&gt; Result&lt;Self, Self::Error&gt; {
+        let row_count = rows.len();
+        let col_count = rows.first().map_or(0, Vec::len);
+
+        if rows.iter().any(|row| row.len() != col_count) {
+            return Err(&quot;all matrix rows must have the same length&quot;.to_string());
+        }
+
+        let data = rows.into_iter().flatten().collect();
+        Ok(Self {
+            rows: row_count,
+            cols: col_count,
+            data,
+        })
+    }
+}
+</code></pre>
+<p>The associated type:</p>
+<pre><code class="language-rust">type Error = String;
+</code></pre>
+<p>tells Rust what kind of error the conversion can return.</p>
+<p>The caller can then write:</p>
+<pre><code class="language-rust">let integer_matrix =
+    Matrix::try_from(vec![vec![1, 0], vec![0, 2]])
+        .expect(&quot;all rows have the same length&quot;);
+</code></pre>
+<p>This is a good fit because nested vectors may be ragged: one row might have a
+different length from another.</p>
+<h2 id="iteration-with-intoiterator">Iteration With <code>IntoIterator</code><a class="headerlink" href="#iteration-with-intoiterator" title="Permanent link">&para;</a></h2>
+<p>The <code>traits</code> example also implements <code>IntoIterator</code> for three cases:</p>
+<ul>
+<li>owned matrix iteration;</li>
+<li>shared borrowed matrix iteration;</li>
+<li>mutable borrowed matrix iteration.</li>
+</ul>
+<p>Owned iteration consumes the matrix and yields owned elements:</p>
+<pre><code class="language-rust">impl&lt;T&gt; IntoIterator for Matrix&lt;T&gt; {
+    type Item = T;
+    type IntoIter = std::vec::IntoIter&lt;T&gt;;
+
+    fn into_iter(self) -&gt; Self::IntoIter {
+        self.data.into_iter()
+    }
+}
+</code></pre>
+<p>Borrowed iteration yields shared references:</p>
+<pre><code class="language-rust">impl&lt;'a, T&gt; IntoIterator for &amp;'a Matrix&lt;T&gt; {
+    type Item = &amp;'a T;
+    type IntoIter = std::slice::Iter&lt;'a, T&gt;;
+
+    fn into_iter(self) -&gt; Self::IntoIter {
+        self.data.iter()
+    }
+}
+</code></pre>
+<p>Mutable borrowed iteration yields mutable references:</p>
+<pre><code class="language-rust">impl&lt;'a, T&gt; IntoIterator for &amp;'a mut Matrix&lt;T&gt; {
+    type Item = &amp;'a mut T;
+    type IntoIter = std::slice::IterMut&lt;'a, T&gt;;
+
+    fn into_iter(self) -&gt; Self::IntoIter {
+        self.data.iter_mut()
+    }
+}
+</code></pre>
+<p>This supports ordinary loop syntax:</p>
+<pre><code class="language-rust">for value in &amp;mut matrix {
+    *value *= 0.5;
+}
+</code></pre>
+<p>The lifetime parameter <code>'a</code> connects the lifetime of the iterator items to the
+lifetime of the borrowed matrix. The detailed lifetime rules can be studied
+later; here the practical point is that borrowed iteration returns references
+that cannot outlive the matrix borrow.</p>
+<h2 id="user-defined-traits">User-Defined Traits<a class="headerlink" href="#user-defined-traits" title="Permanent link">&para;</a></h2>
+<p>Standard traits are useful when your type should support behavior Rust already
+knows about. You can also define your own trait for behavior specific to your
+domain.</p>
+<p>The <code>user-defined-trait</code> example computes numerical integrals using different
+quadrature rules:</p>
+<pre><code class="language-bash">cd source-code/user-defined-trait
+cargo run
+cargo run -- --method gauss
+</code></pre>
+<p>The shared interface is:</p>
+<pre><code class="language-rust">pub trait QuadratureRule {
+    fn integrate(&amp;self, f: &amp;dyn Fn(f64) -&gt; f64, a: f64, b: f64) -&gt; f64;
+
+    fn name(&amp;self) -&gt; &amp;'static str;
+}
+</code></pre>
+<p>Any quadrature rule that implements this trait must provide:</p>
+<ul>
+<li>an <code>integrate</code> method;</li>
+<li>a <code>name</code> method.</li>
+</ul>
+<p>This separates what a quadrature rule does from how each rule implements the
+algorithm.</p>
+<h2 id="implementing-a-user-defined-trait">Implementing A User-Defined Trait<a class="headerlink" href="#implementing-a-user-defined-trait" title="Permanent link">&para;</a></h2>
+<p>The Simpson rule stores its number of subdivisions:</p>
+<pre><code class="language-rust">pub struct Simpson {
+    subdivisions: usize,
+}
+</code></pre>
+<p>It implements the shared trait:</p>
+<pre><code class="language-rust">impl QuadratureRule for Simpson {
+    fn integrate(&amp;self, f: &amp;dyn Fn(f64) -&gt; f64, a: f64, b: f64) -&gt; f64 {
+        let h = (b - a) / self.subdivisions as f64;
+        let mut sum = f(a) + f(b);
+
+        for i in 1..self.subdivisions {
+            let x = a + i as f64 * h;
+            let weight = if i % 2 == 0 { 2.0 } else { 4.0 };
+            sum += weight * f(x);
+        }
+
+        h * sum / 3.0
+    }
+
+    fn name(&amp;self) -&gt; &amp;'static str {
+        &quot;composite Simpson&quot;
+    }
+}
+</code></pre>
+<p>The Gauss-Legendre rule also implements the same trait, but with a different
+algorithm and no stored fields:</p>
+<pre><code class="language-rust">pub struct GaussLegendre10;
+</code></pre>
+<p>Both types can now be treated as quadrature rules, even though their
+implementations are different.</p>
+<h2 id="trait-objects-and-dyn-trait">Trait Objects And <code>dyn Trait</code><a class="headerlink" href="#trait-objects-and-dyn-trait" title="Permanent link">&para;</a></h2>
+<p>The concrete quadrature rule is selected from command-line arguments at run
+time:</p>
+<pre><code class="language-rust">fn select_rule(args: &amp;Args) -&gt; Box&lt;dyn QuadratureRule&gt; {
+    match args.method {
+        QuadratureMethod::Simpson =&gt; Box::new(Simpson::new(args.subdivisions)),
+        QuadratureMethod::Gauss =&gt; Box::new(GaussLegendre10),
+    }
+}
+</code></pre>
+<p>The return type:</p>
+<pre><code class="language-rust">Box&lt;dyn QuadratureRule&gt;
+</code></pre>
+<p>means "a heap-allocated value of some concrete type that implements
+<code>QuadratureRule</code>." The concrete type might be <code>Simpson</code> or <code>GaussLegendre10</code>,
+but the caller only relies on the trait methods.</p>
+<p>The <code>dyn</code> keyword marks dynamic dispatch. The exact method implementation is
+chosen at run time through the trait object.</p>
+<p>That lets <code>main</code> use the selected rule uniformly:</p>
+<pre><code class="language-rust">let rule = select_rule(&amp;args);
+let result = rule.integrate(&amp;f, a, b);
+
+println!(&quot;using {} quadrature&quot;, rule.name());
+</code></pre>
+<h2 id="static-and-dynamic-dispatch">Static And Dynamic Dispatch<a class="headerlink" href="#static-and-dynamic-dispatch" title="Permanent link">&para;</a></h2>
+<p>Rust has two common ways to use traits:</p>
+<ul>
+<li>static dispatch through generics and trait bounds;</li>
+<li>dynamic dispatch through trait objects such as <code>dyn Trait</code>.</li>
+</ul>
+<p>Static dispatch is visible in a generic bound such as:</p>
+<pre><code class="language-rust">impl&lt;T: Display&gt; Display for Matrix&lt;T&gt;
+</code></pre>
+<p>The compiler knows the concrete type at compile time and can generate code for
+that type.</p>
+<p>Dynamic dispatch is visible in:</p>
+<pre><code class="language-rust">Box&lt;dyn QuadratureRule&gt;
+</code></pre>
+<p>The concrete type is selected at run time, and method calls go through the
+trait object.</p>
+<p>A practical rule of thumb:</p>
+<ul>
+<li>Use generics and trait bounds when the concrete type can remain known at
+  compile time.</li>
+<li>Use trait objects when different concrete types must be selected and handled
+  uniformly at run time.</li>
+</ul>
+<h2 id="suggested-hands-on-work">Suggested Hands-On Work<a class="headerlink" href="#suggested-hands-on-work" title="Permanent link">&para;</a></h2>
+<p>Use this sequence as a practical lab.</p>
+<ol>
+<li>Run <code>source-code/traits</code>:</li>
+</ol>
+<p><code>bash
+   cd source-code/traits
+   cargo run</code></p>
+<ol>
+<li>
+<p>Identify where <code>IndexMut</code> enables assignment with <code>matrix[(row, col)] = ...</code>.</p>
+</li>
+<li>
+<p>Change the <code>Display</code> implementation to separate matrix entries with commas
+   instead of spaces.</p>
+</li>
+<li>
+<p>Create a ragged nested vector in <code>main.rs</code> and pass it to
+   <code>Matrix::try_from</code>. Observe the error path.</p>
+</li>
+<li>
+<p>Add a loop over <code>&amp;matrix</code> and print every value without consuming the matrix.</p>
+</li>
+<li>
+<p>Add a loop over <code>&amp;mut matrix</code> and scale every value by a different factor.</p>
+</li>
+<li>
+<p>Run <code>source-code/user-defined-trait</code> with both quadrature methods:</p>
+</li>
+</ol>
+<p><code>bash
+   cd source-code/user-defined-trait
+   cargo run
+   cargo run -- --method gauss
+   cargo run -- --method simpson --subdivisions 2000</code></p>
+<ol>
+<li>
+<p>Change the string returned by one <code>name</code> implementation and observe the
+   program output.</p>
+</li>
+<li>
+<p>Add a new quadrature-rule struct with a simple placeholder implementation,
+   implement <code>QuadratureRule</code> for it, and add it to the command-line enum and
+   <code>select_rule</code> match.</p>
+</li>
+</ol>
+<h2 id="discussion-points">Discussion Points<a class="headerlink" href="#discussion-points" title="Permanent link">&para;</a></h2>
+<p>This module is a good place to emphasize:</p>
+<ul>
+<li>Traits describe behavior, not inheritance relationships.</li>
+<li>Standard traits connect custom types to familiar Rust syntax.</li>
+<li>Associated types are part of some trait contracts.</li>
+<li>Trait bounds should describe the behavior an implementation actually needs.</li>
+<li>User-defined traits are useful when several concrete types share the same
+  domain-level role.</li>
+<li>Trait objects are useful when the concrete type is selected at run time.</li>
+<li><code>dyn Trait</code> means dynamic dispatch through a trait object.</li>
+</ul>
+<h2 id="connection-to-later-modules">Connection To Later Modules<a class="headerlink" href="#connection-to-later-modules" title="Permanent link">&para;</a></h2>
+<p>Traits appear throughout more idiomatic Rust code:</p>
+<ul>
+<li>Iterator examples rely heavily on trait-based iterator behavior.</li>
+<li>Error-handling examples use standard traits for conversion and formatting.</li>
+<li>Data I/O examples use traits from crates such as <code>serde</code>.</li>
+<li>Julia set examples use generic and trait-based library APIs.</li>
+<li>The N-body example uses traits indirectly through iterators, formatting,
+  parsing, and serialization.</li>
+</ul>
+<p>Once participants are comfortable with traits, they are ready to study
+collections and iterator pipelines in more depth.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../data-modeling-with-structs-and-methods/" class="btn btn-neutral float-left" title="5. Data Modeling With Structs And Methods"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../collections-iterators-and-text-data/" class="btn btn-neutral float-right" title="7. Collections, Iterators, And Text Data">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../data-modeling-with-structs-and-methods/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../collections-iterators-and-text-data/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

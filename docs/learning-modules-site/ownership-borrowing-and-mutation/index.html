@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>4. Ownership, Borrowing, And Mutation - Rust, the good, the bad, and the ugly</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "4. Ownership, Borrowing, And Mutation";
+        var mkdocs_page_input_path = "ownership-borrowing-and-mutation.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/rust.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/bash.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/toml.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Rust, the good, the bad, and the ugly
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../learning-module-structure/">Module Structure</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Learning Modules</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../getting-started-with-rust-projects/">1. Getting Started With Rust Projects</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scalar-computation-and-numeric-basics/">2. Scalar Computation And Numeric Basics</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../control-flow-and-program-structure/">3. Control Flow And Program Structure</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">4. Ownership, Borrowing, And Mutation</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#learning-objectives">Learning Objectives</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#immutable-by-default">Immutable By Default</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#mutable-references">Mutable References</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#copying-scalars">Copying Scalars</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#moving-owned-data">Moving Owned Data</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#cloning-owned-data">Cloning Owned Data</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#shared-borrowing">Shared Borrowing</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#prefer-slices-for-sequences">Prefer Slices For Sequences</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#mutable-slices">Mutable Slices</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#borrowing-rules">Borrowing Rules</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#borrowed-references-in-collections">Borrowed References In Collections</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#returning-owned-values">Returning Owned Values</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#choosing-function-signatures">Choosing Function Signatures</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#suggested-hands-on-work">Suggested Hands-On Work</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#discussion-points">Discussion Points</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#connection-to-later-modules">Connection To Later Modules</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-modeling-with-structs-and-methods/">5. Data Modeling With Structs And Methods</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reusable-abstractions-with-traits/">6. Reusable Abstractions With Traits</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../collections-iterators-and-text-data/">7. Collections, Iterators, And Text Data</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error-handling/">8. Error Handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../project-organization-libraries-and-tests/">9. Project Organization, Libraries, And Tests</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../randomness-and-reproducible-runs/">10. Randomness And Reproducible Runs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-parallelism-with-rayon/">11. Data Parallelism With Rayon</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-julia-set/">12. Integrated Numerical Example: Julia Set</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-n-body-simulation/">13. Integrated Numerical Example: N-Body Simulation</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Rust, the good, the bad, and the ugly</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Learning Modules</li>
+      <li class="breadcrumb-item active">4. Ownership, Borrowing, And Mutation</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="ownership-borrowing-and-mutation">Ownership, Borrowing, And Mutation<a class="headerlink" href="#ownership-borrowing-and-mutation" title="Permanent link">&para;</a></h1>
+<p>This module introduces Rust's ownership and borrowing model. These rules are
+central to Rust: they determine when a value can be used, when it can be
+modified, and whether a function receives ownership of data or only temporary
+access to it.</p>
+<p>The module builds on the earlier material about scalar values, functions, and
+control flow. The examples are intentionally small because ownership is easiest
+to learn when each program isolates one rule at a time.</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>After completing this module, participants should be able to:</p>
+<ul>
+<li>Explain that bindings are immutable by default.</li>
+<li>Use <code>mut</code> when a local binding has to change.</li>
+<li>Distinguish between copying scalar values and moving owned data.</li>
+<li>Explain what happens when a <code>Vec&lt;T&gt;</code> is passed by value.</li>
+<li>Use <code>clone</code> when an explicit copy of owned data is required.</li>
+<li>Borrow data with shared references such as <code>&amp;T</code> and <code>&amp;[T]</code>.</li>
+<li>Borrow data with mutable references such as <code>&amp;mut T</code> and <code>&amp;mut [T]</code>.</li>
+<li>Explain why shared and mutable borrows cannot overlap arbitrarily.</li>
+<li>Prefer slices over <code>&amp;Vec&lt;T&gt;</code> for read-only sequence arguments.</li>
+<li>Choose function signatures based on whether a function owns, reads, or
+  modifies its input.</li>
+</ul>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<p>Participants should already be comfortable with:</p>
+<ul>
+<li>Defining and calling functions.</li>
+<li>Reading function signatures.</li>
+<li>Using <code>for</code> loops.</li>
+<li>Working with scalar values such as <code>f64</code>.</li>
+<li>Reading simple compiler diagnostics.</li>
+</ul>
+<p>The examples used in this module are:</p>
+<ul>
+<li><code>source-code/mutable-variables</code></li>
+<li><code>source-code/mutable-borrowing</code></li>
+<li><code>source-code/borrowing-vectors</code></li>
+<li><code>source-code/copy-vs-move</code></li>
+</ul>
+<h2 id="immutable-by-default">Immutable By Default<a class="headerlink" href="#immutable-by-default" title="Permanent link">&para;</a></h2>
+<p>Rust bindings are immutable by default:</p>
+<pre><code class="language-rust">let x = 1.0;
+</code></pre>
+<p>Once <code>x</code> has been assigned, it cannot be changed unless the binding is declared
+with <code>mut</code>:</p>
+<pre><code class="language-rust">let mut x = 1.0;
+x += 0.1;
+</code></pre>
+<p>The <code>mutable-variables</code> example uses a mutable <code>x</code> value while stepping through
+the points where a polynomial is evaluated:</p>
+<pre><code class="language-bash">cd source-code/mutable-variables
+cargo run -- --help
+</code></pre>
+<p>The relevant part is:</p>
+<pre><code class="language-rust">let mut x = x_min;
+let delta_x = (x_max - x_min) / (nr_points as f64 - 1.0);
+
+for _ in 0..nr_points {
+    let result = polynomial(x, args.a, args.b, args.c);
+    println!(&quot;{x} {result}&quot;);
+    x += delta_x;
+}
+</code></pre>
+<p>The <code>mut</code> keyword says that the binding <code>x</code> may be assigned a new value. This
+does not make every value in the program mutable; mutation is still local and
+explicit.</p>
+<h2 id="mutable-references">Mutable References<a class="headerlink" href="#mutable-references" title="Permanent link">&para;</a></h2>
+<p>Sometimes a function needs to modify a value owned by its caller. Rust makes
+that visible with a mutable reference:</p>
+<pre><code class="language-rust">fn rhs(x: f64, dxdt: &amp;mut f64, _t: f64) {
+    *dxdt = -x;
+}
+</code></pre>
+<p>This appears in <code>source-code/mutable-borrowing</code>:</p>
+<pre><code class="language-bash">cd source-code/mutable-borrowing
+cargo run
+</code></pre>
+<p>The caller passes a mutable reference with <code>&amp;mut</code>:</p>
+<pre><code class="language-rust">rhs(x, &amp;mut dxdt, t);
+</code></pre>
+<p>Inside the function, <code>dxdt</code> is a reference to a value owned elsewhere. The
+assignment uses <code>*dxdt</code> to write through the reference:</p>
+<pre><code class="language-rust">*dxdt = -x;
+</code></pre>
+<p>This style is similar to a non-const reference parameter in C++. It is useful
+for explaining mutable borrowing, but it is not always the most idiomatic Rust
+API. For a simple computation, returning the computed value is often clearer:</p>
+<pre><code class="language-rust">fn rhs(x: f64, _t: f64) -&gt; f64 {
+    -x
+}
+</code></pre>
+<p>The important point is that mutation through a reference is explicit both in
+the function signature and at the call site.</p>
+<h2 id="copying-scalars">Copying Scalars<a class="headerlink" href="#copying-scalars" title="Permanent link">&para;</a></h2>
+<p>Simple scalar values such as <code>f64</code> implement the <code>Copy</code> trait. Assigning them
+to another binding copies the value:</p>
+<pre><code class="language-rust">let x = 5.0;
+let y = x;
+println!(&quot;x: {x}, y: {y}&quot;);
+</code></pre>
+<p>After the assignment, both <code>x</code> and <code>y</code> can still be used. This is the behavior
+most programmers expect for small numeric values.</p>
+<p>The <code>copy-vs-move</code> example starts with this contrast:</p>
+<pre><code class="language-bash">cd source-code/copy-vs-move
+cargo run
+</code></pre>
+<h2 id="moving-owned-data">Moving Owned Data<a class="headerlink" href="#moving-owned-data" title="Permanent link">&para;</a></h2>
+<p>Owned data structures such as <code>Vec&lt;f64&gt;</code> do not implement <code>Copy</code>. Assigning a
+vector to another binding moves ownership:</p>
+<pre><code class="language-rust">let xs = vec![1.0, 2.0, 3.0];
+let ys = xs;
+</code></pre>
+<p>After this assignment, <code>ys</code> owns the vector and <code>xs</code> can no longer be used. The
+data was not silently copied.</p>
+<p>The same rule applies when passing a vector by value to a function:</p>
+<pre><code class="language-rust">fn mean_move(values: Vec&lt;f64&gt;) -&gt; f64 {
+    values.iter().sum::&lt;f64&gt;() / (values.len() as f64)
+}
+
+let xs = vec![1.0, 2.0, 3.0];
+let mean = mean_move(xs);
+</code></pre>
+<p>After the call, <code>xs</code> has been moved into <code>mean_move</code>. That is usually the wrong
+signature for a read-only computation, because computing a mean should not need
+to take ownership of the vector.</p>
+<h2 id="cloning-owned-data">Cloning Owned Data<a class="headerlink" href="#cloning-owned-data" title="Permanent link">&para;</a></h2>
+<p>If a real copy of owned data is needed, Rust makes that explicit with <code>clone</code>:</p>
+<pre><code class="language-rust">let xs = vec![1.0, 2.0, 3.0];
+let ys = xs.clone();
+</code></pre>
+<p>After cloning, both vectors can be used because the vector contents have been
+copied into a separate allocation.</p>
+<p>This explicitness matters for performance. A vector clone may copy a large
+amount of data, so Rust does not hide that operation inside an ordinary
+assignment.</p>
+<h2 id="shared-borrowing">Shared Borrowing<a class="headerlink" href="#shared-borrowing" title="Permanent link">&para;</a></h2>
+<p>Most read-only functions should borrow data rather than take ownership of it.
+The <code>copy-vs-move</code> example includes:</p>
+<pre><code class="language-rust">fn mean_borrow(values: &amp;Vec&lt;f64&gt;) -&gt; f64 {
+    values.iter().sum::&lt;f64&gt;() / (values.len() as f64)
+}
+</code></pre>
+<p>The caller passes a shared reference:</p>
+<pre><code class="language-rust">let xs = vec![1.0, 2.0, 3.0];
+let mean = mean_borrow(&amp;xs);
+println!(&quot;Mean of xs: {mean}&quot;);
+</code></pre>
+<p>Because <code>mean_borrow</code> only borrows <code>xs</code>, ownership remains with the caller and
+<code>xs</code> can still be used after the function call.</p>
+<h2 id="prefer-slices-for-sequences">Prefer Slices For Sequences<a class="headerlink" href="#prefer-slices-for-sequences" title="Permanent link">&para;</a></h2>
+<p>For read-only sequence data, a slice is usually more flexible than <code>&amp;Vec&lt;T&gt;</code>:</p>
+<pre><code class="language-rust">fn mean_borrow_slice(values: &amp;[f64]) -&gt; f64 {
+    values.iter().sum::&lt;f64&gt;() / (values.len() as f64)
+}
+</code></pre>
+<p>A slice, <code>&amp;[f64]</code>, means "a borrowed view of contiguous <code>f64</code> values." It can
+refer to an entire vector, part of a vector, or other contiguous storage.</p>
+<p>The caller can pass a vector as a slice:</p>
+<pre><code class="language-rust">let xs = vec![1.0, 2.0, 3.0];
+let mean = mean_borrow_slice(&amp;xs);
+</code></pre>
+<p>This is a common Rust API design rule: if a function only needs to read a
+sequence, prefer <code>&amp;[T]</code> over <code>&amp;Vec&lt;T&gt;</code>.</p>
+<h2 id="mutable-slices">Mutable Slices<a class="headerlink" href="#mutable-slices" title="Permanent link">&para;</a></h2>
+<p>When a function needs to modify a sequence in place, it can take a mutable
+slice:</p>
+<pre><code class="language-rust">fn normalize(data: &amp;mut [f64]) {
+    let mean_value = mean(data);
+    for value in data.iter_mut() {
+        *value /= mean_value;
+    }
+}
+</code></pre>
+<p>This appears in <code>source-code/borrowing-vectors</code>:</p>
+<pre><code class="language-bash">cd source-code/borrowing-vectors
+cargo run
+</code></pre>
+<p>The caller must have a mutable vector binding and must pass a mutable borrow:</p>
+<pre><code class="language-rust">let mut data = vec![3.1, 2.4, 5.6, 1.2, 4.8];
+normalize(&amp;mut data);
+</code></pre>
+<p>The <code>iter_mut</code> method produces mutable references to the elements. The loop
+writes through those references:</p>
+<pre><code class="language-rust">*value /= mean_value;
+</code></pre>
+<p>Again, mutation is visible in the function signature, the call site, and the
+body of the loop.</p>
+<h2 id="borrowing-rules">Borrowing Rules<a class="headerlink" href="#borrowing-rules" title="Permanent link">&para;</a></h2>
+<p>Rust allows many shared references or one mutable reference, but not both at
+the same time when the references could overlap.</p>
+<p>This is accepted:</p>
+<pre><code class="language-rust">{
+    let first_value = &amp;data[0];
+    let this_mean = mean(&amp;data);
+    println!(&quot;First value: {first_value}, no problem using data&quot;);
+}
+</code></pre>
+<p>Both borrows are read-only. The shared reference <code>first_value</code> is compatible
+with the shared borrow used by <code>mean</code>.</p>
+<p>This pattern is rejected:</p>
+<pre><code class="language-rust">{
+    let first_value = &amp;data[0];
+    normalize(&amp;mut data);
+    println!(&quot;First value before normalization: {first_value}&quot;);
+}
+</code></pre>
+<p>The reference <code>first_value</code> points into <code>data</code> and is used after the call to
+<code>normalize</code>. Rust therefore rejects the mutable borrow in between, because
+<code>normalize(&amp;mut data)</code> could change the data while <code>first_value</code> is still
+expected to refer to the old value.</p>
+<p>The rule prevents a common class of bugs: reading through a reference while the
+referenced data is being modified elsewhere.</p>
+<h2 id="borrowed-references-in-collections">Borrowed References In Collections<a class="headerlink" href="#borrowed-references-in-collections" title="Permanent link">&para;</a></h2>
+<p>Borrowing can also be extended by storing references in another collection:</p>
+<pre><code class="language-rust">let xs = vec![1.0, 2.0, 3.0];
+let x_filtered: Vec&lt;&amp;f64&gt; = xs.iter().filter(|&amp;&amp;x| x &gt; 1.5).collect();
+</code></pre>
+<p>The values in <code>x_filtered</code> are references into <code>xs</code>. As long as those
+references are used, <code>xs</code> remains borrowed.</p>
+<p>If independent scalar values are needed instead, copy the values out:</p>
+<pre><code class="language-rust">let x_filtered: Vec&lt;f64&gt; = xs.iter().filter(|&amp;&amp;x| x &gt; 1.5).copied().collect();
+</code></pre>
+<p>The <code>copied</code> adapter turns <code>&amp;f64</code> items into independent <code>f64</code> values. After
+that, the filtered vector no longer borrows from <code>xs</code>.</p>
+<h2 id="returning-owned-values">Returning Owned Values<a class="headerlink" href="#returning-owned-values" title="Permanent link">&para;</a></h2>
+<p>Ownership can also be transferred from a function to its caller:</p>
+<pre><code class="language-rust">fn return_vector() -&gt; Vec&lt;f64&gt; {
+    vec![1.0, 2.0, 3.0]
+}
+
+let xs = return_vector();
+</code></pre>
+<p>The function creates a vector and returns ownership to the caller. This is a
+normal and efficient Rust pattern. Returning owned data does not mean the whole
+vector is copied element by element.</p>
+<h2 id="choosing-function-signatures">Choosing Function Signatures<a class="headerlink" href="#choosing-function-signatures" title="Permanent link">&para;</a></h2>
+<p>A useful way to design function signatures is to ask what the function needs:</p>
+<ul>
+<li>If the function only needs a small scalar value, pass it by value.</li>
+<li>If the function only needs to read a sequence, pass <code>&amp;[T]</code>.</li>
+<li>If the function needs to modify a sequence in place, pass <code>&amp;mut [T]</code>.</li>
+<li>If the function must take responsibility for owned data, pass <code>Vec&lt;T&gt;</code> or
+  another owning type by value.</li>
+<li>If the function creates new owned data, return it.</li>
+</ul>
+<p>For example, a mean function should usually read data without taking ownership:</p>
+<pre><code class="language-rust">fn mean(data: &amp;[f64]) -&gt; f64 {
+    let sum: f64 = data.iter().sum();
+    sum / (data.len() as f64)
+}
+</code></pre>
+<p>A normalization function can modify data in place:</p>
+<pre><code class="language-rust">fn normalize(data: &amp;mut [f64]) {
+    let mean_value = mean(data);
+    for value in data.iter_mut() {
+        *value /= mean_value;
+    }
+}
+</code></pre>
+<p>These signatures communicate intent and let the compiler enforce it.</p>
+<h2 id="suggested-hands-on-work">Suggested Hands-On Work<a class="headerlink" href="#suggested-hands-on-work" title="Permanent link">&para;</a></h2>
+<p>Use this sequence as a practical lab.</p>
+<ol>
+<li>
+<p>Run <code>source-code/mutable-variables</code> and identify which binding has to be
+   mutable.</p>
+</li>
+<li>
+<p>Remove <code>mut</code> from that binding and run <code>cargo check</code>. Read the compiler
+   diagnostic, then restore <code>mut</code>.</p>
+</li>
+<li>
+<p>Run <code>source-code/mutable-borrowing</code> and follow where <code>dxdt</code> is modified.</p>
+</li>
+<li>
+<p>Rewrite <code>rhs</code> locally so that it returns <code>f64</code> instead of writing through
+   <code>&amp;mut f64</code>, then update the call site.</p>
+</li>
+<li>
+<p>Run <code>source-code/copy-vs-move</code> and compare the scalar copy with the vector
+   move.</p>
+</li>
+<li>
+<p>Uncomment one of the lines that is expected to fail after a move, run
+   <code>cargo check</code>, and read the diagnostic. Restore the comment afterward.</p>
+</li>
+<li>
+<p>Change <code>mean_borrow</code> to use a slice signature, then update the call site.</p>
+</li>
+<li>
+<p>Run <code>source-code/borrowing-vectors</code> and inspect the normalization output.</p>
+</li>
+<li>
+<p>Uncomment the borrow-checker example in <code>borrowing-vectors</code>, run
+   <code>cargo check</code>, and identify which borrow is still active. Restore the
+   original code afterward.</p>
+</li>
+<li>
+<p>Add a function that shifts all values in a mutable slice by a constant:</p>
+<p><code>rust
+fn shift(data: &amp;mut [f64], offset: f64) {
+    for value in data.iter_mut() {
+        *value += offset;
+    }
+}</code></p>
+</li>
+</ol>
+<h2 id="discussion-points">Discussion Points<a class="headerlink" href="#discussion-points" title="Permanent link">&para;</a></h2>
+<p>This module is a good place to emphasize:</p>
+<ul>
+<li><code>mut</code> belongs to a binding; it is not a global property of a value.</li>
+<li>Moving ownership is different from copying data.</li>
+<li><code>clone</code> should be visible because it can be expensive.</li>
+<li>Borrowing lets functions inspect data without taking ownership.</li>
+<li>Mutable borrowing makes in-place modification explicit.</li>
+<li>Slices are often better API boundaries than vectors.</li>
+<li>Borrow-checker errors usually point to overlapping access patterns that need
+  to be made clearer.</li>
+</ul>
+<h2 id="connection-to-later-modules">Connection To Later Modules<a class="headerlink" href="#connection-to-later-modules" title="Permanent link">&para;</a></h2>
+<p>Ownership and borrowing appear in almost every later example:</p>
+<ul>
+<li>Struct examples store owned data in fields and expose behavior through
+  methods.</li>
+<li>Trait examples use references and trait objects to share behavior without
+  unnecessary ownership transfer.</li>
+<li>Iterator examples rely on borrowed iteration with <code>iter</code> and mutable
+  iteration with <code>iter_mut</code>.</li>
+<li>File I/O examples use borrowed paths, owned strings, and fallible results.</li>
+<li>Julia set and N-body examples use ownership to manage arrays, simulation
+  state, and output writers.</li>
+</ul>
+<p>Once participants are comfortable reading function signatures in terms of
+ownership, borrowing, and mutation, they are ready to define their own data
+types with structs and methods.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../control-flow-and-program-structure/" class="btn btn-neutral float-left" title="3. Control Flow And Program Structure"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../data-modeling-with-structs-and-methods/" class="btn btn-neutral float-right" title="5. Data Modeling With Structs And Methods">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../control-flow-and-program-structure/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../data-modeling-with-structs-and-methods/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

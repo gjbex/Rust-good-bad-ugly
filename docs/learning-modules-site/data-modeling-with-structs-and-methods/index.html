@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>5. Data Modeling With Structs And Methods - Rust, the good, the bad, and the ugly</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "5. Data Modeling With Structs And Methods";
+        var mkdocs_page_input_path = "data-modeling-with-structs-and-methods.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/rust.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/bash.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/toml.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Rust, the good, the bad, and the ugly
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../learning-module-structure/">Module Structure</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Learning Modules</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../getting-started-with-rust-projects/">1. Getting Started With Rust Projects</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scalar-computation-and-numeric-basics/">2. Scalar Computation And Numeric Basics</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../control-flow-and-program-structure/">3. Control Flow And Program Structure</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ownership-borrowing-and-mutation/">4. Ownership, Borrowing, And Mutation</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">5. Data Modeling With Structs And Methods</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#learning-objectives">Learning Objectives</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#why-structs">Why Structs?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#implementing-methods">Implementing Methods</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#associated-functions">Associated Functions</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#accessor-and-mutating-methods">Accessor And Mutating Methods</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#keeping-mainrs-focused">Keeping main.rs Focused</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#encapsulation">Encapsulation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#generic-structs">Generic Structs</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#generic-methods">Generic Methods</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#trait-bounds-where-needed">Trait Bounds Where Needed</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#suggested-hands-on-work">Suggested Hands-On Work</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#discussion-points">Discussion Points</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#connection-to-later-modules">Connection To Later Modules</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reusable-abstractions-with-traits/">6. Reusable Abstractions With Traits</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../collections-iterators-and-text-data/">7. Collections, Iterators, And Text Data</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error-handling/">8. Error Handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../project-organization-libraries-and-tests/">9. Project Organization, Libraries, And Tests</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../randomness-and-reproducible-runs/">10. Randomness And Reproducible Runs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-parallelism-with-rayon/">11. Data Parallelism With Rayon</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-julia-set/">12. Integrated Numerical Example: Julia Set</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-n-body-simulation/">13. Integrated Numerical Example: N-Body Simulation</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Rust, the good, the bad, and the ugly</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Learning Modules</li>
+      <li class="breadcrumb-item active">5. Data Modeling With Structs And Methods</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="data-modeling-with-structs-and-methods">Data Modeling With Structs And Methods<a class="headerlink" href="#data-modeling-with-structs-and-methods" title="Permanent link">&para;</a></h1>
+<p>This module introduces user-defined data types in Rust. Up to this point, the
+examples have mostly used built-in scalar types, vectors, functions, and small
+enums. Structs make it possible to group related data into a domain type and
+attach behavior to that type with methods.</p>
+<p>The main example is a small matrix type. It is intentionally simple and meant
+for teaching. For serious numerical work, use established crates such as
+<code>ndarray</code>, <code>faer</code>, or <code>nalgebra</code>.</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>After completing this module, participants should be able to:</p>
+<ul>
+<li>Define a <code>struct</code> with named fields.</li>
+<li>Explain why fields are often kept private.</li>
+<li>Create values through an associated function such as <code>new</code>.</li>
+<li>Implement methods in an <code>impl</code> block.</li>
+<li>Distinguish <code>self</code>, <code>&amp;self</code>, and <code>&amp;mut self</code>.</li>
+<li>Use accessor methods to expose selected internal state.</li>
+<li>Store two-dimensional data in a flat vector.</li>
+<li>Split a type definition into a separate source module.</li>
+<li>Define a generic struct such as <code>Matrix&lt;T&gt;</code>.</li>
+<li>Add trait bounds only where an operation needs them.</li>
+</ul>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<p>Participants should already be comfortable with:</p>
+<ul>
+<li>Functions and return values.</li>
+<li>Modules declared with <code>mod</code>.</li>
+<li>Ownership and borrowing.</li>
+<li>Shared and mutable references.</li>
+<li>Vectors and indexing.</li>
+<li>Basic use of <code>Option</code> and <code>Result</code> as return values is helpful, but not
+  required.</li>
+</ul>
+<p>The examples used in this module are:</p>
+<ul>
+<li><code>source-code/structs-and-methods</code></li>
+<li><code>source-code/generic-structs</code></li>
+</ul>
+<h2 id="why-structs">Why Structs?<a class="headerlink" href="#why-structs" title="Permanent link">&para;</a></h2>
+<p>A struct groups related values into one type. For a matrix, the relevant data
+are:</p>
+<ul>
+<li>the number of rows;</li>
+<li>the number of columns;</li>
+<li>the element storage.</li>
+</ul>
+<p>Instead of passing these three values around separately, the example defines a
+single <code>Matrix</code> type:</p>
+<pre><code class="language-rust">pub struct Matrix {
+    rows: usize,
+    cols: usize,
+    data: Vec&lt;f64&gt;,
+}
+</code></pre>
+<p>Run the example with:</p>
+<pre><code class="language-bash">cd source-code/structs-and-methods
+cargo run -- --help
+</code></pre>
+<p>The fields are private because they are not marked <code>pub</code>. Code outside the
+<code>matrix</code> module cannot directly modify <code>rows</code>, <code>cols</code>, or <code>data</code>. Instead, it
+uses the methods provided by the type.</p>
+<p>This is useful because the fields have an invariant: <code>data</code> should contain
+<code>rows * cols</code> elements. If all external code could modify the fields directly,
+it would be easy to create an inconsistent matrix.</p>
+<h2 id="implementing-methods">Implementing Methods<a class="headerlink" href="#implementing-methods" title="Permanent link">&para;</a></h2>
+<p>Methods are defined in an <code>impl</code> block:</p>
+<pre><code class="language-rust">impl Matrix {
+    pub fn rows(&amp;self) -&gt; usize {
+        self.rows
+    }
+
+    pub fn cols(&amp;self) -&gt; usize {
+        self.cols
+    }
+}
+</code></pre>
+<p>The <code>impl Matrix</code> block says that the functions inside are associated with the
+<code>Matrix</code> type.</p>
+<p>The first parameter determines how the method receives the value:</p>
+<ul>
+<li><code>&amp;self</code>: shared access; the method can read the value.</li>
+<li><code>&amp;mut self</code>: mutable access; the method can modify the value.</li>
+<li><code>self</code>: owned access; the method consumes the value.</li>
+</ul>
+<p>The <code>rows</code> and <code>cols</code> methods only read from the matrix, so they take <code>&amp;self</code>.</p>
+<h2 id="associated-functions">Associated Functions<a class="headerlink" href="#associated-functions" title="Permanent link">&para;</a></h2>
+<p>An associated function belongs to a type but does not take <code>self</code>. Constructors
+are commonly written this way:</p>
+<pre><code class="language-rust">impl Matrix {
+    pub fn new(rows: usize, cols: usize) -&gt; Self {
+        Self {
+            rows,
+            cols,
+            data: vec![0.0; rows * cols],
+        }
+    }
+}
+</code></pre>
+<p><code>Self</code> means the type currently being implemented, here <code>Matrix</code>.</p>
+<p>The function is called with type-qualified syntax:</p>
+<pre><code class="language-rust">let mut matrix = Matrix::new(args.rows, args.cols);
+</code></pre>
+<p>This creates a matrix with the requested dimensions and initializes the flat
+storage with zeros.</p>
+<h2 id="accessor-and-mutating-methods">Accessor And Mutating Methods<a class="headerlink" href="#accessor-and-mutating-methods" title="Permanent link">&para;</a></h2>
+<p>The matrix example provides methods to get and set an element:</p>
+<pre><code class="language-rust">pub fn get(&amp;self, row: usize, col: usize) -&gt; f64 {
+    self.data[row * self.cols + col]
+}
+
+pub fn set(&amp;mut self, row: usize, col: usize, value: f64) {
+    self.data[row * self.cols + col] = value;
+}
+</code></pre>
+<p>The <code>get</code> method takes <code>&amp;self</code> because it only reads from the matrix. The <code>set</code>
+method takes <code>&amp;mut self</code> because it modifies the matrix.</p>
+<p>The indexing formula maps two-dimensional coordinates to a flat vector:</p>
+<pre><code class="language-rust">row * self.cols + col
+</code></pre>
+<p>This layout stores matrix entries row by row.</p>
+<p>The caller sees the borrowing requirements at the call site:</p>
+<pre><code class="language-rust">let mut matrix = Matrix::new(args.rows, args.cols);
+
+matrix.set(i, j, (i * matrix.cols() + j) as f64);
+let value = matrix.get(i, j);
+</code></pre>
+<p>The matrix binding must be mutable because <code>set</code> requires <code>&amp;mut self</code>.</p>
+<h2 id="keeping-mainrs-focused">Keeping <code>main.rs</code> Focused<a class="headerlink" href="#keeping-mainrs-focused" title="Permanent link">&para;</a></h2>
+<p>The matrix type is defined in its own file:</p>
+<pre><code class="language-text">src/
+├── main.rs
+└── matrix.rs
+</code></pre>
+<p>The module is declared in <code>main.rs</code>:</p>
+<pre><code class="language-rust">mod matrix;
+use matrix::Matrix;
+</code></pre>
+<p>This keeps <code>main.rs</code> focused on command-line parsing and using the matrix,
+while <code>matrix.rs</code> contains the definition of the matrix abstraction.</p>
+<p>This is a common organization pattern:</p>
+<ul>
+<li><code>main.rs</code> handles program setup.</li>
+<li>Separate modules define domain types and operations.</li>
+</ul>
+<h2 id="encapsulation">Encapsulation<a class="headerlink" href="#encapsulation" title="Permanent link">&para;</a></h2>
+<p>The matrix fields are private, but selected operations are public:</p>
+<pre><code class="language-rust">pub struct Matrix {
+    rows: usize,
+    cols: usize,
+    data: Vec&lt;f64&gt;,
+}
+</code></pre>
+<p>The <code>pub struct Matrix</code> declaration makes the type itself visible outside the
+module. The fields remain private because they do not have <code>pub</code>.</p>
+<p>The public methods define the supported interface:</p>
+<pre><code class="language-rust">pub fn new(rows: usize, cols: usize) -&gt; Self
+pub fn rows(&amp;self) -&gt; usize
+pub fn cols(&amp;self) -&gt; usize
+pub fn get(&amp;self, row: usize, col: usize) -&gt; f64
+pub fn set(&amp;mut self, row: usize, col: usize, value: f64)
+</code></pre>
+<p>This lets the module control how matrices are created and modified. That is the
+core idea of encapsulation in this example.</p>
+<h2 id="generic-structs">Generic Structs<a class="headerlink" href="#generic-structs" title="Permanent link">&para;</a></h2>
+<p>The first matrix stores only <code>f64</code> values:</p>
+<pre><code class="language-rust">pub struct Matrix {
+    rows: usize,
+    cols: usize,
+    data: Vec&lt;f64&gt;,
+}
+</code></pre>
+<p>The <code>generic-structs</code> example generalizes this to any element type <code>T</code>:</p>
+<pre><code class="language-bash">cd source-code/generic-structs
+cargo run -- --help
+</code></pre>
+<p>The generic definition is:</p>
+<pre><code class="language-rust">pub struct Matrix&lt;T&gt; {
+    rows: usize,
+    cols: usize,
+    data: Vec&lt;T&gt;,
+}
+</code></pre>
+<p><code>T</code> is a type parameter. A <code>Matrix&lt;f64&gt;</code> stores floating-point values, while a
+<code>Matrix&lt;i32&gt;</code> stores integer values. The same abstraction can be reused for
+different element types.</p>
+<p>The example creates both:</p>
+<pre><code class="language-rust">let mut matrix = Matrix::new(args.rows, args.cols, 0.0_f64);
+let mut integer_matrix = Matrix::new(2, 2, 0_i32);
+</code></pre>
+<h2 id="generic-methods">Generic Methods<a class="headerlink" href="#generic-methods" title="Permanent link">&para;</a></h2>
+<p>Methods that do not require special behavior from <code>T</code> can be implemented for
+all element types:</p>
+<pre><code class="language-rust">impl&lt;T&gt; Matrix&lt;T&gt; {
+    pub fn rows(&amp;self) -&gt; usize {
+        self.rows
+    }
+
+    pub fn cols(&amp;self) -&gt; usize {
+        self.cols
+    }
+}
+</code></pre>
+<p>The <code>get</code> method returns a borrowed element:</p>
+<pre><code class="language-rust">pub fn get(&amp;self, row: usize, col: usize) -&gt; Option&lt;&amp;T&gt; {
+    self.index(row, col).map(|index| &amp;self.data[index])
+}
+</code></pre>
+<p>Returning <code>Option&lt;&amp;T&gt;</code> has two useful effects:</p>
+<ul>
+<li><code>None</code> can represent an out-of-bounds index.</li>
+<li>The element does not have to be copied out of the matrix.</li>
+</ul>
+<p>The <code>set</code> method receives a value of type <code>T</code> and moves it into the matrix:</p>
+<pre><code class="language-rust">pub fn set(&amp;mut self, row: usize, col: usize, value: T) -&gt; Result&lt;(), String&gt; {
+    let index = self
+        .index(row, col)
+        .ok_or_else(|| format!(&quot;matrix index ({row}, {col}) is out of bounds&quot;))?;
+    self.data[index] = value;
+    Ok(())
+}
+</code></pre>
+<p>This uses <code>Result</code> because setting an element can fail if the index is outside
+the matrix. Detailed error-handling patterns are covered later; here the key
+idea is that the method signature makes failure explicit.</p>
+<h2 id="trait-bounds-where-needed">Trait Bounds Where Needed<a class="headerlink" href="#trait-bounds-where-needed" title="Permanent link">&para;</a></h2>
+<p>The generic constructor needs to fill a vector with repeated copies of the
+initial value:</p>
+<pre><code class="language-rust">data: vec![value; rows * cols],
+</code></pre>
+<p>That requires <code>T</code> to be cloneable. Instead of requiring <code>Clone</code> for the whole
+type, the example puts the bound only on the constructor implementation:</p>
+<pre><code class="language-rust">impl&lt;T: Clone&gt; Matrix&lt;T&gt; {
+    pub fn new(rows: usize, cols: usize, value: T) -&gt; Self {
+        Self {
+            rows,
+            cols,
+            data: vec![value; rows * cols],
+        }
+    }
+}
+</code></pre>
+<p>This is an important Rust design habit: add trait bounds only where the
+operation needs them. Reading dimensions does not require <code>T: Clone</code>, but
+initializing all elements from one value does.</p>
+<h2 id="suggested-hands-on-work">Suggested Hands-On Work<a class="headerlink" href="#suggested-hands-on-work" title="Permanent link">&para;</a></h2>
+<p>Use this sequence as a practical lab.</p>
+<ol>
+<li>Run <code>source-code/structs-and-methods</code> and create matrices with different
+   dimensions:</li>
+</ol>
+<p><code>bash
+   cargo run -- --rows 2 --cols 5</code></p>
+<ol>
+<li>
+<p>Open <code>source-code/structs-and-methods/src/matrix.rs</code> and identify which
+   fields are private and which methods are public.</p>
+</li>
+<li>
+<p>Add a public <code>len</code> method that returns the total number of stored elements:</p>
+</li>
+</ol>
+<p><code>rust
+   pub fn len(&amp;self) -&gt; usize {
+       self.data.len()
+   }</code></p>
+<ol>
+<li>
+<p>Call <code>matrix.len()</code> from <code>main.rs</code> and print the value.</p>
+</li>
+<li>
+<p>Try to access <code>matrix.data</code> directly from <code>main.rs</code> and run <code>cargo check</code>.
+   Read the compiler diagnostic, then restore the original code.</p>
+</li>
+<li>
+<p>Add a private helper method to compute the flat index:</p>
+</li>
+</ol>
+<p><code>rust
+   fn index(&amp;self, row: usize, col: usize) -&gt; usize {
+       row * self.cols + col
+   }</code></p>
+<p>Use it from both <code>get</code> and <code>set</code>.</p>
+<ol>
+<li>
+<p>Run <code>source-code/generic-structs</code> and identify where the code creates a
+   <code>Matrix&lt;f64&gt;</code> and a <code>Matrix&lt;i32&gt;</code>.</p>
+</li>
+<li>
+<p>Add a <code>Matrix&lt;bool&gt;</code> or <code>Matrix&lt;char&gt;</code> to <code>source-code/generic-structs</code> and
+   set one or two values.</p>
+</li>
+<li>
+<p>Temporarily remove the <code>Clone</code> bound from <code>impl&lt;T: Clone&gt; Matrix&lt;T&gt;</code> and run
+   <code>cargo check</code>. Read why the constructor needs that bound, then restore it.</p>
+</li>
+</ol>
+<h2 id="discussion-points">Discussion Points<a class="headerlink" href="#discussion-points" title="Permanent link">&para;</a></h2>
+<p>This module is a good place to emphasize:</p>
+<ul>
+<li>Structs group related data into a named type.</li>
+<li>Methods attach behavior to that type.</li>
+<li>Private fields protect invariants.</li>
+<li>Associated functions such as <code>new</code> are commonly used as constructors.</li>
+<li><code>&amp;self</code> is for reading, <code>&amp;mut self</code> is for modifying, and <code>self</code> is for
+  consuming.</li>
+<li>Generic structs let one abstraction work with different element types.</li>
+<li>Trait bounds should be introduced where they are needed, not everywhere by
+  default.</li>
+</ul>
+<h2 id="connection-to-later-modules">Connection To Later Modules<a class="headerlink" href="#connection-to-later-modules" title="Permanent link">&para;</a></h2>
+<p>Structs and methods are the basis for larger Rust designs:</p>
+<ul>
+<li>Trait modules build on method syntax and trait bounds.</li>
+<li>Iterator examples often expose borrowed access to internal data.</li>
+<li>Error-handling examples improve checked matrix access.</li>
+<li>Julia set examples use matrix-like storage for numerical output.</li>
+<li>The N-body example uses structs and methods to represent particles and
+  systems.</li>
+</ul>
+<p>Once participants are comfortable defining data types and methods, they are
+ready to study traits as a way to express shared behavior across types.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../ownership-borrowing-and-mutation/" class="btn btn-neutral float-left" title="4. Ownership, Borrowing, And Mutation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../reusable-abstractions-with-traits/" class="btn btn-neutral float-right" title="6. Reusable Abstractions With Traits">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../ownership-borrowing-and-mutation/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../reusable-abstractions-with-traits/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

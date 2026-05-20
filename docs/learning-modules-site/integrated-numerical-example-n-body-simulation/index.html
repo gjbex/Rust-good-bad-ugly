@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>13. Integrated Numerical Example: N-Body Simulation - Rust, the good, the bad, and the ugly</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "13. Integrated Numerical Example: N-Body Simulation";
+        var mkdocs_page_input_path = "integrated-numerical-example-n-body-simulation.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/rust.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/bash.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/toml.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Rust, the good, the bad, and the ugly
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../learning-module-structure/">Module Structure</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Learning Modules</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../getting-started-with-rust-projects/">1. Getting Started With Rust Projects</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scalar-computation-and-numeric-basics/">2. Scalar Computation And Numeric Basics</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../control-flow-and-program-structure/">3. Control Flow And Program Structure</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ownership-borrowing-and-mutation/">4. Ownership, Borrowing, And Mutation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-modeling-with-structs-and-methods/">5. Data Modeling With Structs And Methods</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reusable-abstractions-with-traits/">6. Reusable Abstractions With Traits</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../collections-iterators-and-text-data/">7. Collections, Iterators, And Text Data</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error-handling/">8. Error Handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../project-organization-libraries-and-tests/">9. Project Organization, Libraries, And Tests</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../randomness-and-reproducible-runs/">10. Randomness And Reproducible Runs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-parallelism-with-rayon/">11. Data Parallelism With Rayon</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-julia-set/">12. Integrated Numerical Example: Julia Set</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">13. Integrated Numerical Example: N-Body Simulation</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#learning-objectives">Learning Objectives</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#what-the-simulation-does">What The Simulation Does</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#command-line-parameters">Command-Line Parameters</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#representing-simulation-state">Representing Simulation State</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#random-initialization">Random Initialization</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gravitational-softening">Gravitational Softening</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#acceleration-calculation">Acceleration Calculation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#velocity-verlet-update">Velocity Verlet Update</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#diagnostics">Diagnostics</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#csv-output">CSV Output</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#optional-output-files">Optional Output Files</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#running-and-visualizing">Running And Visualizing</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#suggested-hands-on-work">Suggested Hands-On Work</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#discussion-points">Discussion Points</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#relation-to-the-julia-set-example">Relation To The Julia Set Example</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Rust, the good, the bad, and the ugly</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Learning Modules</li>
+      <li class="breadcrumb-item active">13. Integrated Numerical Example: N-Body Simulation</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="integrated-numerical-example-n-body-simulation">Integrated Numerical Example: N-Body Simulation<a class="headerlink" href="#integrated-numerical-example-n-body-simulation" title="Permanent link">&para;</a></h1>
+<p>This module uses the softened gravitational N-body simulation as an integrated
+numerical example. Like the Julia set module, it combines many earlier topics
+in one program. Unlike the Julia set example, it evolves a system in time,
+tracks diagnostics, and writes structured output for later analysis.</p>
+<p>The goal is to study how a small simulation program is organized in Rust:
+state representation, random initialization, time integration, diagnostics,
+CSV output, and visualization.</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>After completing this module, participants should be able to:</p>
+<ul>
+<li>Explain how simulation state is stored in a Rust struct.</li>
+<li>Use private fields and methods to encapsulate simulation state.</li>
+<li>Identify where random initialization enters the program.</li>
+<li>Explain the role of gravitational softening.</li>
+<li>Follow a velocity Verlet update step.</li>
+<li>Compute basic simulation diagnostics such as energy and center of mass.</li>
+<li>Write structured CSV output with <code>csv</code> and <code>serde</code>.</li>
+<li>Distinguish evolution output from particle-state output.</li>
+<li>Use Python helper scripts to inspect numerical results.</li>
+<li>Discuss how time step, softening, and initialization affect diagnostics.</li>
+</ul>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<p>Participants should already be comfortable with:</p>
+<ul>
+<li>Structs, methods, and associated functions.</li>
+<li>Ownership and borrowing.</li>
+<li>Vectors and iteration.</li>
+<li>Random number generation with explicit seeds.</li>
+<li>Command-line parsing with <code>clap</code>.</li>
+<li>Error handling and <code>expect</code>.</li>
+<li>CSV output and basic Python visualization workflows.</li>
+</ul>
+<p>The example used in this module is:</p>
+<ul>
+<li><code>source-code/n-body-simulation/rust</code></li>
+</ul>
+<h2 id="what-the-simulation-does">What The Simulation Does<a class="headerlink" href="#what-the-simulation-does" title="Permanent link">&para;</a></h2>
+<p>The program simulates particles interacting through softened gravity. Each
+particle has:</p>
+<ul>
+<li>position: <code>x</code>, <code>y</code>, <code>z</code>;</li>
+<li>velocity: <code>vx</code>, <code>vy</code>, <code>vz</code>;</li>
+<li>mass.</li>
+</ul>
+<p>The system is initialized randomly from a seed. It is then advanced for a fixed
+number of time steps. Optionally, the program writes CSV files containing:</p>
+<ul>
+<li>energy and center-of-mass diagnostics at each step;</li>
+<li>particle positions, velocities, and masses at each step.</li>
+</ul>
+<p>Run the default simulation with:</p>
+<pre><code class="language-bash">cd source-code/n-body-simulation/rust
+cargo run
+</code></pre>
+<h2 id="command-line-parameters">Command-Line Parameters<a class="headerlink" href="#command-line-parameters" title="Permanent link">&para;</a></h2>
+<p>The simulation is configured with command-line arguments:</p>
+<pre><code class="language-rust">#[derive(Parser, Debug)]
+#[command(version, about = &quot;A simple n-body simulation&quot;)]
+struct Args {
+    #[arg(long, default_value_t = 100)]
+    num_particles: usize,
+
+    #[arg(long, default_value_t = 1234)]
+    seed: u64,
+
+    #[arg(long, default_value_t = 0.001)]
+    delta_time: f64,
+
+    #[arg(long = &quot;steps&quot;, default_value_t = 100)]
+    num_steps: usize,
+
+    #[arg(long, default_value_t = 0.01)]
+    softening: f64,
+
+    #[arg(long)]
+    save_evolution: Option&lt;String&gt;,
+
+    #[arg(long)]
+    save_states: Option&lt;String&gt;,
+}
+</code></pre>
+<p>This connects earlier CLI material to a more realistic program. Some
+parameters control the model, such as particle count and softening. Others
+control the run, such as time step, number of steps, seed, and output files.</p>
+<h2 id="representing-simulation-state">Representing Simulation State<a class="headerlink" href="#representing-simulation-state" title="Permanent link">&para;</a></h2>
+<p>The simulation state is stored in a <code>System</code> struct:</p>
+<pre><code class="language-rust">pub struct System {
+    xs: Vec&lt;f64&gt;,
+    ys: Vec&lt;f64&gt;,
+    zs: Vec&lt;f64&gt;,
+    vxs: Vec&lt;f64&gt;,
+    vys: Vec&lt;f64&gt;,
+    vzs: Vec&lt;f64&gt;,
+    masses: Vec&lt;f64&gt;,
+    softening_length: f64,
+}
+</code></pre>
+<p>The fields are private. Other code does not directly modify the vectors.
+Instead, it uses methods such as:</p>
+<ul>
+<li><code>System::new</code>;</li>
+<li><code>update</code>;</li>
+<li><code>potential_energy</code>;</li>
+<li><code>kinetic_energy</code>;</li>
+<li><code>total_energy</code>;</li>
+<li><code>center_of_mass</code>;</li>
+<li><code>particle_states</code>.</li>
+</ul>
+<p>This is the same encapsulation idea from the matrix examples, applied to a
+time-dependent physical system.</p>
+<h2 id="random-initialization">Random Initialization<a class="headerlink" href="#random-initialization" title="Permanent link">&para;</a></h2>
+<p>The constructor initializes the system from a seed:</p>
+<pre><code class="language-rust">pub fn new(num_particles: usize, seed: u64, softening_length: f64) -&gt; Self {
+    let mut rng = rand::rngs::StdRng::seed_from_u64(seed);
+    // allocate vectors and sample values
+}
+</code></pre>
+<p>The example uses distributions for positions, velocities, and masses:</p>
+<pre><code class="language-rust">let position_distribution =
+    Uniform::new(0.0, 1.0).expect(&quot;position distribution bounds should be valid&quot;);
+let velocity_distribution =
+    Normal::new(0.0, 1.0).expect(&quot;velocity distribution parameters should be valid&quot;);
+let mass_distribution =
+    Uniform::new(0.1, 1.0).expect(&quot;mass distribution bounds should be valid&quot;);
+</code></pre>
+<p>The seed is part of the run configuration. Using the same seed and parameters
+recreates the same initial condition.</p>
+<h2 id="gravitational-softening">Gravitational Softening<a class="headerlink" href="#gravitational-softening" title="Permanent link">&para;</a></h2>
+<p>The acceleration calculation includes a softening length:</p>
+<pre><code class="language-rust">let distance_squared =
+    dx * dx + dy * dy + dz * dz + self.softening_length * self.softening_length;
+</code></pre>
+<p>Softening prevents the force from becoming extremely large when two particles
+come very close together. This is a numerical modeling choice, not just a Rust
+implementation detail.</p>
+<p>The same softening length is used in the potential-energy calculation:</p>
+<pre><code class="language-rust">let distance =
+    (dx * dx + dy * dy + dz * dz + self.softening_length * self.softening_length)
+        .sqrt();
+</code></pre>
+<p>Using consistent softening in force and energy diagnostics is important when
+interpreting energy conservation.</p>
+<h2 id="acceleration-calculation">Acceleration Calculation<a class="headerlink" href="#acceleration-calculation" title="Permanent link">&para;</a></h2>
+<p>The acceleration on one particle is computed by summing contributions from all
+other particles:</p>
+<pre><code class="language-rust">fn acceleration_on(&amp;self, index: usize) -&gt; (f64, f64, f64) {
+    let mut acceleration = (0.0, 0.0, 0.0);
+    for i in 0..self.num_particles() {
+        if i != index {
+            let dx = self.xs[i] - self.xs[index];
+            let dy = self.ys[i] - self.ys[index];
+            let dz = self.zs[i] - self.zs[index];
+            let distance_squared =
+                dx * dx + dy * dy + dz * dz + self.softening_length * self.softening_length;
+            let distance = distance_squared.sqrt();
+            let acceleration_magnitude = self.masses[i] / (distance_squared * distance);
+            acceleration.0 += acceleration_magnitude * dx;
+            acceleration.1 += acceleration_magnitude * dy;
+            acceleration.2 += acceleration_magnitude * dz;
+        }
+    }
+    acceleration
+}
+</code></pre>
+<p>The return value is a 3-tuple:</p>
+<pre><code class="language-rust">(f64, f64, f64)
+</code></pre>
+<p>This is a compact local representation for the three acceleration components.
+In a larger code base, a named vector type might be clearer.</p>
+<h2 id="velocity-verlet-update">Velocity Verlet Update<a class="headerlink" href="#velocity-verlet-update" title="Permanent link">&para;</a></h2>
+<p>The <code>update</code> method uses a velocity Verlet step. First it computes the current
+accelerations:</p>
+<pre><code class="language-rust">let accelerations = self.accelerations();
+let half_dt_squared = 0.5 * dt * dt;
+</code></pre>
+<p>Then it updates positions:</p>
+<pre><code class="language-rust">for i in 0..self.num_particles() {
+    let (ax, ay, az) = accelerations[i];
+    self.xs[i] += self.vxs[i] * dt + ax * half_dt_squared;
+    self.ys[i] += self.vys[i] * dt + ay * half_dt_squared;
+    self.zs[i] += self.vzs[i] * dt + az * half_dt_squared;
+}
+</code></pre>
+<p>After the positions change, it recomputes accelerations:</p>
+<pre><code class="language-rust">let new_accelerations = self.accelerations();
+</code></pre>
+<p>Finally it updates velocities using the average of old and new accelerations:</p>
+<pre><code class="language-rust">for i in 0..self.num_particles() {
+    let (ax, ay, az) = accelerations[i];
+    let (new_ax, new_ay, new_az) = new_accelerations[i];
+    self.vxs[i] += 0.5 * (ax + new_ax) * dt;
+    self.vys[i] += 0.5 * (ay + new_ay) * dt;
+    self.vzs[i] += 0.5 * (az + new_az) * dt;
+}
+</code></pre>
+<p>This structure is useful pedagogically because it separates the numerical
+algorithm into visible stages.</p>
+<h2 id="diagnostics">Diagnostics<a class="headerlink" href="#diagnostics" title="Permanent link">&para;</a></h2>
+<p>The system exposes methods for energy diagnostics:</p>
+<pre><code class="language-rust">pub fn kinetic_energy(&amp;self) -&gt; f64
+pub fn potential_energy(&amp;self) -&gt; f64
+pub fn total_energy(&amp;self) -&gt; f64
+</code></pre>
+<p>It also computes the center of mass:</p>
+<pre><code class="language-rust">pub fn center_of_mass(&amp;self) -&gt; (f64, f64, f64)
+</code></pre>
+<p>These diagnostics are not just output decoration. They help evaluate whether
+the simulation behaves plausibly. For example, total energy should usually vary
+less when the time step is smaller, although the softened model, random initial
+conditions, and finite precision all affect the details.</p>
+<h2 id="csv-output">CSV Output<a class="headerlink" href="#csv-output" title="Permanent link">&para;</a></h2>
+<p>The program writes structured output using <code>csv</code> and <code>serde::Serialize</code>.</p>
+<p>The evolution output contains one row per time step:</p>
+<pre><code class="language-rust">#[derive(Serialize)]
+struct EvolutionRecord {
+    step: usize,
+    potential_energy: f64,
+    kinetic_energy: f64,
+    total_energy: f64,
+    center_of_mass_x: f64,
+    center_of_mass_y: f64,
+    center_of_mass_z: f64,
+}
+</code></pre>
+<p>The particle-state output contains one row per particle per time step:</p>
+<pre><code class="language-rust">#[derive(Serialize)]
+struct ParticleStateRecord {
+    step: usize,
+    particle: usize,
+    x: f64,
+    y: f64,
+    z: f64,
+    vx: f64,
+    vy: f64,
+    vz: f64,
+    mass: f64,
+}
+</code></pre>
+<p>This distinction matters:</p>
+<ul>
+<li>evolution output is compact and useful for diagnostics;</li>
+<li>state output is larger and useful for animation or detailed inspection.</li>
+</ul>
+<h2 id="optional-output-files">Optional Output Files<a class="headerlink" href="#optional-output-files" title="Permanent link">&para;</a></h2>
+<p>The output files are optional command-line arguments:</p>
+<pre><code class="language-rust">save_evolution: Option&lt;String&gt;,
+save_states: Option&lt;String&gt;,
+</code></pre>
+<p>The writers are also optional:</p>
+<pre><code class="language-rust">let mut evolution_writer = args
+    .save_evolution
+    .as_deref()
+    .map(|filename| csv::Writer::from_path(filename).expect(&quot;Failed to create evolution file&quot;));
+</code></pre>
+<p>The helper function writes only when a writer exists:</p>
+<pre><code class="language-rust">fn write_evolution_record(
+    writer: &amp;mut Option&lt;csv::Writer&lt;std::fs::File&gt;&gt;,
+    step: usize,
+    system: &amp;System,
+) {
+    if let Some(writer) = writer.as_mut() {
+        writer
+            .serialize(evolution_record(step, system))
+            .expect(&quot;Failed to write evolution record&quot;);
+    }
+}
+</code></pre>
+<p>This is a useful application of <code>Option</code>: no output file is not an error. It is
+just a valid mode of operation.</p>
+<h2 id="running-and-visualizing">Running And Visualizing<a class="headerlink" href="#running-and-visualizing" title="Permanent link">&para;</a></h2>
+<p>Save diagnostics with:</p>
+<pre><code class="language-bash">cargo run -- --steps 200 --save-evolution evolution.csv
+</code></pre>
+<p>Visualize energy and center-of-mass displacement with:</p>
+<pre><code class="language-bash">../visualize-evolution.py evolution.csv
+</code></pre>
+<p>Save particle states with:</p>
+<pre><code class="language-bash">cargo run -- --steps 200 --save-states states.csv
+</code></pre>
+<p>Animate the particle states with:</p>
+<pre><code class="language-bash">../animate-states.py states.csv --output animation.html
+</code></pre>
+<p>The Python scripts use Plotly, and the animation script also uses pandas:</p>
+<pre><code class="language-bash">python3 -m pip install pandas plotly
+</code></pre>
+<h2 id="suggested-hands-on-work">Suggested Hands-On Work<a class="headerlink" href="#suggested-hands-on-work" title="Permanent link">&para;</a></h2>
+<p>Use this sequence as a practical lab.</p>
+<ol>
+<li>Run the default simulation:</li>
+</ol>
+<p><code>bash
+   cd source-code/n-body-simulation/rust
+   cargo run</code></p>
+<ol>
+<li>Save evolution diagnostics:</li>
+</ol>
+<p><code>bash
+   cargo run -- --steps 200 --save-evolution evolution.csv</code></p>
+<ol>
+<li>Visualize the diagnostics:</li>
+</ol>
+<p><code>bash
+   ../visualize-evolution.py evolution.csv</code></p>
+<ol>
+<li>
+<p>Run the same command with a smaller <code>--delta-time</code> and compare total-energy
+   variation.</p>
+</li>
+<li>
+<p>Change the seed and compare the energy evolution.</p>
+</li>
+<li>
+<p>Save particle states and create an animation:</p>
+</li>
+</ol>
+<p><code>bash
+   cargo run -- --steps 100 --save-states states.csv
+   ../animate-states.py states.csv --output animation.html</code></p>
+<ol>
+<li>
+<p>Inspect <code>rust/src/system.rs</code> and identify which methods only read the system and
+   which method mutates it.</p>
+</li>
+<li>
+<p>Change the default softening length on the command line and compare the
+   diagnostics.</p>
+</li>
+<li>
+<p>Add one extra column to <code>EvolutionRecord</code>, such as <code>num_particles</code>, and
+   write it to the CSV output.</p>
+</li>
+<li>
+<p>Discuss whether <code>(f64, f64, f64)</code> is still a good representation for
+    vectors, or whether a named <code>Vector3</code> struct would make the code clearer.</p>
+</li>
+</ol>
+<h2 id="discussion-points">Discussion Points<a class="headerlink" href="#discussion-points" title="Permanent link">&para;</a></h2>
+<p>This module is a good place to emphasize:</p>
+<ul>
+<li>Integrated simulation code combines language features with numerical design
+  choices.</li>
+<li>Struct methods are useful for keeping simulation state encapsulated.</li>
+<li>Random initialization should be reproducible through explicit seeds.</li>
+<li>Numerical diagnostics are part of the program design, not an afterthought.</li>
+<li>CSV output makes simulation results easy to inspect with external tools.</li>
+<li>Optional outputs are naturally represented with <code>Option</code>.</li>
+<li>Visualization helps reveal behavior that is hard to see from raw numbers.</li>
+</ul>
+<h2 id="relation-to-the-julia-set-example">Relation To The Julia Set Example<a class="headerlink" href="#relation-to-the-julia-set-example" title="Permanent link">&para;</a></h2>
+<p>The N-body simulation and Julia set examples are in the same broad category:
+both are integrated numerical examples that combine many smaller Rust features.</p>
+<p>They emphasize different aspects:</p>
+<ul>
+<li>Julia set: deterministic grid computation, matrix-like output, alternative
+  array implementations, and configuration files.</li>
+<li>N-body simulation: time evolution, random initialization, diagnostics,
+  structured CSV output, and animation.</li>
+</ul>
+<p>Together, they give participants two different views of how Rust can be used
+for scientific and technical programs.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../integrated-numerical-example-julia-set/" class="btn btn-neutral float-left" title="12. Integrated Numerical Example: Julia Set"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../integrated-numerical-example-julia-set/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
