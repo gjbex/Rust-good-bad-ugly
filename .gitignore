@@ -3,3 +3,7 @@ site/
 
 # Local GitHub Pages build output
 _site/
+_site*/
+
+# Local Quarto slide render output
+docs/slides/
