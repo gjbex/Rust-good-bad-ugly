@@ -39,7 +39,7 @@ jobs:
         uses: quarto-dev/quarto-actions/setup@v2
 
       - name: Build learning-module site
-        run: mkdocs build --strict --site-dir "$PWD/docs/learning-modules-site"
+        run: mkdocs build --strict --site-dir "$PWD/docs/learning-modules"
 
       - name: Build slide deck
         run: |
@@ -52,7 +52,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/learning-modules-site docs/slides
+          git add docs/learning-modules docs/slides
           if git diff --cached --quiet; then
             echo "No generated site changes to commit."
           else

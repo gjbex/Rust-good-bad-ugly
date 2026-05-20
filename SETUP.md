@@ -178,7 +178,7 @@ Preview the site locally with:
 mkdocs serve
 ```
 
-The GitHub Pages workflow builds this site under `/learning-modules-site/` and
+The GitHub Pages workflow builds this site under `/learning-modules/` and
 the Quarto slide deck under `/slides/`. The Jekyll landing page lives in
 `docs/README.md` and is rendered by GitHub Pages in the classic `/docs`
 configuration.
