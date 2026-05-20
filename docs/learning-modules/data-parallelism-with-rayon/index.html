@@ -169,11 +169,11 @@ and control the number of worker threads when benchmarking or experimenting.</p>
 </ul>
 <p>The example used in this module is:</p>
 <ul>
-<li><code>source-code/julia-set/julia-set-rayon</code></li>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/julia-set/julia-set-rayon"><code>source-code/julia-set/julia-set-rayon</code></a></li>
 </ul>
 <p>The serial reference implementation is:</p>
 <ul>
-<li><code>source-code/julia-set/julia-set-baseline</code></li>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/julia-set/julia-set-baseline"><code>source-code/julia-set/julia-set-baseline</code></a></li>
 </ul>
 <h2 id="why-the-julia-set-parallelizes-well">Why The Julia Set Parallelizes Well<a class="headerlink" href="#why-the-julia-set-parallelizes-well" title="Permanent link">&para;</a></h2>
 <p>In the Julia set computation, each output grid point is computed independently.
@@ -362,7 +362,7 @@ different <code>RAYON_NUM_THREADS</code> values.</p>
    RAYON_NUM_THREADS=4 cargo run --release -- --width 1200 --height 1200 &gt; /dev/null</code></p>
 <ol>
 <li>
-<p>Run the benchmark script from <code>source-code/julia-set</code>.</p>
+<p>Run the benchmark script from <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/julia-set"><code>source-code/julia-set</code></a>.</p>
 </li>
 <li>
 <p>Run the Rayon-specific benchmark script with at least three thread counts.</p>

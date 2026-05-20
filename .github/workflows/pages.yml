@@ -41,6 +41,12 @@ jobs:
       - name: Build learning-module site
         run: mkdocs build --strict --site-dir "$PWD/docs/learning-modules"
 
+      - name: Link source-code references
+        env:
+          SOURCE_LINK_REPO_URL: https://github.com/${{ github.repository }}
+          SOURCE_LINK_BRANCH: main
+        run: python scripts/link_source_code_refs.py docs/learning-modules
+
       - name: Build slide deck
         run: |
           quarto render slides-source/rust-good-bad-ugly.qmd --to revealjs --output-dir "$RUNNER_TEMP/slides"
