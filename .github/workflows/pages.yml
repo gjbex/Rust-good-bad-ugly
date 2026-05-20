@@ -48,6 +48,8 @@ jobs:
         uses: quarto-dev/quarto-actions/setup@v2
 
       - name: Build landing page
+        env:
+          PAGES_REPO_NWO: ${{ github.repository }}
         run: |
           mkdir -p "$RUNNER_TEMP/landing"
           sed "s#{{GITHUB_REPOSITORY}}#${GITHUB_REPOSITORY}#g" pages/README.md > "$RUNNER_TEMP/landing/README.md"
