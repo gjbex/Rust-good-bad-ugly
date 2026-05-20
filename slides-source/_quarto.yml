@@ -1,0 +1,3 @@
+project:
+  title: "Rust, the good, the bad, and the ugly"
+  output-dir: "../docs/slides"

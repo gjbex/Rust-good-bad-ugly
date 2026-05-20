@@ -1,0 +1,403 @@
+# Module 2: Scalar Computation And Numeric Basics
+
+- Concrete scalar types
+- Integer and floating-point arithmetic
+- Explicit numeric conversions
+- Floating-point methods and constants
+- Complex numbers through `num-complex`
+
+::: notes
+This is the first module where Rust's explicitness matters directly for
+numerical work. Keep the visible slides focused on what learners should inspect
+and try.
+:::
+
+## Module Arc
+
+- Inspect scalar type families
+- Compare integer and floating-point behavior
+- Use methods and constants on floating-point values
+- Make conversions visible
+- Add domain-specific numeric types through crates
+
+::: notes
+Avoid turning this into a type catalogue. The recurring idea is that numeric
+expressions have concrete types and Rust does not silently smooth over
+differences between them.
+:::
+
+## By The End
+
+- Recognize signed, unsigned, floating-point, Boolean, character, and pointer-size types
+- Explain why integer and floating-point division differ
+- Choose Euclidean division when a non-negative remainder matters
+- Convert integer values to floating-point values explicitly
+- Use `num-complex` for complex arithmetic
+
+::: notes
+These learning goals come from the module text, but they are phrased as working
+capabilities for trainees.
+:::
+
+## Terminal: Inspect Scalar Types
+
+```{.bash}
+cd source-code/basic-types
+cargo run
+```
+
+- Integer ranges are tied to bit width
+- `usize` and `isize` match pointer width
+- Floating-point constants are type-specific
+
+::: notes
+Use the output to compare `i32`, `u32`, `f32`, `f64`, `usize`, and `isize`.
+Keep the discussion concrete and platform-aware.
+:::
+
+## Scalar Type Families
+
+- Signed integers: `i8`, `i16`, `i32`, `i64`, `i128`, `isize`
+- Unsigned integers: `u8`, `u16`, `u32`, `u64`, `u128`, `usize`
+- Floating-point values: `f32`, `f64`
+- Other scalars: `bool`, `char`
+
+::: notes
+Mention that `usize` is common for indices and sizes. Do not spend long on
+every integer width.
+:::
+
+## Floating-Point Constants
+
+```rust
+f32::MIN
+f32::MAX
+f32::MIN_POSITIVE
+f32::EPSILON
+
+std::f64::consts::PI
+std::f64::consts::TAU
+```
+
+- Constants are namespaced by type
+- `f32` and `f64` constants are distinct
+- Precision is part of the type choice
+
+::: notes
+Connect this to scientific code where precision choices should be intentional.
+:::
+
+## Type Inference And Explicit Types
+
+```rust
+let x = 17;
+let y = 5.2;
+
+let a: i32 = 17;
+let b: i32 = 5;
+let value: f64 = 5.2;
+```
+
+- Rust infers types from context
+- Explicit annotations help when the type matters
+- Numerical examples should make important types visible
+
+::: notes
+Use this slide to prepare learners for the arithmetic examples. The issue is
+not that inference is bad; the issue is knowing when clarity matters.
+:::
+
+## Terminal: Compare Arithmetic
+
+```{.bash}
+cd source-code/math
+cargo run
+```
+
+- Compare `17 / 5` with `17.3 / 5.2`
+- Compare `%` for integers and floating-point values
+- Keep the operand types visible
+
+::: notes
+Run the example before opening the source. Then inspect
+`source-code/math/src/main.rs`.
+:::
+
+## Integer Arithmetic
+
+```rust
+let a: i32 = 17;
+let b: i32 = 5;
+
+println!("{}", a / b);
+println!("{}", a % b);
+```
+
+- Integer `/` discards the fractional part
+- `%` gives the remainder for the same division rule
+- The result type is still an integer
+
+::: notes
+This is a good place to ask for predictions, but keep that prompt in notes.
+:::
+
+## Negative Integer Division
+
+```rust
+let a: i32 = -17;
+let b: i32 = 5;
+
+println!("{}", a / b);
+println!("{}", a % b);
+println!("{}", a.div_euclid(b));
+println!("{}", a.rem_euclid(b));
+```
+
+- `/` and `%` use truncating division
+- `div_euclid` and `rem_euclid` use Euclidean division
+- Non-negative remainders matter for periodic domains
+
+::: notes
+Connect Euclidean remainder to periodic indexing or grid wraparound.
+:::
+
+## Floating-Point Arithmetic
+
+```rust
+let x: f64 = 17.3;
+let y: f64 = 5.2;
+
+println!("{}", x / y);
+println!("{}", x % y);
+```
+
+- Floating-point division keeps fractional information
+- Floating-point remainder is a related but different operation
+- `f32` and `f64` remain distinct types
+
+::: notes
+Avoid a full floating-point numerics lecture here. The key contrast is with
+integer arithmetic.
+:::
+
+## Mathematical Methods
+
+```rust
+let angle = std::f64::consts::FRAC_PI_6;
+let value = 2.0_f64;
+
+println!("{}", angle.sin());
+println!("{}", value.sqrt());
+println!("{}", value.powi(8));
+println!("{}", value.powf(0.5));
+```
+
+- Floating-point functions are methods on values
+- `powi` takes an integer exponent
+- `powf` takes a floating-point exponent
+
+::: notes
+Point out method-call syntax and the typed suffix `2.0_f64`.
+:::
+
+## Rounding And Absolute Values
+
+```rust
+let x = -3.75_f64;
+
+println!("{}", x.abs());
+println!("{}", x.floor());
+println!("{}", x.ceil());
+println!("{}", x.round());
+println!("{}", x.trunc());
+```
+
+- Choose the operation that matches the numerical meaning
+- Rounding choices affect downstream results
+- Method names make the choice explicit
+
+::: notes
+If there is time, edit the value and rerun the example.
+:::
+
+## Terminal: Polynomial Function
+
+```{.bash}
+cd source-code/numerical-function
+cargo run -- --help
+cargo run -- --a 2.0 --b -1.0 --c 0.5
+```
+
+- Command-line coefficients are `f64`
+- The function signature fixes the numeric type
+- Output values come from a generated grid
+
+::: notes
+Connect this back to Module 1: command-line inputs make runs repeatable.
+:::
+
+## Typed Numeric Functions
+
+```rust
+fn polynomial(x: f64, a: f64, b: f64, c: f64) -> f64 {
+    a * x.powi(2) + b * x + c
+}
+```
+
+- Parameter types are part of the interface
+- Return type is explicit
+- `powi(2)` matches an integer exponent
+
+::: notes
+The visible point is the function boundary. Discuss how this helps callers know
+what values are expected.
+:::
+
+## Explicit Conversion
+
+```rust
+let delta_x = (x_max - x_min) / (nr_points as f64 - 1.0);
+
+for i in 0..nr_points {
+    let x = x_min + i as f64 * delta_x;
+    let result = polynomial(x, args.a, args.b, args.c);
+    println!("{x} {result}");
+}
+```
+
+- Integer loop counts do not silently become `f64`
+- `as f64` marks the conversion point
+- Visible conversions make numerical intent reviewable
+
+::: notes
+As a live edit, remove one conversion and run `cargo check`. Keep the
+instruction in notes, not as visible slide text.
+:::
+
+## Terminal: Conversion Diagnostic
+
+```{.bash}
+cd source-code/numerical-function
+cargo check
+```
+
+- Remove one `as f64` conversion
+- Locate the type mismatch
+- Restore the explicit conversion
+
+::: notes
+This visible slide is written as a trainee exercise. The trainer can decide
+whether to demonstrate it or let participants try it.
+:::
+
+## Avoiding Implicit Double Promotion
+
+```rust
+fn compute_polynom(x: f32) -> f32 {
+    let a = 3.0;
+    let b = 2.0;
+    let c = 1.0;
+    a * x * x + b * x + c
+}
+```
+
+- Floating-point literals get a concrete type from context
+- The expression remains `f32`
+- No silent promote-to-double-then-convert-back step
+
+::: notes
+Contrast with C, C++, or Fortran only briefly unless the audience asks for
+more.
+:::
+
+## Terminal: Literal Types
+
+```{.bash}
+cd source-code/no-double-promotion
+cargo run --release
+```
+
+- Inspect the printed type names
+- Notice how `x`, `a`, `b`, and `c` are typed
+- Treat ambiguity as something the compiler should reject
+
+::: notes
+The example prints type names with `type_name_of_val`, which is useful for this
+one teaching moment.
+:::
+
+## Complex Numbers
+
+```rust
+use num_complex::Complex64;
+
+let z1 = Complex64 { re: 1.0, im: 2.0 };
+let z2 = Complex64 { re: 3.0, im: 4.0 };
+
+println!("{}", z1 + z2);
+println!("{}", z1 * z2);
+println!("{}", z1.norm());
+```
+
+- Complex numbers come from a crate
+- `Complex64` stores `f64` real and imaginary parts
+- Numeric behavior can be extended through types
+
+::: notes
+Connect this to later Julia set material, where complex arithmetic becomes part
+of the integrated numerical example.
+:::
+
+## Terminal: Complex Arithmetic
+
+```{.bash}
+cd source-code/complex-numbers
+cargo run
+```
+
+- Add `z1 - z2`
+- Inspect `z1.re` and `z1.im`
+- Compare arithmetic with scalar `f64` arithmetic
+
+::: notes
+This is a compact exercise. Keep the focus on using an external numeric type,
+not on complex analysis.
+:::
+
+## Hands-On Sequence
+
+1. Run `source-code/basic-types`
+2. Add one more floating-point constant
+3. Compare integer and floating-point division
+4. Predict `/`, `%`, `div_euclid`, and `rem_euclid`
+5. Remove one `as f64` conversion and run `cargo check`
+6. Add `z1 - z2` to the complex-number example
+
+::: notes
+Use this as a lab checkpoint or as a summary of the practical work in the
+module.
+:::
+
+## Questions
+
+- When should a type annotation be written explicitly?
+- Which division operation matches periodic indexing?
+- Where should integer-to-float conversion happen?
+- Which numeric types belong in the standard library?
+- Which numeric types belong in crates?
+
+::: notes
+Use these questions to close the module before moving to control flow.
+:::
+
+## Connection To The Next Module
+
+- Numeric expressions need control flow
+- Loops generate grids and samples
+- Functions separate reusable calculations
+- `match` makes discrete choices explicit
+
+::: notes
+Transition to Module 3 by pointing at the loops and functions already seen in
+`math` and `numerical-function`.
+:::

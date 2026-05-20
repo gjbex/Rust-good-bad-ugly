@@ -1,0 +1,436 @@
+# Module 12: Integrated Numerical Example: Julia Set
+
+- Complex arithmetic
+- Grid-to-plane mapping
+- Matrix-level iteration
+- Multiple implementation variants
+- Output and visualization
+
+::: notes
+This is an integration module. Revisit earlier concepts only where they appear
+naturally in the numerical program.
+:::
+
+## Module Arc
+
+- Start with a scalar numerical kernel
+- Map a rectangular grid to complex values
+- Store iteration counts in matrix-like output
+- Compare custom and library-backed storage
+- Move from command-line parameters to TOML configuration
+
+::: notes
+The goal is not to teach fractals deeply. The goal is to study how a numerical
+algorithm becomes Rust code.
+:::
+
+## By The End
+
+- Explain the Julia set computation steps
+- Use `Complex64` for complex arithmetic
+- Map integer grid indices to floating-point coordinates
+- Separate scalar and matrix-level iteration
+- Compare implementation variants
+- Use configuration files for reproducible runs
+
+::: notes
+Keep the focus on integration of earlier Rust ideas.
+:::
+
+## Implementation Family
+
+- `julia-set-baseline`
+- `julia-set-mdarray`
+- `julia-set-mdarray-expr-eval`
+- `julia-set-toml-config`
+- `julia-set-rayon`
+- `view-fractal.py`
+
+::: notes
+The Rayon details were covered in Module 11; here it is part of the family of
+variants.
+:::
+
+## Mathematical Core
+
+```text
+z <- z * z + c
+```
+
+- `c` is fixed for one run
+- initial `z` varies across the grid
+- output is the escape iteration count
+- `max_iterations` caps the work per point
+
+::: notes
+This is enough mathematics for the software design discussion.
+:::
+
+## Scalar Kernel
+
+```rust
+fn iterate_z_value(z: Complex64, c: Complex64, max_iterations: usize) -> usize {
+    let mut z_n = z;
+    for n in 0..max_iterations {
+        if z_n.norm() > 2.0 {
+            return n;
+        }
+        z_n = z_n * z_n + c;
+    }
+    max_iterations
+}
+```
+
+- One input point
+- One fixed complex parameter
+- One iteration count
+
+::: notes
+This is the small numerical kernel that all variants share.
+:::
+
+## Complex Numbers
+
+```rust
+use num_complex::Complex64;
+```
+
+```rust
+let c = Complex64::new(args.c_real, args.c_imag);
+z_n = z_n * z_n + c;
+```
+
+- Complex numbers come from a crate
+- Arithmetic uses ordinary operators
+- `norm()` supports the escape test
+
+::: notes
+Connect this back to Module 2.
+:::
+
+## Grid To Complex Plane
+
+```rust
+let domain_min = -2.0;
+let domain_max = 2.0;
+let delta_re = (domain_max - domain_min) / (cols as f64);
+let delta_im = (domain_max - domain_min) / (rows as f64);
+```
+
+- Integer grid dimensions become floating-point steps
+- `cols` controls the real-axis spacing
+- `rows` controls the imaginary-axis spacing
+
+::: notes
+This is a compact example of explicit numeric conversion.
+:::
+
+## Initial Complex Grid
+
+```rust
+for i in 0..rows {
+    for j in 0..cols {
+        let z_value = Complex64::new(
+            domain_min + j as f64 * delta_re,
+            domain_min + i as f64 * delta_im,
+        );
+        z.set(i, j, z_value)
+            .expect("loop indices should be in bounds");
+    }
+}
+```
+
+- Nested loops visit the image grid
+- `i` and `j` become coordinates
+- The matrix stores initial complex values
+
+::: notes
+This combines loops, explicit conversion, complex construction, and matrix
+updates.
+:::
+
+## Matrix-Level Iteration
+
+```rust
+fn iterate_z_matrix(z: &Matrix<Complex64>, c: Complex64, max_iterations: usize) -> Matrix<usize> {
+    let mut result = Matrix::new(z.rows(), z.cols(), 0);
+    for i in 0..z.rows() {
+        for j in 0..z.cols() {
+            let z_value = *z.get(i, j).expect("loop indices should be in bounds");
+            let iterations = iterate_z_value(z_value, c, max_iterations);
+            result.set(i, j, iterations)
+                .expect("loop indices should be in bounds");
+        }
+    }
+    result
+}
+```
+
+- Borrow input grid
+- Compute one scalar result per point
+- Return owned output matrix
+
+::: notes
+This is the ownership pattern: borrowed input, owned output.
+:::
+
+## Terminal: Baseline Variant
+
+```{.bash}
+cd source-code/julia-set/julia-set-baseline
+cargo run --release -- --width 400 --height 300 | ../view-fractal.py
+```
+
+- Custom matrix type
+- Explicit nested loops
+- Command-line parameters
+- Text output to visualization
+
+::: notes
+Only run the Plotly viewer if the environment supports it.
+:::
+
+## Command-Line Parameters
+
+```rust
+#[arg(short, long, default_value_t = 1000)]
+max_iterations: usize,
+#[arg(short = 'x', long, default_value_t = 800)]
+width: usize,
+#[arg(short = 'y', long, default_value_t = 600)]
+height: usize,
+#[arg(short = 'r', long, default_value_t = -0.5125)]
+c_real: f64,
+#[arg(short = 'i', long, default_value_t = 0.5213)]
+c_imag: f64,
+```
+
+- Numerical parameters are visible
+- Runs can be repeated from the shell command
+- Parameter changes affect the image
+
+::: notes
+This connects back to CLI and reproducibility modules.
+:::
+
+## Terminal: Change The Complex Parameter
+
+```{.bash}
+cargo run --release -- --width 400 --height 300 --c-real -0.8 --c-imag 0.156 | ../view-fractal.py
+```
+
+- Keep image size fixed
+- Change only `c`
+- Compare the resulting structure
+
+::: notes
+This is a compact exploration exercise.
+:::
+
+## External Array Storage With `mdarray`
+
+```rust
+type MatrixC = DArray<Complex64, 2>;
+type MatrixCSlice = DSlice<Complex64, 2>;
+type MatrixI = DArray<usize, 2>;
+```
+
+- Dedicated array storage replaces the teaching matrix
+- Dimension is part of the type alias
+- Library indexing uses array syntax
+
+::: notes
+This shows the transition from teaching data structures to a numerical crate.
+:::
+
+## `mdarray` Indexing
+
+```rust
+let mut z = MatrixC::from_elem([rows, cols], Complex64::new(0.0, 0.0));
+
+z[[i, j]] = z_value;
+let z_value = z[[i, j]];
+```
+
+- Array shape is explicit
+- Indexing syntax is concise
+- The algorithm remains recognizable
+
+::: notes
+Compare with `Matrix::new`, `get`, and `set` from the baseline.
+:::
+
+## Expression Evaluation Variant
+
+```rust
+expr::from_fn([rows, cols], |idx| {
+    let i = idx[0];
+    let j = idx[1];
+
+    Complex64::new(
+        domain_min + j as f64 * delta_re,
+        domain_min + i as f64 * delta_im,
+    )
+})
+.eval()
+```
+
+- Grid construction becomes an expression
+- Index mapping stays explicit
+- More work is delegated to the array library
+
+::: notes
+Use this to discuss readability and library abstractions.
+:::
+
+## Matrix Iteration As An Expression
+
+```rust
+z.expr()
+    .map(|&z_value| iterate_z_value(z_value, c, max_iterations))
+    .eval()
+```
+
+- Element-wise computation reads as a pipeline
+- The scalar kernel is reused
+- The matrix loop is hidden by the library abstraction
+
+::: notes
+This is a good comparison with the explicit nested loops.
+:::
+
+## TOML Configuration
+
+```toml
+max_iterations = 1000
+width = 800
+height = 600
+c_real = -0.5125
+c_imag = 0.5213
+```
+
+- Parameters are saved in a file
+- The run configuration can be edited and shared
+- The command line names the configuration file
+
+::: notes
+Configuration files become more useful as parameter sets grow.
+:::
+
+## Reading Configuration
+
+```rust
+#[derive(Debug, Deserialize)]
+struct Config {
+    max_iterations: usize,
+    width: usize,
+    height: usize,
+    c_real: f64,
+    c_imag: f64,
+}
+```
+
+```rust
+fn read_config(path: PathBuf) -> Result<Config, Box<dyn Error>> {
+    let config_text = fs::read_to_string(path)?;
+    let config = toml::from_str(&config_text)?;
+    Ok(config)
+}
+```
+
+- `serde` maps TOML into a struct
+- I/O and parsing can fail
+- `?` propagates errors
+
+::: notes
+This integrates Modules 8 and 9 with the numerical example.
+:::
+
+## Terminal: TOML Variant
+
+```{.bash}
+cd ../julia-set-toml-config
+cargo run --release -- julia-set.toml | ../view-fractal.py
+```
+
+- Run parameters come from TOML
+- The shell command is shorter
+- The configuration file carries the details
+
+::: notes
+Edit `julia-set.toml` for a small visible change if time allows.
+:::
+
+## Text Output And Visualization
+
+```{.bash}
+cargo run --release -- --width 800 --height 600 | ../view-fractal.py
+```
+
+```python
+go.Heatmap(
+    z=data,
+    colorscale="Viridis",
+    colorbar={"title": "Iterations"},
+)
+```
+
+- Rust computes numerical data
+- Text output keeps tools loosely coupled
+- Python provides quick visualization
+
+::: notes
+This is a pragmatic workflow, not a claim that all visualization belongs in
+Python.
+:::
+
+## Comparing Variants
+
+- Custom matrix versus array crate
+- Explicit loops versus expression evaluation
+- Command-line parameters versus configuration file
+- Minimal dependencies versus domain-specific crates
+- Fully visible steps versus delegated library behavior
+
+::: notes
+No single variant is automatically best. The point is to compare tradeoffs.
+:::
+
+## Hands-On Sequence
+
+1. Run and visualize the baseline
+2. Change `c_real` and `c_imag`
+3. Inspect `initialize_z`
+4. Inspect `iterate_z_value`
+5. Run the `mdarray` variant
+6. Compare explicit loops with expression evaluation
+7. Run the TOML variant
+8. Edit `julia-set.toml` and rerun
+
+::: notes
+Use this as the lab checklist.
+:::
+
+## Questions
+
+- Which code is the scalar numerical kernel?
+- Which code maps grid indices to coordinates?
+- Which storage choice is easiest to read?
+- Which run style is easier to reproduce later?
+- Which variant would be easiest to extend?
+
+::: notes
+Use these questions to close the module.
+:::
+
+## Connection To The N-Body Example
+
+- Both examples combine earlier language features
+- Both use command-line configuration
+- Both produce output for external visualization
+- Julia set is deterministic and compact
+- N-body adds time evolution, randomness, and diagnostics
+
+::: notes
+Transition to Module 13.
+:::

@@ -1,0 +1,485 @@
+# Module 4: Ownership, Borrowing, And Mutation
+
+- Immutable bindings by default
+- Move semantics and `Copy`
+- Shared and mutable references
+- Slices for borrowed sequences
+- Function signatures that communicate ownership
+
+::: notes
+Treat this as a mental-model module. The goal is predicting why the compiler
+accepts or rejects a program, not memorizing slogans.
+:::
+
+## Module Arc
+
+- Start with local mutation
+- Compare scalar copies with vector moves
+- Borrow data for read-only functions
+- Borrow mutably for in-place updates
+- Choose signatures from ownership intent
+
+::: notes
+Each example isolates one rule. Keep the flow concrete and example-driven.
+:::
+
+## By The End
+
+- Use `mut` when a binding changes
+- Distinguish copy, move, clone, borrow, and mutable borrow
+- Prefer `&[T]` over `&Vec<T>` for read-only sequences
+- Use `&mut [T]` for in-place sequence updates
+- Read function signatures as ownership contracts
+
+::: notes
+This list is trainee-facing. It is okay if not every point is fully mastered
+after one pass; later modules reinforce the same ideas.
+:::
+
+## Immutable By Default
+
+```rust
+let x = 1.0;
+
+let mut y = 1.0;
+y += 0.1;
+```
+
+- Bindings do not change unless marked `mut`
+- Mutation is local and visible
+- `mut` belongs to the binding
+
+::: notes
+Clarify that `mut` is not a global property of the value forever. It says this
+binding may be assigned a new value.
+:::
+
+## Terminal: Mutable Grid Point
+
+```{.bash}
+cd source-code/mutable-variables
+cargo run -- --help
+cargo run -- --a 1.0 --b 0.0 --c 0.0
+```
+
+- Locate the binding that changes
+- Remove `mut` and run `cargo check`
+- Restore `mut`
+
+::: notes
+Use the diagnostic to connect mutation in the code to mutation in the function
+body. Keep the visible text as participant work.
+:::
+
+## Local Mutation In A Loop
+
+```rust
+let mut x = x_min;
+let delta_x = (x_max - x_min) / (nr_points as f64 - 1.0);
+
+for _ in 0..nr_points {
+    let result = polynomial(x, args.a, args.b, args.c);
+    println!("{x} {result}");
+    x += delta_x;
+}
+```
+
+- `x` changes on each iteration
+- `delta_x` does not change
+- The mutable binding is the one that needs `mut`
+
+::: notes
+This connects Module 3 loops to ownership and mutation.
+:::
+
+## Mutable References
+
+```rust
+fn rhs(x: f64, dxdt: &mut f64, _t: f64) {
+    *dxdt = -x;
+}
+```
+
+- `dxdt` is borrowed mutably
+- `*dxdt` writes through the reference
+- Mutation appears in the function signature
+
+::: notes
+Mention that this style is useful for explaining mutable borrowing, but a
+return value is often clearer for a simple computation.
+:::
+
+## Terminal: Write Through A Reference
+
+```{.bash}
+cd source-code/mutable-borrowing
+cargo run
+```
+
+- Find the `&mut` at the call site
+- Find the `*dxdt` assignment
+- Rewrite `rhs` to return `f64`
+
+::: notes
+The rewrite is a useful comparison: `fn rhs(x, t) -> f64` versus writing into a
+caller-owned output variable.
+:::
+
+## Mutable Borrow At The Call Site
+
+```rust
+let mut dxdt = 0.0;
+
+rhs(x, &mut dxdt, t);
+x += dxdt * delta_t;
+```
+
+- The caller must own a mutable binding
+- `&mut dxdt` grants temporary write access
+- The caller keeps ownership after the call
+
+::: notes
+This slide distinguishes borrowing from moving ownership.
+:::
+
+## Copying Scalars
+
+```rust
+let x = 5.0;
+let y = x;
+
+println!("x: {x}, y: {y}");
+```
+
+- Small scalar values such as `f64` are copied
+- Both bindings remain usable
+- This is the expected behavior for simple numeric values
+
+::: notes
+Introduce `Copy` as the trait behind this behavior without going deep into
+traits yet.
+:::
+
+## Moving Owned Data
+
+```rust
+let xs = vec![1.0, 2.0, 3.0];
+let ys = xs;
+
+println!("ys: {ys:?}");
+```
+
+- `Vec<f64>` owns heap-allocated data
+- Assignment moves ownership to `ys`
+- `xs` is no longer usable after the move
+
+::: notes
+Use the commented-out failing print in `copy-vs-move` to show the diagnostic if
+time permits.
+:::
+
+## Terminal: Copy Versus Move
+
+```{.bash}
+cd source-code/copy-vs-move
+cargo run
+cargo check
+```
+
+- Compare the scalar assignment with the vector assignment
+- Uncomment one line that uses a moved vector
+- Locate where ownership moved
+
+::: notes
+Keep the diagnostic exercise small. Restore comments afterward.
+:::
+
+## Cloning Owned Data
+
+```rust
+let xs = vec![1.0, 2.0, 3.0];
+let ys = xs.clone();
+
+println!("xs: {xs:?}, ys: {ys:?}");
+```
+
+- `clone` creates an explicit copy
+- Both vectors can be used afterward
+- Large clones are visible in the code
+
+::: notes
+This is the performance point: Rust does not hide vector copies in ordinary
+assignment.
+:::
+
+## Moving Into A Function
+
+```rust
+fn mean_move(values: Vec<f64>) -> f64 {
+    values.iter().sum::<f64>() / (values.len() as f64)
+}
+
+let xs = vec![1.0, 2.0, 3.0];
+let mean = mean_move(xs);
+```
+
+- The function takes ownership of the vector
+- The caller cannot use `xs` after the call
+- Read-only computations usually should not take ownership
+
+::: notes
+This sets up borrowing as the better API for a mean function.
+:::
+
+## Shared Borrowing
+
+```rust
+fn mean_borrow(values: &Vec<f64>) -> f64 {
+    values.iter().sum::<f64>() / (values.len() as f64)
+}
+
+let xs = vec![1.0, 2.0, 3.0];
+let mean = mean_borrow(&xs);
+```
+
+- `&xs` grants read-only access
+- Ownership stays with the caller
+- `xs` can still be used after the call
+
+::: notes
+This is a stepping stone to slices. Do not present `&Vec<T>` as the final API
+style.
+:::
+
+## Prefer Slices For Sequences
+
+```rust
+fn mean(data: &[f64]) -> f64 {
+    let sum: f64 = data.iter().sum();
+    sum / (data.len() as f64)
+}
+```
+
+- `&[f64]` is a borrowed view of contiguous values
+- A slice can refer to all or part of a vector
+- Read-only sequence APIs are more flexible with slices
+
+::: notes
+Use this as a durable API rule: read a sequence with `&[T]`, not `&Vec<T>`.
+:::
+
+## Mutable Slices
+
+```rust
+fn normalize(data: &mut [f64]) {
+    let mean_value = mean(data);
+    for value in data.iter_mut() {
+        *value /= mean_value;
+    }
+}
+```
+
+- `&mut [f64]` grants write access to sequence elements
+- `iter_mut` yields mutable element references
+- `*value` writes through each reference
+
+::: notes
+This combines shared borrowing for `mean(data)` and mutable iteration for
+normalization.
+:::
+
+## Terminal: Normalize In Place
+
+```{.bash}
+cd source-code/borrowing-vectors
+cargo run
+```
+
+- Inspect the original data
+- Normalize through `&mut data`
+- Compare the mean before and after normalization
+
+::: notes
+Open `source-code/borrowing-vectors/src/main.rs` and point at the function
+signatures.
+:::
+
+## Borrowing Rules
+
+```rust
+{
+    let first_value = &data[0];
+    let this_mean = mean(&data);
+    println!("First value: {first_value}");
+}
+```
+
+- Multiple shared borrows can overlap
+- Read-only access does not conflict with read-only access
+- The borrow ends when the reference is no longer used
+
+::: notes
+This accepted case makes the rejected case easier to reason about.
+:::
+
+## Shared And Mutable Borrows
+
+```rust
+{
+    let first_value = &data[0];
+    normalize(&mut data);
+    println!("First value before normalization: {first_value}");
+}
+```
+
+- `first_value` borrows from `data`
+- `normalize(&mut data)` needs exclusive access
+- The two accesses overlap
+
+::: notes
+This code is intentionally rejected. The point is overlapping access, not
+syntax.
+:::
+
+## Terminal: Borrow Conflict
+
+```{.bash}
+cd source-code/borrowing-vectors
+cargo check
+```
+
+- Uncomment the rejected borrowing block
+- Locate the shared borrow
+- Locate the attempted mutable borrow
+- Restore the original code
+
+::: notes
+Keep this as a focused diagnostic-reading exercise.
+:::
+
+## References In Collections
+
+```rust
+let xs = vec![1.0, 2.0, 3.0];
+let filtered: Vec<&f64> = xs.iter()
+    .filter(|&&x| x > 1.5)
+    .collect();
+```
+
+- `filtered` stores references into `xs`
+- `xs` remains borrowed while those references are used
+- The filtered vector does not own the numbers
+
+::: notes
+This prepares for iterator material later. The ownership consequence is the
+important part here.
+:::
+
+## Independent Filtered Values
+
+```rust
+let filtered: Vec<f64> = xs.iter()
+    .filter(|&&x| x > 1.5)
+    .copied()
+    .collect();
+```
+
+- `copied` turns `&f64` into `f64`
+- The filtered vector owns its values
+- `xs` can be modified independently afterward
+
+::: notes
+For `f64`, copying is cheap. For owned data, the distinction between copied,
+cloned, borrowed, and moved matters more.
+:::
+
+## Returning Owned Values
+
+```rust
+fn return_vector() -> Vec<f64> {
+    vec![1.0, 2.0, 3.0]
+}
+
+let xs = return_vector();
+```
+
+- A function can create owned data
+- Ownership moves to the caller
+- Returning a vector does not imply element-by-element copying
+
+::: notes
+This counters the misconception that ownership transfer is inherently a deep
+copy.
+:::
+
+## Choosing Function Signatures
+
+- Small scalar input: pass by value
+- Read-only sequence input: pass `&[T]`
+- In-place sequence update: pass `&mut [T]`
+- Ownership transfer: pass an owning type by value
+- Newly created data: return an owning type
+
+::: notes
+This is the main API-design slide for the module.
+:::
+
+## Signature Examples
+
+```rust
+fn mean(data: &[f64]) -> f64
+```
+
+```rust
+fn normalize(data: &mut [f64])
+```
+
+```rust
+fn return_vector() -> Vec<f64>
+```
+
+- Read
+- Modify
+- Create and return
+
+::: notes
+Read the signatures as ownership contracts.
+:::
+
+## Hands-On Sequence
+
+1. Run `source-code/mutable-variables`
+2. Remove and restore one required `mut`
+3. Rewrite `rhs` to return `f64`
+4. Compare scalar copy with vector move
+5. Change `mean_borrow` to use a slice
+6. Uncomment one borrow conflict and run `cargo check`
+7. Add `shift(data: &mut [f64], offset: f64)`
+
+::: notes
+Use this as a lab checklist. Keep each diagnostic exercise small and restore
+the original code afterward.
+:::
+
+## Questions
+
+- Does this function need ownership?
+- Does this function only read data?
+- Does this function modify data in place?
+- Is a clone intentional and worth its cost?
+- Can a slice make the API more flexible?
+
+::: notes
+These questions should become a habit when designing signatures.
+:::
+
+## Connection To The Next Module
+
+- Structs store owned data in fields
+- Methods borrow `self` or `&mut self`
+- Constructors return owned values
+- Encapsulation depends on clear ownership boundaries
+
+::: notes
+Transition to Module 5: data modeling with structs and methods.
+:::

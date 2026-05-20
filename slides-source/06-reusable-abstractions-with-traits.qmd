@@ -1,0 +1,492 @@
+# Module 6: Reusable Abstractions With Traits
+
+- Standard traits for familiar behavior
+- User-defined traits for domain behavior
+- Trait bounds on generic code
+- Associated types in trait contracts
+- Static and dynamic dispatch
+
+::: notes
+Present traits as Rust's way to express shared behavior. Avoid starting with
+inheritance comparisons unless the room asks for them.
+:::
+
+## Module Arc
+
+- Implement standard traits for a custom matrix type
+- Connect custom types to familiar Rust syntax
+- Define a numerical interface with a project-specific trait
+- Use trait bounds when generic code needs behavior
+- Compare compile-time and run-time dispatch
+
+::: notes
+The matrix example shows standard traits. The quadrature example shows a
+domain-level trait.
+:::
+
+## By The End
+
+- Explain what a trait represents
+- Implement `Index`, `IndexMut`, `Display`, and `TryFrom`
+- Recognize associated types such as `Output` and `Error`
+- Define and implement a user-defined trait
+- Use trait bounds to require behavior
+- Recognize `dyn Trait` as dynamic dispatch
+
+::: notes
+These are recognition and working-use goals, not full trait-system mastery.
+:::
+
+## What Is A Trait?
+
+- A named set of behavior
+- A contract a type can implement
+- A way to use shared syntax or shared interfaces
+- Not an inheritance relationship
+
+```rust
+println!("{value}");
+matrix[(row, col)]
+```
+
+::: notes
+Use the examples to keep this practical: formatting and indexing are behaviors.
+:::
+
+## Terminal: Matrix With Traits
+
+```{.bash}
+cd source-code/traits
+cargo run
+```
+
+- Fill a matrix with indexing syntax
+- Print a matrix with `{}`
+- Iterate over borrowed and owned matrix values
+
+::: notes
+Run first, then open `source-code/traits/src/matrix.rs`.
+:::
+
+## Standard Traits In This Example
+
+- `Index`: read with `matrix[(row, col)]`
+- `IndexMut`: assign with `matrix[(row, col)] = value`
+- `Display`: print with `println!("{matrix}")`
+- `TryFrom`: build from nested vectors fallibly
+- `IntoIterator`: loop over matrix values
+
+::: notes
+This slide is a map of the standard-trait part of the module.
+:::
+
+## Indexing With `Index`
+
+```rust
+impl<T> Index<(usize, usize)> for Matrix<T> {
+    type Output = T;
+
+    fn index(&self, index: (usize, usize)) -> &Self::Output {
+        let (row, col) = index;
+        let flat_index = self.flat_index(row, col)
+            .unwrap_or_else(|| panic!("matrix index ({row}, {col}) is out of bounds"));
+        &self.data[flat_index]
+    }
+}
+```
+
+- The index type is `(usize, usize)`
+- `type Output = T` defines the indexed value type
+- The method returns a shared reference
+
+::: notes
+The panic behavior matches slice indexing. A fallible method can still exist
+separately.
+:::
+
+## Indexing Syntax
+
+```rust
+let value = matrix[(row, col)];
+```
+
+- The syntax uses the `Index` implementation
+- The row and column become one tuple index
+- Out-of-bounds indexing is a programming error here
+
+::: notes
+Connect this to the previous module's tuple and matrix-indexing discussion.
+:::
+
+## Mutable Indexing With `IndexMut`
+
+```rust
+impl<T> IndexMut<(usize, usize)> for Matrix<T> {
+    fn index_mut(&mut self, index: (usize, usize)) -> &mut Self::Output {
+        let (row, col) = index;
+        let flat_index = self.flat_index(row, col)
+            .unwrap_or_else(|| panic!("matrix index ({row}, {col}) is out of bounds"));
+        &mut self.data[flat_index]
+    }
+}
+```
+
+- `&mut self` grants mutable matrix access
+- The method returns a mutable element reference
+- Assignment uses this implementation
+
+::: notes
+Tie this back to the ownership module: mutable indexing is mutable borrowing.
+:::
+
+## Assignment Through Indexing
+
+```rust
+for row in 0..matrix.rows() {
+    for col in 0..matrix.cols() {
+        matrix[(row, col)] = (row * matrix.cols() + col) as f64;
+    }
+}
+```
+
+- Matrix assignment reads like ordinary indexing
+- The implementation still controls bounds checks
+- The call site no longer needs a `set` method
+
+::: notes
+This illustrates why standard traits are useful: they connect custom types to
+familiar syntax.
+:::
+
+## Formatting With `Display`
+
+```rust
+impl<T: Display> Display for Matrix<T> {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for row in 0..self.rows {
+            for col in 0..self.cols {
+                if col > 0 {
+                    write!(formatter, " ")?;
+                }
+                write!(formatter, "{}", self[(row, col)])?;
+            }
+        }
+        Ok(())
+    }
+}
+```
+
+- `Display` controls `{}` formatting
+- `T: Display` is needed for each element
+- `fmt::Result` reports formatting success or failure
+
+::: notes
+The actual implementation also writes newlines between rows. This shortened
+fragment keeps the slide readable.
+:::
+
+## Printing A Matrix
+
+```rust
+println!("floating-point matrix:");
+println!("{matrix}");
+```
+
+- The matrix controls its own text representation
+- The caller uses ordinary formatting syntax
+- Element formatting depends on `T: Display`
+
+::: notes
+This is a simple, visible payoff from implementing a standard trait.
+:::
+
+## Fallible Conversion With `TryFrom`
+
+```rust
+impl<T> TryFrom<Vec<Vec<T>>> for Matrix<T> {
+    type Error = String;
+
+    fn try_from(rows: Vec<Vec<T>>) -> Result<Self, Self::Error> {
+        // validate row lengths, flatten data
+    }
+}
+```
+
+- Nested vectors may be ragged
+- `TryFrom` represents conversion that can fail
+- `type Error = String` defines the error type
+
+::: notes
+Keep this as the conversion contract. The full validation code can be shown in
+the editor.
+:::
+
+## Using `TryFrom`
+
+```rust
+let integer_matrix =
+    Matrix::try_from(vec![vec![1, 0], vec![0, 2]])
+        .expect("all rows have the same length");
+```
+
+- Conversion produces `Result<Matrix<_>, String>`
+- Valid nested vectors become matrices
+- Ragged rows follow the error path
+
+::: notes
+The hands-on section asks learners to create a ragged input.
+:::
+
+## Iteration With `IntoIterator`
+
+```rust
+for value in &mut matrix {
+    *value *= 0.5;
+}
+```
+
+- Owned iteration consumes the matrix
+- Shared borrowed iteration yields `&T`
+- Mutable borrowed iteration yields `&mut T`
+
+::: notes
+This prepares for the iterator module. Avoid deep lifetime explanation here.
+:::
+
+## Borrowed Iteration
+
+```rust
+impl<'a, T> IntoIterator for &'a Matrix<T> {
+    type Item = &'a T;
+    type IntoIter = std::slice::Iter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.data.iter()
+    }
+}
+```
+
+- Items are references into the matrix
+- The iterator cannot outlive the borrow
+- The matrix remains usable after shared iteration
+
+::: notes
+The lifetime `'a` connects item references to the borrowed matrix.
+:::
+
+## Terminal: Trait Experiments
+
+```{.bash}
+cd source-code/traits
+cargo test
+cargo run
+```
+
+- Change the `Display` separator
+- Create a ragged nested vector
+- Add a loop over `&matrix`
+- Add a loop over `&mut matrix`
+
+::: notes
+These are trainee-facing exercise bullets. Use as many as time allows.
+:::
+
+## User-Defined Traits
+
+```rust
+pub trait QuadratureRule {
+    fn integrate(&self, f: &dyn Fn(f64) -> f64, a: f64, b: f64) -> f64;
+
+    fn name(&self) -> &'static str;
+}
+```
+
+- The trait names shared numerical behavior
+- Each rule integrates a function over an interval
+- Each rule provides a human-readable name
+
+::: notes
+This is the domain-specific half of the module.
+:::
+
+## Terminal: Quadrature Rules
+
+```{.bash}
+cd source-code/user-defined-trait
+cargo run
+cargo run -- --method gauss
+cargo run -- --method simpson --subdivisions 2000
+```
+
+- Run both concrete implementations
+- Compare output names
+- Vary Simpson subdivisions
+
+::: notes
+Run the program before opening the trait and implementations.
+:::
+
+## Implementing A Trait
+
+```rust
+pub struct Simpson {
+    subdivisions: usize,
+}
+
+impl QuadratureRule for Simpson {
+    fn integrate(&self, f: &dyn Fn(f64) -> f64, a: f64, b: f64) -> f64 {
+        // Simpson implementation
+    }
+
+    fn name(&self) -> &'static str {
+        "composite Simpson"
+    }
+}
+```
+
+- The type stores data needed by the algorithm
+- The implementation provides required methods
+- The trait describes what callers can rely on
+
+::: notes
+Show full implementation in the editor if needed.
+:::
+
+## Same Trait, Different Type
+
+```rust
+pub struct GaussLegendre10;
+
+impl QuadratureRule for GaussLegendre10 {
+    fn integrate(&self, f: &dyn Fn(f64) -> f64, a: f64, b: f64) -> f64 {
+        // Gauss-Legendre implementation
+    }
+
+    fn name(&self) -> &'static str {
+        "10-point Gauss-Legendre"
+    }
+}
+```
+
+- Different storage
+- Different algorithm
+- Same external interface
+
+::: notes
+This is the central value of a user-defined trait for this example.
+:::
+
+## Trait Objects With `dyn Trait`
+
+```rust
+fn select_rule(args: &Args) -> Box<dyn QuadratureRule> {
+    match args.method {
+        QuadratureMethod::Simpson => Box::new(Simpson::new(args.subdivisions)),
+        QuadratureMethod::Gauss => Box::new(GaussLegendre10),
+    }
+}
+```
+
+- The concrete rule is selected at run time
+- `Box<dyn QuadratureRule>` stores either implementation
+- Callers use the trait methods
+
+::: notes
+This is dynamic dispatch. Keep it conceptual and tied to run-time selection.
+:::
+
+## Uniform Use After Selection
+
+```rust
+let rule = select_rule(&args);
+let result = rule.integrate(&f, a, b);
+
+println!("using {} quadrature", rule.name());
+```
+
+- The caller does not match on the method again
+- `integrate` works through the trait object
+- `name` works through the same interface
+
+::: notes
+This shows how the trait object simplifies the rest of `main`.
+:::
+
+## Static Dispatch
+
+```rust
+impl<T: Display> Display for Matrix<T>
+```
+
+- The concrete type is known at compile time
+- The compiler generates code for that type
+- Trait bounds express required behavior
+
+::: notes
+Use `Display` for `Matrix<T>` as the concrete static-dispatch example.
+:::
+
+## Dynamic Dispatch
+
+```rust
+Box<dyn QuadratureRule>
+```
+
+- The concrete type is selected at run time
+- Calls go through a trait object
+- Different concrete types are handled uniformly
+
+::: notes
+Keep the comparison pragmatic: use dynamic dispatch when run-time selection is
+actually needed.
+:::
+
+## Choosing The Trait Pattern
+
+- Use standard traits for familiar Rust syntax
+- Use user-defined traits for domain roles
+- Use generic bounds when concrete types stay known
+- Use trait objects for run-time selection
+- Put bounds where the operation needs them
+
+::: notes
+This slide summarizes the design choices introduced in the module.
+:::
+
+## Hands-On Sequence
+
+1. Run `source-code/traits`
+2. Change the `Display` separator
+3. Trigger the `TryFrom` error path with ragged rows
+4. Iterate over `&matrix` without consuming it
+5. Iterate over `&mut matrix` and scale values
+6. Run both quadrature methods
+7. Change one `name` implementation
+8. Add a placeholder quadrature rule
+
+::: notes
+Use this as the lab checklist. The placeholder rule is a stretch task.
+:::
+
+## Questions
+
+- Which standard trait matches the syntax you want?
+- Which associated types are part of the trait contract?
+- Which behavior does a generic implementation need?
+- Which domain role deserves a user-defined trait?
+- Is the concrete type known at compile time or selected at run time?
+
+::: notes
+Use these questions to close the module.
+:::
+
+## Connection To The Next Module
+
+- Iterators are trait-based abstractions
+- Collections expose borrowed and owned iteration
+- Iterator adapters compose behavior
+- Trait bounds appear throughout data-processing code
+
+::: notes
+Transition to Module 7: collections, iterators, and text data.
+:::

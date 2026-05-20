@@ -1,0 +1,156 @@
+# Introduction
+
+- Why Rust for scientific computing?
+- How the learning modules fit together
+- How the examples and terminal work fit together
+
+::: notes
+This is the opening section after the title slide. Keep it as orientation, not
+as a full course abstract.
+:::
+
+## Course Arc
+
+- Start with the project workflow
+- Build the core Rust mental model
+- Move from syntax to data and error handling
+- Finish with scientific-computing examples
+
+::: notes
+Set expectations: these slides are a map, not the course itself. The real
+teaching happens through discussion, terminal demos, and live edits in the
+example projects.
+:::
+
+## Audience
+
+- Programmers who are new to Rust
+- Scientists and engineers assessing Rust
+- Learners who need practical examples, not language trivia
+- People who will read compiler diagnostics often
+
+::: notes
+Emphasize that prior programming experience is assumed. The course does not
+try to teach programming from scratch.
+:::
+
+## Working Style
+
+- Short concept checkpoints
+- Terminal work for longer code
+- Small Cargo projects for practice
+- Scientific-computing relevance throughout
+
+::: notes
+Mention that many examples are intentionally small. The point is to isolate one
+language or workflow idea before combining ideas in the integrated examples.
+:::
+
+## The Through-Line
+
+- Explicit types and conversions
+- Ownership before larger data structures
+- Traits and iterators for reusable code
+- `Result`, tests, seeds, and reproducible runs
+- Integrated numerical programs at the end
+
+::: notes
+This is the main narrative thread. Rust's explicitness is not just a language
+quirk; it supports maintenance, reproducibility, and correctness in technical
+software.
+:::
+
+## Modules 1-4: Foundations
+
+1. Getting Started With Rust Projects
+2. Scalar Computation And Numeric Basics
+3. Control Flow And Program Structure
+4. Ownership, Borrowing, And Mutation
+
+::: notes
+These modules establish the basic workflow and the mental model needed before
+larger examples. Ownership appears early because it affects how later code is
+designed.
+:::
+
+## Modules 5-9: Building Programs
+
+5. Data Modeling With Structs And Methods
+6. Reusable Abstractions With Traits
+7. Collections, Iterators, And Text Data
+8. Error Handling
+9. Project Organization, Libraries, And Tests
+
+::: notes
+Frame this group as the transition from isolated syntax to programs that have
+shape: domain types, shared behavior, data processing, recoverable failure, and
+tests.
+:::
+
+## Modules 10-13: Scientific Workflows
+
+10. Randomness And Reproducible Runs
+11. Data Parallelism With Rayon
+12. Integrated Numerical Example: Julia Set
+13. Integrated Numerical Example: N-Body Simulation
+
+::: notes
+These modules make the scientific-computing context explicit: reproducibility,
+parallelism, structured output, diagnostics, and visualization.
+:::
+
+## Example Workflow
+
+```{.bash}
+cd source-code/hello-world
+cargo run
+cargo check
+```
+
+- Enter one example project
+- Run the code before changing it
+- Make one small change
+- Use compiler output as feedback
+
+::: notes
+Switch to the terminal if useful. This slide is the pattern that will repeat
+throughout the course.
+:::
+
+## Shorter Course Path
+
+- Use Modules 1-4 for the Rust core
+- Add Modules 7-8 for practical data and errors
+- Use the Julia set as the main integrated example
+- Leave N-body as follow-up reading or an optional lab
+
+::: notes
+For a short delivery, do not try to cover every module equally. The numerical
+examples should receive more time than purely syntactic material for this
+audience.
+:::
+
+## Habits To Build
+
+- `cargo check` as the edit-check loop
+- Compiler diagnostics as feedback
+- Explicitness around types, errors, and configuration
+- Small examples first, integrated examples later
+- Reproducible commands and inputs
+
+::: notes
+These are the habits that should survive after the course, even if learners do
+not remember every syntax detail.
+:::
+
+## First Hands-On Module
+
+- Open the repository structure
+- Run the smallest Rust example
+- Inspect `Cargo.toml` and `src/main.rs`
+- Add one dependency-backed command-line tool
+
+::: notes
+Transition directly into Module 1. Keep this as a cue slide rather than a
+summary slide.
+:::

@@ -1,0 +1,419 @@
+# Module 8: Error Handling
+
+- `Option<T>` for missing values
+- `Result<T, E>` for recoverable failure
+- `map`, `ok_or_else`, and `?`
+- `expect` for violated assumptions
+- Fallible command-line programs
+
+::: notes
+Tie this to scientific applications that read inputs, parse files, validate
+configuration, and write outputs. Failure is normal and should be represented.
+:::
+
+## Module Arc
+
+- Make absence explicit with `Option`
+- Transform present values with `map`
+- Report recoverable failure with `Result`
+- Convert absence into an error message
+- Propagate failure with `?`
+- Handle expected and unexpected failure differently
+
+::: notes
+The running example is checked matrix indexing.
+:::
+
+## By The End
+
+- Distinguish `Some`, `None`, `Ok`, and `Err`
+- Choose between `Option` and `Result`
+- Convert `Option` to `Result`
+- Use `?` to keep the success path readable
+- Use `expect` only when failure means a bug
+- Recognize fallible `main` functions
+
+::: notes
+Keep the visible goals practical and tied to code they will see.
+:::
+
+## Terminal: Checked Matrix Access
+
+```{.bash}
+cd source-code/error-handling
+cargo run -- --rows 3 --cols 4
+```
+
+- Fill the matrix through checked `set`
+- Read the matrix through checked `get`
+- Inspect the return types in `matrix.rs`
+
+::: notes
+Run first, then open `source-code/error-handling/src/matrix.rs`.
+:::
+
+## Missing Values With `Option`
+
+```rust
+Some(value)
+None
+```
+
+- `Some` contains a value
+- `None` means no value is present
+- The type system forces callers to handle both possibilities
+
+::: notes
+Connect this to out-of-bounds indexing: sometimes there is no valid element.
+:::
+
+## Checked Index Calculation
+
+```rust
+fn index(&self, row: usize, col: usize) -> Option<usize> {
+    if row < self.rows && col < self.cols {
+        Some(row * self.cols + col)
+    } else {
+        None
+    }
+}
+```
+
+- Valid coordinates produce `Some(flat_index)`
+- Invalid coordinates produce `None`
+- No error message is needed at this helper level
+
+::: notes
+The helper only answers "does this index exist?".
+:::
+
+## Transforming `Option` With `map`
+
+```rust
+pub fn get(&self, row: usize, col: usize) -> Option<f64> {
+    self.index(row, col).map(|index| self.data[index])
+}
+```
+
+- `map` transforms the value inside `Some`
+- `None` stays `None`
+- The return type exposes possible absence
+
+::: notes
+This avoids a manual `match` for a simple transformation.
+:::
+
+## Manual `match` Equivalent
+
+```rust
+pub fn get(&self, row: usize, col: usize) -> Option<f64> {
+    match self.index(row, col) {
+        Some(index) => Some(self.data[index]),
+        None => None,
+    }
+}
+```
+
+- Same behavior as the `map` version
+- More explicit control flow
+- Useful when each case needs different work
+
+::: notes
+This is a good local rewrite exercise.
+:::
+
+## Recoverable Failure With `Result`
+
+```rust
+Ok(value)
+Err(error)
+```
+
+- `Ok` contains the successful value
+- `Err` contains failure information
+- The error type is part of the function signature
+
+::: notes
+Use `Result` when the caller needs to know what went wrong, not only that
+something was absent.
+:::
+
+## Checked Mutation With `Result`
+
+```rust
+pub fn set(&mut self, row: usize, col: usize, value: f64) -> Result<(), String> {
+    let index = self
+        .index(row, col)
+        .ok_or_else(|| format!("matrix index ({row}, {col}) is out of bounds"))?;
+    self.data[index] = value;
+    Ok(())
+}
+```
+
+- Success returns `Ok(())`
+- Failure returns `Err(String)`
+- The matrix is modified only after a valid index is found
+
+::: notes
+The success type is unit because there is no meaningful value to return after a
+successful write.
+:::
+
+## Converting `Option` To `Result`
+
+```rust
+.ok_or_else(|| format!("matrix index ({row}, {col}) is out of bounds"))?
+```
+
+- `Some(index)` becomes `Ok(index)`
+- `None` becomes `Err(message)`
+- The error message is built only when needed
+
+::: notes
+This pattern is common when a private helper returns `Option` but the public
+method should report context.
+:::
+
+## The `?` Operator
+
+```rust
+let index = self
+    .index(row, col)
+    .ok_or_else(|| format!("matrix index ({row}, {col}) is out of bounds"))?;
+```
+
+- `Ok(index)` extracts `index`
+- `Err(error)` returns early from the function
+- The successful path stays compact
+
+::: notes
+Stress that `?` does not hide failure; the function return type still says it
+can fail.
+:::
+
+## Without `?`
+
+```rust
+let index = match self
+    .index(row, col)
+    .ok_or_else(|| format!("matrix index ({row}, {col}) is out of bounds"))
+{
+    Ok(index) => index,
+    Err(error) => return Err(error),
+};
+```
+
+- The same propagation is written manually
+- The successful path is less direct
+- `?` is shorthand for this common pattern
+
+::: notes
+This comparison helps demystify `?`.
+:::
+
+## Handling Known-Good Indices
+
+```rust
+for i in 0..matrix.rows() {
+    for j in 0..matrix.cols() {
+        matrix
+            .set(i, j, (i * matrix.cols() + j) as f64)
+            .expect("loop indices should be in bounds");
+    }
+}
+```
+
+- The loops generate valid indices
+- Failure would indicate a programming mistake
+- `expect` documents that assumption
+
+::: notes
+This is an acceptable use of `expect` because the loop bounds are supposed to
+guarantee validity.
+:::
+
+## Reading Known-Good Indices
+
+```rust
+let value = matrix
+    .get(i, j)
+    .expect("loop indices should be in bounds");
+```
+
+- `get` still returns `Option`
+- The caller decides how to handle `None`
+- `expect` is for impossible-in-this-context failure
+
+::: notes
+Contrast this with user-provided row and column values, where `match` or
+returned errors would usually be better.
+:::
+
+## Handling `None` At The Call Site
+
+```rust
+match matrix.get(row, col) {
+    Some(value) => println!("{value}"),
+    None => println!("no value at ({row}, {col})"),
+}
+```
+
+- Both cases are visible
+- The program can continue after absence
+- The message belongs near the user-facing boundary
+
+::: notes
+This is a good exercise for out-of-bounds reads.
+:::
+
+## Handling `Err` At The Call Site
+
+```rust
+match matrix.set(row, col, value) {
+    Ok(()) => println!("value updated"),
+    Err(message) => println!("{message}"),
+}
+```
+
+- Success and failure are separate cases
+- The error carries context
+- Recoverable errors do not need to panic
+
+::: notes
+This is the companion exercise for out-of-bounds writes.
+:::
+
+## `Option` Or `Result`?
+
+- Use `Option<T>` when absence is enough information
+- Use `Result<T, E>` when failure needs explanation
+- Use `expect` when failure means a bug
+- Use `match` when the program can continue differently
+- Use `?` when the current function should propagate failure
+
+::: notes
+This is the central decision slide for the module.
+:::
+
+## Panics Versus Recoverable Errors
+
+- Panic for violated internal assumptions
+- Return `Result` for expected operational failure
+- File input, parsing, and configuration usually need `Result`
+- Indexing syntax may panic like Rust slices
+- Checked methods can return `Option` or `Result`
+
+::: notes
+Keep this pragmatic. The goal is not "never panic"; it is to reserve panics for
+the right situations.
+:::
+
+## Fallible `main`
+
+```rust
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // fallible work
+    Ok(())
+}
+```
+
+- `main` can return `Result`
+- `?` can be used in command-line programs
+- The exact error type can be refined later
+
+::: notes
+This prepares learners for I/O-heavy examples and larger command-line tools.
+:::
+
+## Example From CSV Input
+
+```rust
+fn main() -> Result<(), Box<dyn Error>> {
+    let mut reader = csv::Reader::from_path(args.file)?;
+    for result in reader.deserialize() {
+        let value: Values = result?;
+        // use value
+    }
+    Ok(())
+}
+```
+
+- Opening the file can fail
+- Parsing a record can fail
+- `?` propagates both failures
+
+::: notes
+This ties the module back to the iterator example.
+:::
+
+## Terminal: Error-Handling Exercises
+
+```{.bash}
+cd source-code/error-handling
+cargo check
+```
+
+- Rewrite `get` with manual `match`
+- Add an out-of-bounds read and handle `None`
+- Add an out-of-bounds write and handle `Err`
+- Rewrite `set` without `?`
+
+::: notes
+Use these as live or participant exercises. Keep one change at a time.
+:::
+
+## Improve The Error Message
+
+```rust
+format!(
+    "matrix index ({row}, {col}) is out of bounds for {} x {} matrix",
+    self.rows,
+    self.cols,
+)
+```
+
+- Include the invalid index
+- Include the valid shape
+- Put context in the error value
+
+::: notes
+This is a small improvement that shows why `Result` can be more useful than
+`Option`.
+:::
+
+## Hands-On Sequence
+
+1. Run `source-code/error-handling`
+2. Identify methods returning `Option` and `Result`
+3. Rewrite `get` with `match`
+4. Handle an out-of-bounds read
+5. Handle an out-of-bounds write
+6. Rewrite `set` without `?`
+7. Improve the `ok_or_else` message
+
+::: notes
+Use this as the lab checklist.
+:::
+
+## Questions
+
+- Is absence expected and self-explanatory?
+- Does failure need an error message?
+- Should this function handle the error or propagate it?
+- Does `expect` document a real invariant?
+- Would a fallible `main` simplify the program?
+
+::: notes
+Use these questions to close the module.
+:::
+
+## Connection To The Next Module
+
+- Shared library code should report errors consistently
+- Tests should cover success and failure paths
+- Larger packages need reusable fallible functions
+- Numerical tests often need explicit tolerances
+
+::: notes
+Transition to Module 9: project organization, libraries, and tests.
+:::
