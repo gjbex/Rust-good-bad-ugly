@@ -52,7 +52,7 @@ jobs:
           PAGES_REPO_NWO: ${{ github.repository }}
         run: |
           mkdir -p "$RUNNER_TEMP/landing"
-          sed "s#{{GITHUB_REPOSITORY}}#${GITHUB_REPOSITORY}#g" pages/README.md > "$RUNNER_TEMP/landing/README.md"
+          sed "s#{{GITHUB_REPOSITORY}}#${GITHUB_REPOSITORY}#g" pages/index.md > "$RUNNER_TEMP/landing/index.md"
           cp pages/_config.yml "$RUNNER_TEMP/landing/_config.yml"
           cp pages/Gemfile "$RUNNER_TEMP/landing/Gemfile"
           cd "$RUNNER_TEMP/landing"

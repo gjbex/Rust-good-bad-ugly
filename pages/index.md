@@ -1,3 +1,8 @@
+---
+layout: default
+title: Rust, the good, the bad, and the ugly
+---
+
 The Rust programming language has gained quite some attention as a systems
 programming language with strong safety guarantees.  What are its strong
 points, its weak points?  Is it a practical language for scientific computing
