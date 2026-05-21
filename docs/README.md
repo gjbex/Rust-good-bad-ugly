@@ -72,6 +72,58 @@ how to program.
 If you plan to use Rust in a Linux or HPC environment, you should be familiar
 with these as well.
 
+More concretely, participants should already be comfortable with the following:
+
+* variables, expressions, control flow, and writing functions in some other
+  programming language;
+* basic data structures such as arrays/lists, maps/dictionaries, or sets;
+* reading short programs and understanding how data flows through them;
+* basic problem decomposition into helper functions or modules;
+* compiling or running programs from the command line at a basic level;
+* working in a shell environment well enough to edit files, run commands, and
+  inspect output;
+* reading compiler or interpreter diagnostics well enough to locate the part of
+  a program that needs attention.
+
+You do not need prior experience with Rust itself, ownership and borrowing,
+traits, Cargo, Rayon, or Rust's scientific-computing ecosystem. Those are part
+of the training itself.
+
+
+### Quick self-assessment
+
+If you can do most of the tasks below in some programming language, you are
+likely ready for this training.
+
+* write a function that computes the average of a list of numbers;
+* loop over a collection and compute a derived result such as a sum or count;
+* use `if`/`else` or a `switch`/`match`-like construct to classify values into
+  cases;
+* split a program into a few helper functions or files;
+* read data from a text file and print a simple summary;
+* handle a missing value or invalid input without crashing the whole program;
+* read a short program and explain what it does;
+* compile or run a small program from the command line;
+* make a small change to an existing program and run it again.
+
+If several of these items still feel difficult, the training will probably move
+too fast. In that case, it is better to first take a short introductory
+programming course.
+
+
+### Software and access requirements
+
+To follow hands-on, you need a computer with a Linux-style terminal and a Rust
+development environment installed. The recommended setup uses `rustup` for the
+Rust toolchain and `cargo` for building and running the examples.
+
+Some examples use Python helper scripts for visualization, and the learning
+module website is built with MkDocs. The repository contains an
+`environment.yml` file for creating the Python environment with `mamba`.
+
+See the repository's `SETUP.md` file for installation and verification
+commands.
+
 
 ## Level
 
