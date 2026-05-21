@@ -127,9 +127,13 @@ commands.
 
 ## Level
 
-* Introductory: 40 %
-* Intermediate: 40 %
+* Introductory: 30 %
+* Intermediate: 50 %
 * Advanced: 20 %
+
+These percentages describe the level of the Rust and scientific-computing
+topics covered in the training, not the participants' general programming
+background.
 
 
 ## Trainer(s)
