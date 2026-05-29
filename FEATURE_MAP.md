@@ -11,7 +11,7 @@ several places when they combine multiple ideas.
 | Minimal Rust binary | `source-code/hello-world/src/main.rs` |
 | Cargo project layout | `source-code/hello-world/` |
 | Building and running with Cargo | `source-code/hello-world/README.md` |
-| External crates in `Cargo.toml` | `source-code/hello-clap/Cargo.toml`, `source-code/complex-numbers/Cargo.toml`, `source-code/random-numbers/Cargo.toml`, `source-code/smart-pointers/Cargo.toml`, `source-code/julia-set/julia-set-toml-config/Cargo.toml`, `source-code/n-body-simulation/rust/Cargo.toml` |
+| External crates in `Cargo.toml` | `source-code/hello-clap/Cargo.toml`, `source-code/complex-numbers/Cargo.toml`, `source-code/random-numbers/Cargo.toml`, `source-code/smart-pointers/Cargo.toml`, `source-code/strings/Cargo.toml`, `source-code/julia-set/julia-set-toml-config/Cargo.toml`, `source-code/n-body-simulation/rust/Cargo.toml` |
 | Reproducible dependency lockfiles | `source-code/*/Cargo.lock`, `source-code/julia-set/*/Cargo.lock`, `source-code/n-body-simulation/rust/Cargo.lock` |
 | Multiple binaries in one package | `source-code/hashmap-hashset/src/generate-data.rs`, `source-code/hashmap-hashset/src/count-nucleotides.rs`, `source-code/hashmap-hashset/src/read-errors.rs` |
 | Shared package code in `lib.rs` | `source-code/smart-pointers/src/lib.rs`, `source-code/hashmap-hashset/src/lib.rs` |
@@ -65,6 +65,7 @@ several places when they combine multiple ideas.
 | Matching on enum variants | `source-code/enum-match/src/main.rs`, `source-code/random-numbers/src/main.rs` |
 | Match guards | `source-code/enum-match/src/main.rs`, `source-code/hashmap-hashset/src/count-nucleotides.rs` |
 | Tuple destructuring in patterns | `source-code/iterators/src/main.rs`, `source-code/traits/src/matrix.rs`, `source-code/n-body-simulation/rust/src/system.rs` |
+| Structural `match` on tuple-shaped state | `source-code/strings/src/main.rs` |
 | Optional behavior with `if let` | `source-code/n-body-simulation/rust/src/main.rs` |
 | Formatted output | `source-code/numerical-function/src/main.rs`, `source-code/basic-types/src/main.rs`, `source-code/control-flow/src/main.rs` |
 
@@ -145,6 +146,10 @@ several places when they combine multiple ideas.
 | Counting values with `HashMap` | `source-code/hashmap-hashset/src/count-nucleotides.rs` |
 | Updating counts with the entry API | `source-code/hashmap-hashset/src/count-nucleotides.rs` |
 | Collecting unique values with `HashSet` | `source-code/hashmap-hashset/src/count-nucleotides.rs` |
+| Owned `String` accumulation | `source-code/strings/src/main.rs` |
+| Borrowed `&str` parser input | `source-code/strings/src/main.rs` |
+| Splitting and trimming text fields | `source-code/strings/src/main.rs` |
+| Parsing numeric values from strings | `source-code/strings/src/main.rs` |
 
 ## Error Handling
 
@@ -161,9 +166,10 @@ several places when they combine multiple ideas.
 
 | Feature | Where to look |
 |---|---|
-| Buffered input with `BufReader` | `source-code/hashmap-hashset/src/count-nucleotides.rs`, `source-code/hashmap-hashset/src/read-errors.rs` |
+| Buffered input with `BufReader` | `source-code/hashmap-hashset/src/count-nucleotides.rs`, `source-code/hashmap-hashset/src/read-errors.rs`, `source-code/strings/src/main.rs` |
 | Buffered output with `BufWriter` | `source-code/hashmap-hashset/src/generate-data.rs` |
 | Byte iterators over input streams | `source-code/hashmap-hashset/src/count-nucleotides.rs` |
+| Line iterators over buffered input | `source-code/strings/src/main.rs` |
 | CSV input | `source-code/iterators/src/main.rs`, `source-code/iterators/data.txt` |
 | `serde::Deserialize` derive | `source-code/iterators/src/main.rs`, `source-code/smart-pointers/src/tree.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
 | Deserializing rows into a struct | `source-code/iterators/src/main.rs` |
@@ -174,6 +180,8 @@ several places when they combine multiple ideas.
 | Serializing typed records to CSV | `source-code/n-body-simulation/rust/src/main.rs` |
 | TOML configuration file for run parameters | `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/julia-set/julia-set-toml-config/julia-set.toml` |
 | Deserializing a TOML file into a typed config struct | `source-code/julia-set/julia-set-toml-config/src/main.rs` |
+| RFC 3339 timestamp parsing with `chrono` | `source-code/strings/src/main.rs` |
+| Computing elapsed calendar-style spans from parsed timestamps | `source-code/strings/src/main.rs` |
 
 ## Randomness And Reproducibility
 

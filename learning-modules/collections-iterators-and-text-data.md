@@ -26,6 +26,9 @@ After completing this module, participants should be able to:
 - Read text input with buffered readers.
 - Write text output with buffered writers.
 - Process input byte by byte when that is appropriate for the file format.
+- Process input line by line when records are naturally text lines.
+- Distinguish owned `String` data from borrowed `&str` views.
+- Parse timestamp strings into date/time values with a crate.
 
 ## Prerequisites
 
@@ -41,6 +44,7 @@ The examples used in this module are:
 
 - `source-code/iterators`
 - `source-code/hashmap-hashset`
+- `source-code/strings`
 
 ## Vectors
 
@@ -387,6 +391,149 @@ Byte-wise processing is appropriate here because the input is simple
 ASCII-like sequence data. For general Unicode text, line-based or string-based
 processing is usually more appropriate.
 
+## Line-Based String Processing
+
+The `strings` example uses line-based input for timestamped records:
+
+```bash
+cd source-code/strings
+cargo run -- --file data.txt
+```
+
+The input is a small instrument-log format:
+
+```text
+time: 2023-06-01T12:00:00Z
+temperature: 42.3
+pressure: 1013.25
+----
+```
+
+Line-based processing keeps the input format visible:
+
+```rust
+let reader = BufReader::new(file);
+
+for line in reader.lines() {
+    let line = line.expect("Failed to read line");
+    // process one line
+}
+```
+
+Each call to `lines` yields an owned `String`. The program builds a record in
+another owned `String`:
+
+```rust
+record_buffer.push_str(&line);
+record_buffer.push('\n');
+```
+
+When a complete record has been collected, parsing borrows the string data:
+
+```rust
+fn parse_record(record_str: &str) -> Result<Record, String> {
+    // parse fields from borrowed text
+}
+```
+
+This signature says that parsing reads the text but does not take ownership of
+the buffer.
+
+## Splitting And Parsing Fields
+
+The record parser extracts values from lines such as `temperature: 42.3`.
+Numeric values can be parsed from trimmed strings:
+
+```rust
+let temperature_val = temp_str
+    .trim()
+    .parse::<f64>();
+```
+
+The timestamp line is deliberately a little trickier:
+
+```text
+time: 2023-06-01T12:00:00Z
+```
+
+The timestamp value itself contains colons, so the example uses `split_once`
+for that field:
+
+```rust
+line.split_once(':').map(|(_, value)| value)
+```
+
+This is a useful parsing lesson: a method that is sufficient for one field may
+be wrong for another field if the data format changes the assumptions.
+
+## Date And Time Values
+
+Rust's standard library has `std::time::Duration`, `Instant`, and
+`SystemTime`, but it does not provide full calendar date/time parsing. The
+`strings` example therefore uses the `chrono` crate:
+
+```rust
+use chrono::{DateTime, Utc};
+```
+
+The record stores a parsed UTC timestamp:
+
+```rust
+struct Record {
+    time: DateTime<Utc>,
+    temperature: f64,
+    pressure: f64,
+}
+```
+
+Once timestamps are parsed, the program can compute the covered time span:
+
+```rust
+let duration = last - first;
+let days = duration.num_seconds() as f64 / 86400.0;
+```
+
+This keeps date/time handling explicit and avoids treating timestamps as raw
+strings after the input boundary.
+
+## Matching Parser And Aggregator State
+
+The same example also shows `match` on parser results:
+
+```rust
+match parse_record(&record_buffer) {
+    Ok(record) => aggregator.add_record(record),
+    Err(err) => {
+        eprintln!("Failed to parse record:\n{}", record_buffer);
+        eprintln!("Error: {}", err);
+    }
+}
+```
+
+The aggregator uses a structural match on the pair of optional timestamps:
+
+```rust
+match (self.first_time, self.last_time) {
+    (None, None) => {
+        self.first_time = Some(record.time);
+        self.last_time = Some(record.time);
+    }
+    (Some(first), Some(last)) => {
+        if record.time < first {
+            self.first_time = Some(record.time);
+        }
+        if record.time > last {
+            self.last_time = Some(record.time);
+        }
+    }
+    _ => unreachable!("first_time and last_time should be updated together"),
+}
+```
+
+This connects the earlier `match` discussion to data-processing code: patterns
+can describe the structure of ordinary values, not only which enum variant was
+selected at the command line.
+
 ## Buffered Text Output
 
 The data-generation and error-injection programs use buffered writers:
@@ -475,6 +622,18 @@ Use this sequence as a practical lab.
     cargo run --bin count-nucleotides -- --file errors.txt
     ```
 
+11. Run the timestamped string parser:
+
+    ```bash
+    cd ../strings
+    cargo run -- --file data.txt
+    ```
+
+12. Change one timestamp, temperature, or pressure value and inspect how the
+    averages or covered time span change.
+
+13. Remove one field from a record and inspect the parser error message.
+
 ## Discussion Points
 
 This module is a good place to emphasize:
@@ -490,6 +649,9 @@ This module is a good place to emphasize:
 - Buffered I/O is a sensible default for file-based text processing.
 - Choose byte-wise, line-wise, or record-wise processing based on the input
   format.
+- Use owned `String` values when the program needs to keep or grow text.
+- Use borrowed `&str` parameters when a function only needs to read text.
+- Convert external timestamps into date/time values near the input boundary.
 
 ## Connection To Later Modules
 

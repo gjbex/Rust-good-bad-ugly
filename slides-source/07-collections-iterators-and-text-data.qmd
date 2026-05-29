@@ -27,6 +27,8 @@ The emphasis is readable collection processing, not clever iterator chains.
 - Use `HashMap` for counts
 - Use `HashSet` for unique values
 - Read and write text through buffers
+- Process owned `String` and borrowed `&str`
+- Parse timestamped records with `chrono`
 
 ::: notes
 These are practical data-processing tools used in later modules.
@@ -402,6 +404,144 @@ This distinction matters for scientific file formats that are not all the same
 kind of text.
 :::
 
+## Terminal: Timestamped Strings
+
+```{.bash}
+cd source-code/strings
+cargo run -- --file data.txt
+```
+
+- Read timestamped records line by line
+- Accumulate one record in a `String`
+- Parse borrowed text with `&str`
+- Aggregate values without loading the whole file
+
+::: notes
+Run this after the byte-wise nucleotide example to contrast byte-oriented and
+line-oriented text processing.
+:::
+
+## Line-Based Text Input
+
+```rust
+let reader = BufReader::new(file);
+
+for line in reader.lines() {
+    let line = line.expect("Failed to read line");
+    // process one line
+}
+```
+
+- `lines()` yields owned `String` values
+- Records can be built incrementally
+- The input format drives the reading strategy
+
+::: notes
+Connect this to the earlier point that general text often needs line-based or
+string-based processing.
+:::
+
+## Owned `String`, Borrowed `&str`
+
+```rust
+record_buffer.push_str(&line);
+record_buffer.push('\n');
+```
+
+```rust
+fn parse_record(record_str: &str) -> Result<Record, String> {
+    // parse fields from borrowed text
+}
+```
+
+- `String` owns growable text
+- `&str` borrows text for read-only parsing
+- Function signatures show ownership intent
+
+::: notes
+This mirrors the earlier `Vec<T>` versus borrowed slice discussion.
+:::
+
+## Parsing Fields
+
+```rust
+line.split_once(':').map(|(_, value)| value)
+```
+
+```rust
+temp_str.trim().parse::<f64>()
+```
+
+- Trim text before parsing
+- Parse external text near the input boundary
+- Choose splitting logic that fits the field format
+
+::: notes
+Point out that timestamps contain colons, so parsing assumptions matter.
+:::
+
+## Date And Time Values
+
+```rust
+use chrono::{DateTime, Utc};
+```
+
+```rust
+struct Record {
+    time: DateTime<Utc>,
+    temperature: f64,
+    pressure: f64,
+}
+```
+
+- `std::time` is not a calendar-date parser
+- `chrono` parses the timestamp into a typed value
+- Later code works with dates, not raw strings
+
+::: notes
+Keep this pragmatic: use a crate when the standard library intentionally does
+not cover rich calendar/date-time parsing.
+:::
+
+## Matching Parser State
+
+```rust
+match parse_record(&record_buffer) {
+    Ok(record) => aggregator.add_record(record),
+    Err(err) => {
+        eprintln!("Failed to parse record:\n{}", record_buffer);
+        eprintln!("Error: {}", err);
+    }
+}
+```
+
+- Success updates the aggregator
+- Failure reports the record and reason
+- `match` keeps both paths visible
+
+::: notes
+This prepares the transition to Module 8 without trying to teach all error
+handling details here.
+:::
+
+## Matching Aggregator State
+
+```rust
+match (self.first_time, self.last_time) {
+    (None, None) => { /* first record */ }
+    (Some(first), Some(last)) => { /* update range */ }
+    _ => unreachable!("timestamps move together"),
+}
+```
+
+- Match on tuple structure
+- Make the aggregator invariant explicit
+- Reuse Module 3 `match` in data-processing code
+
+::: notes
+This is the structural matching connection requested by the module text.
+:::
+
 ## Matching While Processing Input
 
 ```rust
@@ -484,6 +624,9 @@ This is the design summary for the module.
 6. Run `count-nucleotides`
 7. Count invalid tokens with a second `HashMap`
 8. Generate a new input file and count it
+9. Run `source-code/strings`
+10. Change a timestamp or numeric field
+11. Remove a field and inspect the parse error
 
 ::: notes
 Use this as the lab checklist. Keep iterator changes readable.
@@ -496,6 +639,8 @@ Use this as the lab checklist. Keep iterator changes readable.
 - What operation consumes the iterator?
 - Does `collect` need a type annotation?
 - Should the file be read by record, line, or byte?
+- Does the parser need owned text or borrowed text?
+- Should a timestamp remain a string after parsing?
 
 ::: notes
 Use these questions to close the module.

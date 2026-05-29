@@ -58,6 +58,10 @@ prevent or make explicit in safe code.
 1. `hashmap-hashset`: illustrates how to use `HashMap` and `HashSet`, share
    code between multiple binaries with a library target, and process files with
    buffered readers and writers.
+1. `strings`: illustrates how to process text line by line, work with owned
+   `String` values and borrowed `&str` slices, parse timestamped records with
+   `chrono`, and aggregate parsed data without loading the full input file into
+   memory.
 
 `julia-set`: Julia set  implementations illustrating diverse aspects of Rust
 programming.

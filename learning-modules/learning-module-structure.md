@@ -184,6 +184,7 @@ Primary examples:
 
 - `source-code/iterators`
 - `source-code/hashmap-hashset`
+- `source-code/strings`
 
 Topics:
 
@@ -193,6 +194,9 @@ Topics:
 - Hash maps and hash sets.
 - Reading and writing text files.
 - Buffered I/O.
+- Owned `String` values and borrowed `&str` views.
+- Line-based parsing of timestamped records.
+- Date/time parsing with `chrono`.
 
 Goal:
 
