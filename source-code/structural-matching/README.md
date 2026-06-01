@@ -1,7 +1,7 @@
 # Structural matching
 
 This example parses a simple instrument log with timestamped records and
-aggregates the numeric fields. Compared to `../hashmap-hashset`, it shows how
+aggregates the numeric fields. Compared to `../strings`, it shows how
 to:
 
 * read text input line by line with `BufRead::lines`;
