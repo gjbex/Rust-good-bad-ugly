@@ -62,6 +62,9 @@ prevent or make explicit in safe code.
    `String` values and borrowed `&str` slices, parse timestamped records with
    `chrono`, and aggregate parsed data without loading the full input file into
    memory.
+1. `structural-matching`: variant of `strings` that illustrates structural
+   matching by pattern matching on `split_once` results when parsing
+   `key: value` record fields.
 
 `julia-set`: Julia set  implementations illustrating diverse aspects of Rust
 programming.
