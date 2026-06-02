@@ -29,6 +29,7 @@ The emphasis is readable collection processing, not clever iterator chains.
 - Read and write text through buffers
 - Process owned `String` and borrowed `&str`
 - Parse timestamped records with `chrono`
+- Compare direct parsing with structural matching
 
 ::: notes
 These are practical data-processing tools used in later modules.
@@ -542,6 +543,43 @@ match (self.first_time, self.last_time) {
 This is the structural matching connection requested by the module text.
 :::
 
+## Terminal: Structural Matching
+
+```{.bash}
+cd source-code/structural-matching
+cargo run -- --file data.txt
+```
+
+- Same data format as `source-code/strings`
+- Match on `split_once(':')`
+- Destructure field name and value
+- Keep parser assumptions visible
+
+::: notes
+Use this after the basic string parser. The data stays the same, so the
+contrast is the parser shape.
+:::
+
+## Field Parser Shapes
+
+```rust
+match line.split_once(':') {
+    Some(("time", value)) => { /* parse timestamp */ }
+    Some(("temperature", value)) => { /* parse f64 */ }
+    Some(("pressure", value)) => { /* parse f64 */ }
+    Some(_) | None => {}
+}
+```
+
+- `Some` means the separator was present
+- The tuple pattern checks the field name
+- `value` binds the text after the separator
+
+::: notes
+Point out that patterns can validate and bind at the same time. Also point out
+that this is only worth it when the pattern improves readability.
+:::
+
 ## Matching While Processing Input
 
 ```rust
@@ -627,6 +665,8 @@ This is the design summary for the module.
 9. Run `source-code/strings`
 10. Change a timestamp or numeric field
 11. Remove a field and inspect the parse error
+12. Run `source-code/structural-matching`
+13. Compare the two parser implementations
 
 ::: notes
 Use this as the lab checklist. Keep iterator changes readable.
@@ -641,6 +681,7 @@ Use this as the lab checklist. Keep iterator changes readable.
 - Should the file be read by record, line, or byte?
 - Does the parser need owned text or borrowed text?
 - Should a timestamp remain a string after parsing?
+- Does a `match` make the parser shape clearer?
 
 ::: notes
 Use these questions to close the module.

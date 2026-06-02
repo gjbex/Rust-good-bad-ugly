@@ -1,30 +1,27 @@
-# Structural matching
+# Structural Matching
 
-This example parses a simple instrument log with timestamped records and
-aggregates the numeric fields. Compared to `../strings`, it shows how
-to:
+This example parses the same timestamped instrument-log format as
+`../strings`, but makes more use of structural pattern matching while parsing
+fields and summarizing the result. Compared to `../strings`, it shows how to:
 
-* read text input line by line with `BufRead::lines`;
-* accumulate a multi-line record in an owned `String`;
-* parse borrowed string data through a function that accepts `&str`;
-* split and trim field values from `key: value` text lines;
-* parse record fields via structural matching on `split_once(':')` results;
-* parse numeric values from strings with `parse::<f64>`;
-* parse UTC timestamps with `chrono::DateTime<Utc>`;
-* convert missing parsed fields from `Option` to `Result` with `ok_or_else`;
-* use `match` on parser results and on tuple-shaped state;
-* aggregate records without loading the whole input file into memory.
+* match on the tuple returned by `split_once(':')`;
+* destructure `key: value` lines directly in `match` arms;
+* match on nested results such as `Some(("time", value))`;
+* match on parse results from `DateTime<Utc>` and `f64`;
+* match on tuple-shaped optional state in the aggregator;
+* keep parser success and failure paths explicit with `Ok` and `Err`;
+* reuse the same line-based text workflow with a different parser shape.
 
-The example intentionally keeps the file format small. It is meant to make
-string ownership, borrowed string slices, line-based text processing, and
-date/time parsing visible in one compact scientific-data workflow.
+The example is meant as a follow-up to `../strings`. It keeps the same input
+format so the teaching focus can move from string handling to the structure of
+the patterns.
 
 
 ## What is it?
 
 1. `src/main.rs`: main source file for the application. It reads timestamped
-   records, parses each record, and computes average temperature, average
-   pressure, and the time span covered by the data.
+   records, parses each record with structural matching, and computes average
+   temperature, average pressure, and the time span covered by the data.
 1. `data.txt`: sample input containing three timestamped records.
 1. `Cargo.toml`: configuration file for the Rust package manager. It specifies
    dependencies on `clap` and `chrono`.

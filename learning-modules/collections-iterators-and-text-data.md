@@ -45,6 +45,7 @@ The examples used in this module are:
 - `source-code/iterators`
 - `source-code/hashmap-hashset`
 - `source-code/strings`
+- `source-code/structural-matching`
 
 ## Vectors
 
@@ -534,6 +535,45 @@ This connects the earlier `match` discussion to data-processing code: patterns
 can describe the structure of ordinary values, not only which enum variant was
 selected at the command line.
 
+## Structural Matching While Parsing
+
+The `structural-matching` example keeps the same input format as `strings`, but
+uses a more direct `match` while parsing fields:
+
+```bash
+cd source-code/structural-matching
+cargo run -- --file data.txt
+```
+
+The parser matches on the structure returned by `split_once`:
+
+```rust
+match line.split_once(':') {
+    Some(("time", value)) => match value.trim().parse::<DateTime<Utc>>() {
+        Ok(parsed_time) => time = Some(parsed_time),
+        Err(_) => return Err(format!("Failed to parse time: {}", value.trim())),
+    },
+    Some(("temperature", value)) => {
+        // parse temperature
+    }
+    Some(("pressure", value)) => {
+        // parse pressure
+    }
+    Some(_) | None => {}
+}
+```
+
+The arm `Some(("time", value))` checks several things at once:
+
+- the line contained a separator;
+- the field name was exactly `time`;
+- the part after the separator should be bound to `value`.
+
+This is the same parsing problem as the previous example, but the match arms
+make the expected shapes explicit. It is a useful place to discuss when pattern
+matching improves readability and when it would be too much structure for a
+small parsing task.
+
 ## Buffered Text Output
 
 The data-generation and error-injection programs use buffered writers:
@@ -634,6 +674,17 @@ Use this sequence as a practical lab.
 
 13. Remove one field from a record and inspect the parser error message.
 
+14. Run the structural-matching variant:
+
+    ```bash
+    cd ../structural-matching
+    cargo run -- --file data.txt
+    ```
+
+15. Compare the parsing code in `source-code/strings` and
+    `source-code/structural-matching`. Identify which assumptions are expressed
+    by the match patterns.
+
 ## Discussion Points
 
 This module is a good place to emphasize:
@@ -652,6 +703,8 @@ This module is a good place to emphasize:
 - Use owned `String` values when the program needs to keep or grow text.
 - Use borrowed `&str` parameters when a function only needs to read text.
 - Convert external timestamps into date/time values near the input boundary.
+- Structural matches can make parser assumptions visible at the point where
+  text is classified.
 
 ## Connection To Later Modules
 

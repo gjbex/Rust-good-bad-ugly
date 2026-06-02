@@ -185,6 +185,7 @@ Primary examples:
 - `source-code/iterators`
 - `source-code/hashmap-hashset`
 - `source-code/strings`
+- `source-code/structural-matching`
 
 Topics:
 
@@ -197,6 +198,7 @@ Topics:
 - Owned `String` values and borrowed `&str` views.
 - Line-based parsing of timestamped records.
 - Date/time parsing with `chrono`.
+- Structural matching while parsing text fields.
 
 Goal:
 
