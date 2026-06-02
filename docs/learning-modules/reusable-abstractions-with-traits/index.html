@@ -81,6 +81,8 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#fallible-conversion-with-tryfrom">Fallible Conversion With TryFrom</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#crate-provided-numeric-traits">Crate-Provided Numeric Traits</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#iteration-with-intoiterator">Iteration With IntoIterator</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#user-defined-traits">User-Defined Traits</a>
@@ -177,6 +179,7 @@ trait.</p>
 <p>The examples used in this module are:</p>
 <ul>
 <li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/generic-structs"><code>source-code/generic-structs</code></a></li>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/generic-numerics"><code>source-code/generic-numerics</code></a></li>
 <li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/traits"><code>source-code/traits</code></a></li>
 <li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/user-defined-trait"><code>source-code/user-defined-trait</code></a></li>
 </ul>
@@ -322,6 +325,41 @@ uses it to build a matrix from nested vectors:</p>
 </code></pre>
 <p>This is a good fit because nested vectors may be ragged: one row might have a
 different length from another.</p>
+<h2 id="crate-provided-numeric-traits">Crate-Provided Numeric Traits<a class="headerlink" href="#crate-provided-numeric-traits" title="Permanent link">&para;</a></h2>
+<p>Trait bounds are not limited to traits from the standard library or traits
+defined inside the current project. The <code>generic-numerics</code> example uses the
+<code>num-traits</code> crate to define a running-statistics type:</p>
+<pre><code class="language-bash">cd source-code/generic-numerics
+cargo run
+</code></pre>
+<p>The accumulator is generic over the floating-point type used for the stored
+statistics:</p>
+<pre><code class="language-rust">struct Stats&lt;T: Float + FromPrimitive&gt; {
+    sum: T,
+    sum_sqr: T,
+    count: usize,
+}
+</code></pre>
+<p>The bound <code>Float</code> says that <code>T</code> supports floating-point operations such as
+division and square root. The bound <code>FromPrimitive</code> says that values such as
+the count can be converted into <code>T</code>.</p>
+<p>The <code>add</code> method accepts any input type that can be converted to a primitive
+numeric value:</p>
+<pre><code class="language-rust">fn add&lt;U&gt;(&amp;mut self, value: U) -&gt; Option&lt;()&gt;
+where
+    U: ToPrimitive,
+{
+    let value = T::from(value)?;
+    self.sum = self.sum + value;
+    self.sum_sqr = self.sum_sqr + value * value;
+    self.count += 1;
+    Some(())
+}
+</code></pre>
+<p>This keeps the conversion explicit. If a value cannot be converted into the
+accumulator's floating-point type, <code>add</code> returns <code>None</code>.</p>
+<p>For scientific code, this is a useful pattern: use trait bounds to state the
+numeric behavior the algorithm needs, rather than relying on implicit casts.</p>
 <h2 id="iteration-with-intoiterator">Iteration With <code>IntoIterator</code><a class="headerlink" href="#iteration-with-intoiterator" title="Permanent link">&para;</a></h2>
 <p>The <code>traits</code> example also implements <code>IntoIterator</code> for three cases:</p>
 <ul>

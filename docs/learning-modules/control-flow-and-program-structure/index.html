@@ -324,6 +324,23 @@ type.</p>
 </ul>
 <p>The value produced by the selected arm becomes the value assigned to <code>result</code>.
 As with <code>if</code>, the arms must produce compatible types.</p>
+<p>Later examples use <code>match</code> for more than enum dispatch. In
+<a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/strings"><code>source-code/strings</code></a>, the parser matches on <code>Result</code> values, and the
+aggregator matches on a tuple of optional timestamps:</p>
+<pre><code class="language-rust">match (self.first_time, self.last_time) {
+    (None, None) =&gt; {
+        self.first_time = Some(record.time);
+        self.last_time = Some(record.time);
+    }
+    (Some(first), Some(last)) =&gt; {
+        // update the time range
+    }
+    _ =&gt; unreachable!(&quot;first_time and last_time should be updated together&quot;),
+}
+</code></pre>
+<p>This is a structural match: the pattern describes the shape of the value, not
+only a single enum variant. It appears later because the full example also uses
+strings, text files, dates, and <code>Result</code>.</p>
 <h2 id="passing-functions-and-closures">Passing Functions And Closures<a class="headerlink" href="#passing-functions-and-closures" title="Permanent link">&para;</a></h2>
 <p>The <code>enum-match</code> example defines the function to integrate as a closure:</p>
 <pre><code class="language-rust">let f = |x: f64| x.sin();
@@ -426,6 +443,8 @@ dispatch, while the numerical algorithms live in separate files.</p>
 <li>Ownership examples use functions to show moves and borrows.</li>
 <li>Struct examples attach behavior to data through methods.</li>
 <li>Trait examples generalize the enum-based quadrature design.</li>
+<li>Text-processing examples use <code>match</code> again for parser results and structured
+  optional state.</li>
 <li>Iterator examples replace some explicit loops with iterator pipelines.</li>
 <li>Julia set and N-body examples use branches, loops, functions, modules, and
   larger program structure in more realistic programs.</li>
