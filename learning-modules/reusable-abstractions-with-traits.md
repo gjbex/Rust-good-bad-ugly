@@ -41,6 +41,7 @@ Participants should already be comfortable with:
 The examples used in this module are:
 
 - `source-code/generic-structs`
+- `source-code/generic-numerics`
 - `source-code/traits`
 - `source-code/user-defined-trait`
 
@@ -247,6 +248,54 @@ let integer_matrix =
 
 This is a good fit because nested vectors may be ragged: one row might have a
 different length from another.
+
+## Crate-Provided Numeric Traits
+
+Trait bounds are not limited to traits from the standard library or traits
+defined inside the current project. The `generic-numerics` example uses the
+`num-traits` crate to define a running-statistics type:
+
+```bash
+cd source-code/generic-numerics
+cargo run
+```
+
+The accumulator is generic over the floating-point type used for the stored
+statistics:
+
+```rust
+struct Stats<T: Float + FromPrimitive> {
+    sum: T,
+    sum_sqr: T,
+    count: usize,
+}
+```
+
+The bound `Float` says that `T` supports floating-point operations such as
+division and square root. The bound `FromPrimitive` says that values such as
+the count can be converted into `T`.
+
+The `add` method accepts any input type that can be converted to a primitive
+numeric value:
+
+```rust
+fn add<U>(&mut self, value: U) -> Option<()>
+where
+    U: ToPrimitive,
+{
+    let value = T::from(value)?;
+    self.sum = self.sum + value;
+    self.sum_sqr = self.sum_sqr + value * value;
+    self.count += 1;
+    Some(())
+}
+```
+
+This keeps the conversion explicit. If a value cannot be converted into the
+accumulator's floating-point type, `add` returns `None`.
+
+For scientific code, this is a useful pattern: use trait bounds to state the
+numeric behavior the algorithm needs, rather than relying on implicit casts.
 
 ## Iteration With `IntoIterator`
 

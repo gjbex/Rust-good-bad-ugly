@@ -158,6 +158,7 @@ Primary examples:
 - `source-code/traits`
 - `source-code/user-defined-trait`
 - `source-code/generic-structs`
+- `source-code/generic-numerics`
 
 Topics:
 
@@ -165,6 +166,7 @@ Topics:
 - `Display`, `Index`, `IndexMut`, and `TryFrom`.
 - User-defined traits.
 - Trait bounds.
+- Crate-provided numeric traits.
 - Trait objects.
 - `dyn Trait`.
 - Static and dynamic dispatch at a conceptual level.
@@ -184,6 +186,8 @@ Primary examples:
 
 - `source-code/iterators`
 - `source-code/hashmap-hashset`
+- `source-code/strings`
+- `source-code/structural-matching`
 
 Topics:
 
@@ -193,6 +197,10 @@ Topics:
 - Hash maps and hash sets.
 - Reading and writing text files.
 - Buffered I/O.
+- Owned `String` values and borrowed `&str` views.
+- Line-based parsing of timestamped records.
+- Date/time parsing with `chrono`.
+- Structural matching while parsing text fields.
 
 Goal:
 

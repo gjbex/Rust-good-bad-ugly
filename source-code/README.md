@@ -46,6 +46,8 @@ prevent or make explicit in safe code.
    `Result` types and the `?` operator.
 1. `generic-structs`: illustrates how to define a generic struct and constrain
    methods with trait bounds.
+1. `generic-numerics`: illustrates how to use `num-traits` for generic numeric
+   conversions and how to keep running statistics in a generic numeric struct.
 1. `traits`: illustrates how to implement standard traits such as `Index`,
    `IndexMut`, `Display`, and `TryFrom` for a custom type.
 1. `smart-pointers`: illustrates how to use `Box<T>` to define a recursive
@@ -58,6 +60,13 @@ prevent or make explicit in safe code.
 1. `hashmap-hashset`: illustrates how to use `HashMap` and `HashSet`, share
    code between multiple binaries with a library target, and process files with
    buffered readers and writers.
+1. `strings`: illustrates how to process text line by line, work with owned
+   `String` values and borrowed `&str` slices, parse timestamped records with
+   `chrono`, and aggregate parsed data without loading the full input file into
+   memory.
+1. `structural-matching`: variant of `strings` that illustrates structural
+   matching by pattern matching on `split_once` results when parsing
+   `key: value` record fields.
 
 `julia-set`: Julia set  implementations illustrating diverse aspects of Rust
 programming.

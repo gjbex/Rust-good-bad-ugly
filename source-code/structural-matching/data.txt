@@ -1,0 +1,14 @@
+----
+time: 2023-06-01T12:00:00Z
+temperature: 42.3
+pressure: 1013.25
+----
+time: 2023-06-02T12:01:00Z
+temperature: 42.5
+pressure: 1013.30
+----
+time: 2023-06-03T11:59:00Z
+temperature: 44.7
+pressure: 1015.30
+----
+

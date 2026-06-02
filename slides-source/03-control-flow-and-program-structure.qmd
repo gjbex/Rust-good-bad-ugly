@@ -274,6 +274,25 @@ If time permits, add a new variant without a matching arm and run
 `cargo check`.
 :::
 
+## Structural Matches Later
+
+```rust
+match (self.first_time, self.last_time) {
+    (None, None) => { /* first record */ }
+    (Some(first), Some(last)) => { /* update range */ }
+    _ => unreachable!("timestamps move together"),
+}
+```
+
+- Patterns can describe tuple structure
+- `match` is not only for command choices
+- This appears in `source-code/strings`
+
+::: notes
+Use this as a preview only. The full example belongs in Module 7, after
+learners have seen strings, line-based input, and `Result`.
+:::
+
 ## Closures As Function Arguments
 
 ```rust

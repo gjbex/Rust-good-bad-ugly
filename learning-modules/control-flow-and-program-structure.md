@@ -268,6 +268,27 @@ Each arm handles one enum variant. This has two useful properties:
 The value produced by the selected arm becomes the value assigned to `result`.
 As with `if`, the arms must produce compatible types.
 
+Later examples use `match` for more than enum dispatch. In
+`source-code/strings`, the parser matches on `Result` values, and the
+aggregator matches on a tuple of optional timestamps:
+
+```rust
+match (self.first_time, self.last_time) {
+    (None, None) => {
+        self.first_time = Some(record.time);
+        self.last_time = Some(record.time);
+    }
+    (Some(first), Some(last)) => {
+        // update the time range
+    }
+    _ => unreachable!("first_time and last_time should be updated together"),
+}
+```
+
+This is a structural match: the pattern describes the shape of the value, not
+only a single enum variant. It appears later because the full example also uses
+strings, text files, dates, and `Result`.
+
 ## Passing Functions And Closures
 
 The `enum-match` example defines the function to integrate as a closure:
@@ -383,6 +404,8 @@ The ideas in this module are used throughout the rest of the training:
 - Ownership examples use functions to show moves and borrows.
 - Struct examples attach behavior to data through methods.
 - Trait examples generalize the enum-based quadrature design.
+- Text-processing examples use `match` again for parser results and structured
+  optional state.
 - Iterator examples replace some explicit loops with iterator pipelines.
 - Julia set and N-body examples use branches, loops, functions, modules, and
   larger program structure in more realistic programs.

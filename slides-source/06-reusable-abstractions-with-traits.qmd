@@ -9,6 +9,7 @@ inheritance comparisons unless the room asks for them.
 
 - Implement standard traits for a custom matrix type
 - Connect custom types to familiar Rust syntax
+- Use crate-provided numeric traits for generic statistics
 - Define a numerical interface with a project-specific trait
 - Use trait bounds when generic code needs behavior
 - Compare compile-time and run-time dispatch
@@ -25,6 +26,7 @@ domain-level trait.
 - Recognize associated types such as `Output` and `Error`
 - Define and implement a user-defined trait
 - Use trait bounds to require behavior
+- Recognize numeric trait bounds from external crates
 - Recognize `dyn Trait` as dynamic dispatch
 
 ::: notes
@@ -229,6 +231,47 @@ let integer_matrix =
 
 ::: notes
 The hands-on section asks learners to create a ragged input.
+:::
+
+## Terminal: Generic Numerics
+
+```{.bash}
+cd source-code/generic-numerics
+cargo run
+```
+
+- Accumulate values in a generic `Stats<T>`
+- Convert input values with `num-traits`
+- Compute mean and population standard deviation
+
+::: notes
+Use this as a compact bridge from generic structs to trait bounds from crates.
+:::
+
+## Numeric Trait Bounds
+
+```rust
+struct Stats<T: Float + FromPrimitive> {
+    sum: T,
+    sum_sqr: T,
+    count: usize,
+}
+```
+
+```rust
+fn add<U>(&mut self, value: U) -> Option<()>
+where
+    U: ToPrimitive,
+```
+
+- `Float` supplies floating-point operations
+- `FromPrimitive` converts counts and values into `T`
+- `ToPrimitive` accepts several input numeric types
+
+::: notes
+Point out that these traits come from `num-traits`, not the standard library.
+This is common in scientific Rust when generic numeric code needs explicit
+capabilities.
 :::
 
 ## Iteration With `IntoIterator`
