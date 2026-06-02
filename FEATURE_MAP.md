@@ -114,6 +114,8 @@ several places when they combine multiple ideas.
 | Generic structs with type parameters | `source-code/generic-structs/src/matrix.rs`, `source-code/smart-pointers/src/tree.rs` |
 | Generic `impl<T>` blocks | `source-code/generic-structs/src/matrix.rs` |
 | Trait bounds on methods | `source-code/generic-structs/src/matrix.rs`, `source-code/smart-pointers/src/bst.rs` |
+| Numeric trait bounds with `num-traits` | `source-code/generic-numerics/src/main.rs` |
+| Generic running statistics | `source-code/generic-numerics/src/main.rs` |
 | Borrowing generic elements as `Option<&T>` | `source-code/generic-structs/src/matrix.rs` |
 | Storing different element types through one abstraction | `source-code/generic-structs/src/main.rs` |
 | Defining a user-defined trait | `source-code/user-defined-trait/src/quadrature.rs` |

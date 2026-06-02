@@ -46,6 +46,8 @@ prevent or make explicit in safe code.
    `Result` types and the `?` operator.
 1. `generic-structs`: illustrates how to define a generic struct and constrain
    methods with trait bounds.
+1. `generic-numerics`: illustrates how to use `num-traits` for generic numeric
+   conversions and how to keep running statistics in a generic numeric struct.
 1. `traits`: illustrates how to implement standard traits such as `Index`,
    `IndexMut`, `Display`, and `TryFrom` for a custom type.
 1. `smart-pointers`: illustrates how to use `Box<T>` to define a recursive

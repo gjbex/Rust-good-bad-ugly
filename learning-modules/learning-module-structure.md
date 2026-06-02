@@ -158,6 +158,7 @@ Primary examples:
 - `source-code/traits`
 - `source-code/user-defined-trait`
 - `source-code/generic-structs`
+- `source-code/generic-numerics`
 
 Topics:
 
@@ -165,6 +166,7 @@ Topics:
 - `Display`, `Index`, `IndexMut`, and `TryFrom`.
 - User-defined traits.
 - Trait bounds.
+- Crate-provided numeric traits.
 - Trait objects.
 - `dyn Trait`.
 - Static and dynamic dispatch at a conceptual level.
