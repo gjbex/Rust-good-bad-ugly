@@ -25,3 +25,8 @@ The modules are written as reading material. The slide deck in
 
 The [module structure](learning-module-structure.md) page gives an overview of
 the intended sequence and the source-code examples used in each module.
+
+For learners coming from another programming language, the
+[Rust false friends by programming background](rust-false-friends-by-language.md)
+page summarizes habits from C, C++, Fortran, Python, R, and MATLAB that do not
+translate directly to Rust.
