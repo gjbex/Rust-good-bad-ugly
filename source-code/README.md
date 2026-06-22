@@ -26,6 +26,8 @@ prevent or make explicit in safe code.
    booleans, characters, and address types.
 1. `complex-numbers`: illustration of how to use `num-complex` crate to work
    with complex numbers.
+1. `units`: illustrates how to use the `uom` crate to convert command-line
+   `f64` values into typed physical quantities such as `Length` and `Time`.
 1. `no-double-promotion`: illustrates that double promotion does not occur in
    Rust, and that the type of a floating point literal is determined by the
    context in which it is used.

@@ -42,6 +42,7 @@ Primary examples:
 - `source-code/numerical-function`
 - `source-code/no-double-promotion`
 - `source-code/complex-numbers`
+- `source-code/units`
 
 Topics:
 
@@ -52,6 +53,7 @@ Topics:
 - Integer division and remainder.
 - Floating-point functions and constants.
 - Complex numbers through `num-complex`.
+- Physical quantities through `uom`.
 - Differences from C and C++ numeric promotion rules.
 
 Goal:

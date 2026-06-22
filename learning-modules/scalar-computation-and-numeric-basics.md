@@ -25,6 +25,7 @@ After completing this module, participants should be able to:
 - Convert integer values to floating-point values explicitly.
 - Understand why Rust avoids implicit double promotion.
 - Use `num-complex` for complex arithmetic.
+- Use `uom` to make physical units explicit at program boundaries.
 
 ## Prerequisites
 
@@ -42,6 +43,7 @@ The examples used in this module are:
 - `source-code/numerical-function`
 - `source-code/no-double-promotion`
 - `source-code/complex-numbers`
+- `source-code/units`
 
 ## Scalar Types
 
@@ -312,6 +314,53 @@ This example reinforces two earlier points:
 - Numeric behavior can be extended through crates.
 - External types are brought into scope with `use`.
 
+## Quantities With Physical Units
+
+Plain `f64` values are convenient for numerical kernels, but they do not say
+what a value means. A solver that accepts `t0`, `delta_t`, and `x0` may use
+`f64` for all three values even though two are times and one is a position.
+
+The `units` example uses the `uom` crate to make those meanings explicit:
+
+```bash
+cd source-code/units
+cargo run -- --x0 1.0 --t0 0.0 --delta-t 0.25
+```
+
+The command-line parser still accepts ordinary numeric values. The conversion
+from raw input to typed quantities happens once, near the program boundary:
+
+```rust
+impl From<Args> for SimulationParameters {
+    fn from(args: Args) -> Self {
+        Self {
+            x0: Length::new::<uom::si::length::meter>(args.x0),
+            t0: Time::new::<uom::si::time::second>(args.t0),
+            delta_t: Time::new::<uom::si::time::second>(args.delta_t),
+        }
+    }
+}
+```
+
+This gives the rest of the program a more meaningful type than plain `f64`.
+When a tight numerical loop needs scalar values in canonical units, the example
+converts back explicitly:
+
+```rust
+let t0 = t0.get::<uom::si::time::second>();
+let delta_t = delta_t.get::<uom::si::time::second>();
+let x0 = x0.get::<uom::si::length::meter>();
+```
+
+The important pattern is not that every inner-loop variable must be wrapped in
+a unit type. The useful boundary is often:
+
+- parse simple command-line values;
+- convert them into domain-specific quantities;
+- pass typed quantities through the configuration or solver interface;
+- convert to canonical scalar values where the numerical kernel benefits from
+  plain arithmetic.
+
 ## Suggested Hands-On Work
 
 Use this sequence as a practical lab.
@@ -345,6 +394,14 @@ Use this sequence as a practical lab.
 
 9. Run `source-code/complex-numbers` and add a calculation of `z1 - z2`.
 
+10. Run `source-code/units` and change the time step:
+
+    ```bash
+    cargo run -- --x0 1.0 --t0 0.0 --delta-t 0.5
+    ```
+
+    Inspect where the input values become `Length` and `Time`.
+
 ## Discussion Points
 
 This module is a good place to emphasize:
@@ -354,7 +411,9 @@ This module is a good place to emphasize:
 - Conversions between numeric types should be visible in the code.
 - Floating-point constants and mathematical functions are type-specific.
 - Scientific code often needs external crates for domain-specific types such
-  as complex numbers.
+  as complex numbers or physical quantities.
+- Unit-aware quantities are useful at program boundaries, while inner numerical
+  loops may still use canonical scalar values.
 - The compiler is a useful guide when a numeric expression has an ambiguous or
   inconsistent type.
 
@@ -367,6 +426,8 @@ The concepts in this module appear throughout the rest of the training:
 - The Julia set examples use complex arithmetic and floating-point constants.
 - The N-body simulation uses vectors of floating-point values, mathematical
   functions, random initial conditions, and numerical diagnostics.
+- Unit-aware configuration values are one way to make simulation parameters
+  less ambiguous before entering a numerical kernel.
 
 Once participants are comfortable with scalar values and numeric expressions,
 they are ready to move on to control flow, functions, and pattern matching.

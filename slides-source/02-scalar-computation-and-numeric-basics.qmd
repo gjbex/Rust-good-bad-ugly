@@ -27,6 +27,7 @@ differences between them.
 - Choose Euclidean division when a non-negative remainder matters
 - Convert integer values to floating-point values explicitly
 - Use `num-complex` for complex arithmetic
+- Use `uom` for typed physical quantities at boundaries
 
 ::: notes
 These learning goals come from the module text, but they are phrased as working
@@ -358,6 +359,62 @@ This is a compact exercise. Keep the focus on using an external numeric type,
 not on complex analysis.
 :::
 
+## Quantities With Units
+
+```rust
+use uom::si::f64::{Length, Time};
+
+struct SimulationParameters {
+    x0: Length,
+    t0: Time,
+    delta_t: Time,
+}
+```
+
+- Plain `f64` values do not carry physical meaning
+- `uom` gives quantities distinct types
+- Keep units explicit at input and configuration boundaries
+
+::: notes
+Connect this to ODE and simulation setup: `t0`, `delta_t`, and `x0` are all
+numbers, but they are not interchangeable quantities.
+:::
+
+## Boundary Conversion
+
+```rust
+Self {
+    x0: Length::new::<uom::si::length::meter>(args.x0),
+    t0: Time::new::<uom::si::time::second>(args.t0),
+    delta_t: Time::new::<uom::si::time::second>(args.delta_t),
+}
+```
+
+- `clap` parses ordinary numeric values
+- Conversion happens once near the boundary
+- The solver can receive typed quantities
+
+::: notes
+Emphasize that the command-line interface stays simple: values are documented
+as seconds and meters, then converted into typed quantities.
+:::
+
+## Terminal: Unit-Aware Parameters
+
+```{.bash}
+cd source-code/units
+cargo run -- --x0 1.0 --t0 0.0 --delta-t 0.25
+```
+
+- Inspect the printed `SimulationParameters`
+- Locate `Length::new::<meter>`
+- Locate `Time::new::<second>`
+
+::: notes
+Open `source-code/units/src/main.rs` after running the command. Point out that
+the example converts back to canonical `f64` values before the simple loop.
+:::
+
 ## Hands-On Sequence
 
 1. Run `source-code/basic-types`
@@ -366,6 +423,7 @@ not on complex analysis.
 4. Predict `/`, `%`, `div_euclid`, and `rem_euclid`
 5. Remove one `as f64` conversion and run `cargo check`
 6. Add `z1 - z2` to the complex-number example
+7. Run `source-code/units` and change `--delta-t`
 
 ::: notes
 Use this as a lab checkpoint or as a summary of the practical work in the
@@ -379,6 +437,7 @@ module.
 - Where should integer-to-float conversion happen?
 - Which numeric types belong in the standard library?
 - Which numeric types belong in crates?
+- Where should unit conversions happen in a simulation?
 
 ::: notes
 Use these questions to close the module before moving to control flow.
