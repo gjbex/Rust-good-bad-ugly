@@ -391,22 +391,22 @@ Use this sequence as a practical lab.
 
 1. Run the default simulation:
 
-   ```bash
-   cd source-code/n-body-simulation/rust
-   cargo run
-   ```
+    ```bash
+    cd source-code/n-body-simulation/rust
+    cargo run
+    ```
 
 2. Save evolution diagnostics:
 
-   ```bash
-   cargo run -- --steps 200 --save-evolution evolution.csv
-   ```
+    ```bash
+    cargo run -- --steps 200 --save-evolution evolution.csv
+    ```
 
 3. Visualize the diagnostics:
 
-   ```bash
-   ../visualize-evolution.py evolution.csv
-   ```
+    ```bash
+    ../visualize-evolution.py evolution.csv
+    ```
 
 4. Run the same command with a smaller `--delta-time` and compare total-energy
    variation.
@@ -415,10 +415,10 @@ Use this sequence as a practical lab.
 
 6. Save particle states and create an animation:
 
-   ```bash
-   cargo run -- --steps 100 --save-states states.csv
-   ../animate-states.py states.csv --output animation.html
-   ```
+    ```bash
+    cargo run -- --steps 100 --save-states states.csv
+    ../animate-states.py states.csv --output animation.html
+    ```
 
 7. Inspect `rust/src/system.rs` and identify which methods only read the system and
    which method mutates it.

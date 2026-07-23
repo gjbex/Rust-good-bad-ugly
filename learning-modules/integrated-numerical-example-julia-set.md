@@ -386,16 +386,16 @@ Use this sequence as a practical lab.
 
 1. Run the baseline implementation and visualize the result:
 
-   ```bash
-   cd source-code/julia-set/julia-set-baseline
-   cargo run --release -- --width 400 --height 300 | ../view-fractal.py
-   ```
+    ```bash
+    cd source-code/julia-set/julia-set-baseline
+    cargo run --release -- --width 400 --height 300 | ../view-fractal.py
+    ```
 
 2. Change `c_real` and `c_imag` on the command line and compare the image:
 
-   ```bash
-   cargo run --release -- --width 400 --height 300 --c-real -0.8 --c-imag 0.156 | ../view-fractal.py
-   ```
+    ```bash
+    cargo run --release -- --width 400 --height 300 --c-real -0.8 --c-imag 0.156 | ../view-fractal.py
+    ```
 
 3. Inspect `initialize_z` and identify where integer indices are converted to
    floating-point coordinates.
@@ -410,10 +410,10 @@ Use this sequence as a practical lab.
 
 7. Run the TOML configuration implementation:
 
-   ```bash
-   cd ../julia-set-toml-config
-   cargo run --release -- julia-set.toml | ../view-fractal.py
-   ```
+    ```bash
+    cd ../julia-set-toml-config
+    cargo run --release -- julia-set.toml | ../view-fractal.py
+    ```
 
 8. Edit `julia-set.toml` to change the image size or complex parameter, then
    rerun the program.

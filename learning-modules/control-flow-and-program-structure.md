@@ -364,19 +364,19 @@ Use this sequence as a practical lab.
 
 5. Run `source-code/numerical-function` with different coefficients:
 
-   ```bash
-   cargo run -- --a 1.0 --b 2.0 --c -3.0
-   ```
+    ```bash
+    cargo run -- --a 1.0 --b 2.0 --c -3.0
+    ```
 
 6. Add a second function to `source-code/numerical-function`, such as a cubic
    polynomial, and call it from `main`.
 
 7. Run `source-code/enum-match` with both quadrature methods:
 
-   ```bash
-   cargo run
-   cargo run -- --method gauss
-   ```
+    ```bash
+    cargo run
+    cargo run -- --method gauss
+    ```
 
 8. Change the function being integrated in `source-code/enum-match/src/main.rs`
    from `sin(x)` to `cos(x)` and run both quadrature methods again.

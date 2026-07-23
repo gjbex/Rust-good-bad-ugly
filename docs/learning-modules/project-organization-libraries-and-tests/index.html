@@ -184,17 +184,15 @@ the code they check.</p>
 </ul>
 <h2 id="from-one-binary-to-several-targets">From One Binary To Several Targets<a class="headerlink" href="#from-one-binary-to-several-targets" title="Permanent link">&para;</a></h2>
 <p>A minimal Rust binary project has one main executable:</p>
-<pre><code class="language-text">src/
-└── main.rs
-</code></pre>
+<pre class="highlight"><code class="language-text">src/
+└── main.rs</code></pre>
 <p>That is enough for many small examples. The <code>hashmap-hashset</code> example is a
 larger package with several related executables:</p>
-<pre><code class="language-text">src/
+<pre class="highlight"><code class="language-text">src/
 ├── lib.rs
 ├── generate-data.rs
 ├── read-errors.rs
-└── count-nucleotides.rs
-</code></pre>
+└── count-nucleotides.rs</code></pre>
 <p>The three executable programs are:</p>
 <ul>
 <li><code>generate-data</code></li>
@@ -206,30 +204,28 @@ definitions live in <code>src/lib.rs</code>.</p>
 <h2 id="binary-targets">Binary Targets<a class="headerlink" href="#binary-targets" title="Permanent link">&para;</a></h2>
 <p>Each executable in a Cargo package is a binary target. The <code>hashmap-hashset</code>
 package declares its binaries explicitly in <code>Cargo.toml</code>:</p>
-<pre><code class="language-toml">[[bin]]
-name = &quot;generate-data&quot;
-path = &quot;src/generate-data.rs&quot;
+<pre class="highlight"><code class="language-toml">[[bin]]
+name = "generate-data"
+path = "src/generate-data.rs"
 
 [[bin]]
-name = &quot;read-errors&quot;
-path = &quot;src/read-errors.rs&quot;
+name = "read-errors"
+path = "src/read-errors.rs"
 
 [[bin]]
-name = &quot;count-nucleotides&quot;
-path = &quot;src/count-nucleotides.rs&quot;
-</code></pre>
+name = "count-nucleotides"
+path = "src/count-nucleotides.rs"</code></pre>
 <p>Each binary file has its own <code>main</code> function. Run a specific binary with:</p>
-<pre><code class="language-bash">cargo run --bin generate-data -- --count 800 --file data.txt
+<pre class="highlight"><code class="language-bash">cargo run --bin generate-data -- --count 800 --file data.txt
 cargo run --bin read-errors -- --file data.txt --output errors.txt --error-rate 0.1
-cargo run --bin count-nucleotides -- --file errors.txt
-</code></pre>
+cargo run --bin count-nucleotides -- --file errors.txt</code></pre>
 <p>The first <code>--</code> separates Cargo arguments from arguments passed to the selected
 program.</p>
 <h2 id="library-targets">Library Targets<a class="headerlink" href="#library-targets" title="Permanent link">&para;</a></h2>
 <p>When a package contains <code>src/lib.rs</code>, Cargo builds a library target as well.
 This library can be used by the package's binaries.</p>
 <p>The shared library code in <code>hashmap-hashset</code> is:</p>
-<pre><code class="language-rust">pub const VALID_NUCLEOTIDES: [char; 4] = ['A', 'C', 'G', 'T'];
+<pre class="highlight"><code class="language-rust">pub const VALID_NUCLEOTIDES: [char; 4] = ['A', 'C', 'G', 'T'];
 pub const ERROR_TOKENS: [char; 12] = ['B', 'D', 'E', 'F', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O'];
 
 pub fn is_valid_nucleotide(value: char) -&gt; bool {
@@ -238,22 +234,18 @@ pub fn is_valid_nucleotide(value: char) -&gt; bool {
 
 pub fn is_error_token(value: char) -&gt; bool {
     ERROR_TOKENS.contains(&amp;value)
-}
-</code></pre>
+}</code></pre>
 <p>The constants and functions are marked <code>pub</code> because the binary targets need to
 use them.</p>
 <h2 id="using-library-code-from-binaries">Using Library Code From Binaries<a class="headerlink" href="#using-library-code-from-binaries" title="Permanent link">&para;</a></h2>
 <p>Binary targets can import the package's library by using the package name with
 hyphens converted to underscores.</p>
 <p>The package is named:</p>
-<pre><code class="language-toml">name = &quot;hashmap-hashset&quot;
-</code></pre>
+<pre class="highlight"><code class="language-toml">name = "hashmap-hashset"</code></pre>
 <p>The corresponding Rust crate name is:</p>
-<pre><code class="language-rust">hashmap_hashset
-</code></pre>
+<pre class="highlight"><code class="language-rust">hashmap_hashset</code></pre>
 <p>For example, <code>count-nucleotides.rs</code> imports shared definitions with:</p>
-<pre><code class="language-rust">use hashmap_hashset::{VALID_NUCLEOTIDES, is_valid_nucleotide};
-</code></pre>
+<pre class="highlight"><code class="language-rust">use hashmap_hashset::{VALID_NUCLEOTIDES, is_valid_nucleotide};</code></pre>
 <p>This keeps the valid nucleotide list in one place. The generator, error
 injector, and counter do not each need their own separate copy of the same
 definition.</p>
@@ -274,7 +266,7 @@ on the same rules.</p>
 <h2 id="unit-tests">Unit Tests<a class="headerlink" href="#unit-tests" title="Permanent link">&para;</a></h2>
 <p>Rust unit tests are usually placed close to the code they test. A common
 pattern is a test module at the bottom of a source file:</p>
-<pre><code class="language-rust">#[cfg(test)]
+<pre class="highlight"><code class="language-rust">#[cfg(test)]
 mod tests {
     use super::*;
 
@@ -284,48 +276,40 @@ mod tests {
             assert!(is_valid_nucleotide(nucleotide));
         }
     }
-}
-</code></pre>
+}</code></pre>
 <p>The <code>#[cfg(test)]</code> attribute means the module is compiled only when running
 tests.</p>
 <p>The <code>#[test]</code> attribute marks a function as a test case.</p>
 <p>Run tests with:</p>
-<pre><code class="language-bash">cargo test
-</code></pre>
+<pre class="highlight"><code class="language-bash">cargo test</code></pre>
 <h2 id="using-super-in-tests">Using <code>super</code> In Tests<a class="headerlink" href="#using-super-in-tests" title="Permanent link">&para;</a></h2>
 <p>Tests inside a nested <code>tests</code> module often need access to items from the parent
 module. This is done with <code>super</code>:</p>
-<pre><code class="language-rust">use super::*;
-</code></pre>
+<pre class="highlight"><code class="language-rust">use super::*;</code></pre>
 <p>or more selectively:</p>
-<pre><code class="language-rust">use super::quad;
-</code></pre>
+<pre class="highlight"><code class="language-rust">use super::quad;</code></pre>
 <p>In <a href="https://github.com/gjbex/Rust-good-bad-ugly/blob/main/source-code/enum-match/src/simpson.rs"><code>source-code/enum-match/src/simpson.rs</code></a>, the test imports the quadrature
 function with:</p>
-<pre><code class="language-rust">use super::quad;
-</code></pre>
+<pre class="highlight"><code class="language-rust">use super::quad;</code></pre>
 <p>This means "use <code>quad</code> from the module that contains this test module."</p>
 <h2 id="assertions">Assertions<a class="headerlink" href="#assertions" title="Permanent link">&para;</a></h2>
 <p>Tests usually check behavior with assertion macros.</p>
 <p>Use <code>assert!</code> for Boolean conditions:</p>
-<pre><code class="language-rust">assert!(is_valid_nucleotide(nucleotide));
-</code></pre>
+<pre class="highlight"><code class="language-rust">assert!(is_valid_nucleotide(nucleotide));</code></pre>
 <p>Use <code>assert_eq!</code> when two values should be equal:</p>
-<pre><code class="language-rust">assert_eq!(matrix[(0, 0)], 1);
-assert_eq!(matrix[(1, 1)], 4);
-</code></pre>
+<pre class="highlight"><code class="language-rust">assert_eq!(matrix[(0, 0)], 1);
+assert_eq!(matrix[(1, 1)], 4);</code></pre>
 <p><code>assert_eq!</code> is often preferable for equality checks because failure messages
 show both the left and right values.</p>
 <h2 id="testing-error-paths">Testing Error Paths<a class="headerlink" href="#testing-error-paths" title="Permanent link">&para;</a></h2>
 <p>Tests should cover error paths as well as successful paths. The matrix trait
 example checks that ragged nested vectors are rejected:</p>
-<pre><code class="language-rust">#[test]
+<pre class="highlight"><code class="language-rust">#[test]
 fn rejects_ragged_rows() {
     let result = Matrix::try_from(vec![vec![1, 2], vec![3]]);
 
     assert!(result.is_err());
-}
-</code></pre>
+}</code></pre>
 <p>This test does not need to inspect the exact error message. It only verifies
 that invalid input is rejected.</p>
 <p>For user-facing tools, more detailed tests may check the specific error text,
@@ -334,13 +318,12 @@ but that can make tests more brittle.</p>
 <p>Numerical code often should not be tested with exact floating-point equality.
 The <code>enum-match</code> example tests Simpson integration of <code>sin(x)</code> on <code>[0, pi]</code>.
 The exact result is <code>2</code>, but the computed result is compared with a tolerance:</p>
-<pre><code class="language-rust">#[test]
+<pre class="highlight"><code class="language-rust">#[test]
 fn integrates_sine_on_zero_to_pi() {
     let result = quad(|x| f64::sin(x), 0.0, std::f64::consts::PI, 1000);
 
     assert!((result - 2.0).abs() &lt; 2.0e-12);
-}
-</code></pre>
+}</code></pre>
 <p>The tolerance should be chosen based on the method, expected accuracy, and
 floating-point scale of the problem. A tolerance that is too loose may miss
 real bugs. A tolerance that is too tight may fail for unimportant numerical
@@ -348,14 +331,13 @@ noise.</p>
 <h2 id="testing-trait-behavior">Testing Trait Behavior<a class="headerlink" href="#testing-trait-behavior" title="Permanent link">&para;</a></h2>
 <p>The <code>traits</code> example uses tests to check behavior provided by trait
 implementations:</p>
-<pre><code class="language-rust">#[test]
+<pre class="highlight"><code class="language-rust">#[test]
 fn displays_matrix_rows() {
     let matrix =
-        Matrix::try_from(vec![vec![1, 2], vec![3, 4]]).expect(&quot;rows have the same length&quot;);
+        Matrix::try_from(vec![vec![1, 2], vec![3, 4]]).expect("rows have the same length");
 
-    assert_eq!(matrix.to_string(), &quot;1 2\n3 4&quot;);
-}
-</code></pre>
+    assert_eq!(matrix.to_string(), "1 2\n3 4");
+}</code></pre>
 <p>This test checks the <code>Display</code> implementation through the public behavior it
 enables: converting the matrix to a string.</p>
 <p>Other tests check indexing, mutable indexing, borrowed iteration, mutable
@@ -363,11 +345,9 @@ borrowed iteration, and owned iteration. That is a useful pattern: test the
 syntax and behavior that users of the type will actually rely on.</p>
 <h2 id="running-specific-tests">Running Specific Tests<a class="headerlink" href="#running-specific-tests" title="Permanent link">&para;</a></h2>
 <p>For small examples, running all tests is usually fine:</p>
-<pre><code class="language-bash">cargo test
-</code></pre>
+<pre class="highlight"><code class="language-bash">cargo test</code></pre>
 <p>Cargo can also run tests whose names match a filter:</p>
-<pre><code class="language-bash">cargo test displays_matrix_rows
-</code></pre>
+<pre class="highlight"><code class="language-bash">cargo test displays_matrix_rows</code></pre>
 <p>This is useful when working on one behavior at a time.</p>
 <h2 id="suggested-hands-on-work">Suggested Hands-On Work<a class="headerlink" href="#suggested-hands-on-work" title="Permanent link">&para;</a></h2>
 <p>Use this sequence as a practical lab.</p>
@@ -378,36 +358,27 @@ syntax and behavior that users of the type will actually rely on.</p>
 </li>
 <li>
 <p>Run each binary:</p>
+<pre class="highlight"><code class="language-bash">cd source-code/hashmap-hashset
+cargo run --bin generate-data -- --count 200 --file data.txt
+cargo run --bin read-errors -- --file data.txt --output errors.txt --error-rate 0.2
+cargo run --bin count-nucleotides -- --file errors.txt</code></pre>
 </li>
-</ol>
-<p><code>bash
-   cd source-code/hashmap-hashset
-   cargo run --bin generate-data -- --count 200 --file data.txt
-   cargo run --bin read-errors -- --file data.txt --output errors.txt --error-rate 0.2
-   cargo run --bin count-nucleotides -- --file errors.txt</code></p>
-<ol>
 <li>
 <p>Open <code>src/lib.rs</code> and identify which items are public.</p>
 </li>
 <li>
 <p>Add a new helper function to <code>src/lib.rs</code>, such as:</p>
+<pre class="highlight"><code class="language-rust">pub fn is_known_token(value: char) -&gt; bool {
+    is_valid_nucleotide(value) || is_error_token(value)
+}</code></pre>
 </li>
-</ol>
-<p><code>rust
-   pub fn is_known_token(value: char) -&gt; bool {
-       is_valid_nucleotide(value) || is_error_token(value)
-   }</code></p>
-<ol>
 <li>
 <p>Add a unit test for the new helper.</p>
 </li>
 <li>
 <p>Run:</p>
+<pre class="highlight"><code class="language-bash">cargo test</code></pre>
 </li>
-</ol>
-<p><code>bash
-   cargo test</code></p>
-<ol>
 <li>
 <p>Open <a href="https://github.com/gjbex/Rust-good-bad-ugly/blob/main/source-code/enum-match/src/simpson.rs"><code>source-code/enum-match/src/simpson.rs</code></a> and inspect the numerical test.</p>
 </li>
@@ -416,14 +387,13 @@ syntax and behavior that users of the type will actually rely on.</p>
 </li>
 <li>
 <p>Open <a href="https://github.com/gjbex/Rust-good-bad-ugly/blob/main/source-code/traits/src/matrix.rs"><code>source-code/traits/src/matrix.rs</code></a> and run one specific test by name:</p>
+<pre class="highlight"><code class="language-bash">cd source-code/traits
+cargo test displays_matrix_rows</code></pre>
 </li>
-</ol>
-<p><code>bash
-   cd source-code/traits
-   cargo test displays_matrix_rows</code></p>
-<ol>
-<li>Add a test that checks one additional behavior, such as formatting a
-    one-row matrix.</li>
+<li>
+<p>Add a test that checks one additional behavior, such as formatting a
+    one-row matrix.</p>
+</li>
 </ol>
 <h2 id="discussion-points">Discussion Points<a class="headerlink" href="#discussion-points" title="Permanent link">&para;</a></h2>
 <p>This module is a good place to emphasize:</p>

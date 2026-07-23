@@ -35,4 +35,4 @@ markdown_extensions:
   - toc:
       permalink: true
   - tables
-  - fenced_code
+  - pymdownx.superfences

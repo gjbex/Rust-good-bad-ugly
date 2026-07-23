@@ -181,29 +181,25 @@ should be repeatable when investigating results.</p>
 RNG algorithm, same seed, and same sequence of sampling calls, the program
 produces the same stream of values.</p>
 <p>Run the example twice with the same seed:</p>
-<pre><code class="language-bash">cd source-code/random-numbers
+<pre class="highlight"><code class="language-bash">cd source-code/random-numbers
 cargo run -- --count 5 --seed 42 --distribution uniform
-cargo run -- --count 5 --seed 42 --distribution uniform
-</code></pre>
+cargo run -- --count 5 --seed 42 --distribution uniform</code></pre>
 <p>The output should be the same. Changing the seed changes the stream:</p>
-<pre><code class="language-bash">cargo run -- --count 5 --seed 43 --distribution uniform
-</code></pre>
+<pre class="highlight"><code class="language-bash">cargo run -- --count 5 --seed 43 --distribution uniform</code></pre>
 <p>This is the basic reproducibility contract used throughout the module.</p>
 <h2 id="choosing-an-rng">Choosing An RNG<a class="headerlink" href="#choosing-an-rng" title="Permanent link">&para;</a></h2>
 <p>The example uses <code>ChaCha12Rng</code>:</p>
-<pre><code class="language-rust">use rand_chacha::ChaCha12Rng;
-</code></pre>
+<pre class="highlight"><code class="language-rust">use rand_chacha::ChaCha12Rng;</code></pre>
 <p>The RNG is constructed from a command-line seed:</p>
-<pre><code class="language-rust">let mut rng = ChaCha12Rng::seed_from_u64(args.seed);
-</code></pre>
+<pre class="highlight"><code class="language-rust">let mut rng = ChaCha12Rng::seed_from_u64(args.seed);</code></pre>
 <p>Using a named RNG algorithm is important for reproducibility. If a program uses
 an unspecified default RNG, its exact behavior may change across crate versions
 or platforms. A named RNG makes the intended stream more explicit.</p>
 <p>The RNG is mutable because sampling advances its internal state.</p>
 <h2 id="command-line-parameters">Command-Line Parameters<a class="headerlink" href="#command-line-parameters" title="Permanent link">&para;</a></h2>
 <p>The example exposes three command-line parameters:</p>
-<pre><code class="language-rust">#[derive(Parser, Debug)]
-#[command(author, version, about=&quot;Random number generator&quot;)]
+<pre class="highlight"><code class="language-rust">#[derive(Parser, Debug)]
+#[command(author, version, about="Random number generator")]
 struct Args {
     /// The number of random numbers to generate
     #[arg(short, long, default_value_t = 1)]
@@ -214,53 +210,47 @@ struct Args {
     seed: u64,
 
     /// The distribution to sample from
-    #[arg(short, long, default_value = &quot;uniform&quot;)]
+    #[arg(short, long, default_value = "uniform")]
     distribution: DistributionKind,
-}
-</code></pre>
+}</code></pre>
 <p>This makes random generation configurable from the shell:</p>
-<pre><code class="language-bash">cargo run -- --count 5 --seed 42 --distribution normal
-</code></pre>
+<pre class="highlight"><code class="language-bash">cargo run -- --count 5 --seed 42 --distribution normal</code></pre>
 <p>For scientific examples, the seed should be treated as part of the run
 configuration. It belongs in command-line arguments, configuration files, logs,
 or output metadata.</p>
 <h2 id="cli-choices-with-valueenum">CLI Choices With <code>ValueEnum</code><a class="headerlink" href="#cli-choices-with-valueenum" title="Permanent link">&para;</a></h2>
 <p>The available distribution choices are represented by an enum:</p>
-<pre><code class="language-rust">#[derive(Clone, ValueEnum, Debug)]
+<pre class="highlight"><code class="language-rust">#[derive(Clone, ValueEnum, Debug)]
 enum DistributionKind {
     Uniform,
     Normal,
-}
-</code></pre>
+}</code></pre>
 <p>Because it derives <code>ValueEnum</code>, <code>clap</code> can parse these values from the command
 line and show them in <code>--help</code> output:</p>
-<pre><code class="language-bash">cargo run -- --help
-</code></pre>
+<pre class="highlight"><code class="language-bash">cargo run -- --help</code></pre>
 <p>This keeps accepted values explicit. The program does not need to manually
 parse arbitrary strings such as <code>"uniform"</code> or <code>"normal"</code>.</p>
 <h2 id="runtime-distribution-objects">Runtime Distribution Objects<a class="headerlink" href="#runtime-distribution-objects" title="Permanent link">&para;</a></h2>
 <p>The command-line enum describes the user's choice, but the actual sampling code
 needs concrete distribution objects from the <code>rand_distr</code> crate:</p>
-<pre><code class="language-rust">enum RealDistribution {
+<pre class="highlight"><code class="language-rust">enum RealDistribution {
     Uniform(Uniform&lt;f64&gt;),
     Normal(Normal&lt;f64&gt;),
-}
-</code></pre>
+}</code></pre>
 <p>The conversion from command-line choice to runtime distribution object happens
 in one place:</p>
-<pre><code class="language-rust">impl RealDistribution {
+<pre class="highlight"><code class="language-rust">impl RealDistribution {
     fn from_kind(kind: DistributionKind) -&gt; Self {
         match kind {
             DistributionKind::Uniform =&gt; {
-                Self::Uniform(Uniform::new(0.0, 1.0).expect(&quot;valid uniform distribution&quot;))
+                Self::Uniform(Uniform::new(0.0, 1.0).expect("valid uniform distribution"))
             }
             DistributionKind::Normal =&gt; {
-                Self::Normal(Normal::new(0.0, 1.0).expect(&quot;valid normal distribution&quot;))
+                Self::Normal(Normal::new(0.0, 1.0).expect("valid normal distribution"))
             }
         }
     }
-}
-</code></pre>
+}</code></pre>
 <p>This is a useful design pattern:</p>
 <ul>
 <li>one type represents the CLI choice;</li>
@@ -270,16 +260,14 @@ in one place:</p>
 The normal distribution uses mean <code>0.0</code> and standard deviation <code>1.0</code>.</p>
 <h2 id="sampling-from-a-distribution">Sampling From A Distribution<a class="headerlink" href="#sampling-from-a-distribution" title="Permanent link">&para;</a></h2>
 <p>The distribution enum provides a common sampling method:</p>
-<pre><code class="language-rust">fn sample&lt;R: Rng + ?Sized&gt;(&amp;self, rng: &amp;mut R) -&gt; f64 {
+<pre class="highlight"><code class="language-rust">fn sample&lt;R: Rng + ?Sized&gt;(&amp;self, rng: &amp;mut R) -&gt; f64 {
     match self {
         Self::Uniform(distribution) =&gt; distribution.sample(rng),
         Self::Normal(distribution) =&gt; distribution.sample(rng),
     }
-}
-</code></pre>
+}</code></pre>
 <p>The method is generic over any RNG that implements <code>Rng</code>:</p>
-<pre><code class="language-rust">R: Rng + ?Sized
-</code></pre>
+<pre class="highlight"><code class="language-rust">R: Rng + ?Sized</code></pre>
 <p>At this stage, the important idea is that the distribution does not need to
 know the exact RNG type. It only needs an RNG that supports the behavior
 required for sampling.</p>
@@ -288,39 +276,34 @@ behind references or trait objects. It is not central to the example, but it
 matches common Rust library patterns.</p>
 <h2 id="generating-a-stream-of-values">Generating A Stream Of Values<a class="headerlink" href="#generating-a-stream-of-values" title="Permanent link">&para;</a></h2>
 <p>The <code>main</code> function ties the pieces together:</p>
-<pre><code class="language-rust">let args = Args::parse();
+<pre class="highlight"><code class="language-rust">let args = Args::parse();
 let mut rng = ChaCha12Rng::seed_from_u64(args.seed);
 let distribution = RealDistribution::from_kind(args.distribution);
 
 for _ in 0..args.count {
     let random_number = distribution.sample(&amp;mut rng);
-    println!(&quot;{}&quot;, random_number);
-}
-</code></pre>
+    println!("{}", random_number);
+}</code></pre>
 <p>Each call to <code>sample</code> advances the RNG and prints one value. The program writes
 plain text to standard output, one sample per line. This makes it easy to
 inspect directly or pipe into another program.</p>
 <h2 id="visualizing-a-distribution">Visualizing A Distribution<a class="headerlink" href="#visualizing-a-distribution" title="Permanent link">&para;</a></h2>
 <p>The example includes a Python helper script:</p>
-<pre><code class="language-text">source-code/random-numbers/show-distribution.py
-</code></pre>
+<pre class="highlight"><code class="language-text">source-code/random-numbers/show-distribution.py</code></pre>
 <p>It reads numbers from standard input and displays a Plotly histogram. Use it
 with a shell pipeline:</p>
-<pre><code class="language-bash">cargo run -- --count 1000 --seed 42 --distribution normal | ./show-distribution.py
-</code></pre>
+<pre class="highlight"><code class="language-bash">cargo run -- --count 1000 --seed 42 --distribution normal | ./show-distribution.py</code></pre>
 <p>The Rust program generates the data. The Python script visualizes the data.
 This separation keeps the Rust example focused on reproducible generation and
 uses Python for interactive plotting.</p>
 <p>The script requires Plotly:</p>
-<pre><code class="language-bash">python3 -m pip install plotly
-</code></pre>
+<pre class="highlight"><code class="language-bash">python3 -m pip install plotly</code></pre>
 <h2 id="randomness-and-program-design">Randomness And Program Design<a class="headerlink" href="#randomness-and-program-design" title="Permanent link">&para;</a></h2>
 <p>For small examples, constructing the RNG directly in <code>main</code> is fine. For larger
 programs, it is often better to pass an RNG into functions that need random
 values.</p>
 <p>For example, the design used in the distribution method:</p>
-<pre><code class="language-rust">fn sample&lt;R: Rng + ?Sized&gt;(&amp;self, rng: &amp;mut R) -&gt; f64
-</code></pre>
+<pre class="highlight"><code class="language-rust">fn sample&lt;R: Rng + ?Sized&gt;(&amp;self, rng: &amp;mut R) -&gt; f64</code></pre>
 <p>makes the source of randomness explicit. The function does not create its own
 hidden RNG. That improves reproducibility because the caller controls the seed
 and the order of random draws.</p>
@@ -330,17 +313,15 @@ differ.</p>
 <h2 id="suggested-hands-on-work">Suggested Hands-On Work<a class="headerlink" href="#suggested-hands-on-work" title="Permanent link">&para;</a></h2>
 <p>Use this sequence as a practical lab.</p>
 <ol>
-<li>Run the example with the default settings:</li>
-</ol>
-<p><code>bash
-   cd source-code/random-numbers
-   cargo run</code></p>
-<ol>
-<li>Generate five uniform samples with an explicit seed:</li>
-</ol>
-<p><code>bash
-   cargo run -- --count 5 --seed 42 --distribution uniform</code></p>
-<ol>
+<li>
+<p>Run the example with the default settings:</p>
+<pre class="highlight"><code class="language-bash">cd source-code/random-numbers
+cargo run</code></pre>
+</li>
+<li>
+<p>Generate five uniform samples with an explicit seed:</p>
+<pre class="highlight"><code class="language-bash">cargo run -- --count 5 --seed 42 --distribution uniform</code></pre>
+</li>
 <li>
 <p>Run the same command again and verify that the output is identical.</p>
 </li>
@@ -349,11 +330,8 @@ differ.</p>
 </li>
 <li>
 <p>Generate normally distributed samples:</p>
+<pre class="highlight"><code class="language-bash">cargo run -- --count 5 --seed 42 --distribution normal</code></pre>
 </li>
-</ol>
-<p><code>bash
-   cargo run -- --count 5 --seed 42 --distribution normal</code></p>
-<ol>
 <li>
 <p>Run <code>cargo run -- --help</code> and inspect the accepted distribution values.</p>
 </li>
@@ -368,13 +346,12 @@ differ.</p>
 </li>
 <li>
 <p>Generate a larger sample and visualize it:</p>
+<pre class="highlight"><code class="language-bash">cargo run -- --count 1000 --seed 42 --distribution normal | ./show-distribution.py</code></pre>
 </li>
-</ol>
-<p><code>bash
-   cargo run -- --count 1000 --seed 42 --distribution normal | ./show-distribution.py</code></p>
-<ol>
-<li>Record the command used to generate a plot and rerun it to confirm that the
-    same seed reproduces the same data.</li>
+<li>
+<p>Record the command used to generate a plot and rerun it to confirm that the
+    same seed reproduces the same data.</p>
+</li>
 </ol>
 <h2 id="discussion-points">Discussion Points<a class="headerlink" href="#discussion-points" title="Permanent link">&para;</a></h2>
 <p>This module is a good place to emphasize:</p>

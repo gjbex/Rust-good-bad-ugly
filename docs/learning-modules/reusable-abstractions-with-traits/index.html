@@ -192,25 +192,21 @@ trait.</p>
 other requirements that an implementing type must provide.</p>
 <p>For example, a type that implements <code>Display</code> defines how it should be printed
 with <code>{}</code>:</p>
-<pre><code class="language-rust">println!(&quot;{value}&quot;);
-</code></pre>
+<pre class="highlight"><code class="language-rust">println!("{value}");</code></pre>
 <p>A type that implements <code>Index</code> can be indexed with square brackets:</p>
-<pre><code class="language-rust">matrix[(row, col)]
-</code></pre>
+<pre class="highlight"><code class="language-rust">matrix[(row, col)]</code></pre>
 <p>Traits are not inheritance. They do not say that one type is a subclass of
 another type. They say that a type supports a particular behavior.</p>
 <h2 id="standard-traits-for-a-matrix-type">Standard Traits For A Matrix Type<a class="headerlink" href="#standard-traits-for-a-matrix-type" title="Permanent link">&para;</a></h2>
 <p>The <code>traits</code> example extends the generic matrix from the previous module:</p>
-<pre><code class="language-bash">cd source-code/traits
-cargo run
-</code></pre>
+<pre class="highlight"><code class="language-bash">cd source-code/traits
+cargo run</code></pre>
 <p>The matrix type is still a generic struct:</p>
-<pre><code class="language-rust">pub struct Matrix&lt;T&gt; {
+<pre class="highlight"><code class="language-rust">pub struct Matrix&lt;T&gt; {
     rows: usize,
     cols: usize,
     data: Vec&lt;T&gt;,
-}
-</code></pre>
+}</code></pre>
 <p>The difference is that it now implements several standard traits:</p>
 <ul>
 <li><code>Index</code></li>
@@ -224,59 +220,53 @@ of requiring every operation to be called as a named method.</p>
 <h2 id="indexing-with-index">Indexing With <code>Index</code><a class="headerlink" href="#indexing-with-index" title="Permanent link">&para;</a></h2>
 <p>The <code>Index</code> trait defines immutable indexing. For the matrix, the index is a
 pair of <code>usize</code> values:</p>
-<pre><code class="language-rust">impl&lt;T&gt; Index&lt;(usize, usize)&gt; for Matrix&lt;T&gt; {
+<pre class="highlight"><code class="language-rust">impl&lt;T&gt; Index&lt;(usize, usize)&gt; for Matrix&lt;T&gt; {
     type Output = T;
 
     fn index(&amp;self, index: (usize, usize)) -&gt; &amp;Self::Output {
         let (row, col) = index;
         let flat_index = self
             .flat_index(row, col)
-            .unwrap_or_else(|| panic!(&quot;matrix index ({row}, {col}) is out of bounds&quot;));
+            .unwrap_or_else(|| panic!("matrix index ({row}, {col}) is out of bounds"));
         &amp;self.data[flat_index]
     }
-}
-</code></pre>
+}</code></pre>
 <p>The associated type:</p>
-<pre><code class="language-rust">type Output = T;
-</code></pre>
+<pre class="highlight"><code class="language-rust">type Output = T;</code></pre>
 <p>tells Rust what kind of value is produced by indexing. The method returns a
 shared reference to that value:</p>
-<pre><code class="language-rust">&amp;Self::Output
-</code></pre>
+<pre class="highlight"><code class="language-rust">&amp;Self::Output</code></pre>
 <p>After implementing <code>Index</code>, users can write:</p>
-<pre><code class="language-rust">let value = matrix[(row, col)];
-</code></pre>
+<pre class="highlight"><code class="language-rust">let value = matrix[(row, col)];</code></pre>
 <p>The indexing implementation panics for out-of-bounds indices, matching the
 behavior of Rust slices. A fallible API can still be provided separately with a
 method returning <code>Option</code> or <code>Result</code>.</p>
 <h2 id="mutable-indexing-with-indexmut">Mutable Indexing With <code>IndexMut</code><a class="headerlink" href="#mutable-indexing-with-indexmut" title="Permanent link">&para;</a></h2>
 <p>The <code>IndexMut</code> trait enables assignment through indexing:</p>
-<pre><code class="language-rust">impl&lt;T&gt; IndexMut&lt;(usize, usize)&gt; for Matrix&lt;T&gt; {
+<pre class="highlight"><code class="language-rust">impl&lt;T&gt; IndexMut&lt;(usize, usize)&gt; for Matrix&lt;T&gt; {
     fn index_mut(&amp;mut self, index: (usize, usize)) -&gt; &amp;mut Self::Output {
         let (row, col) = index;
         let flat_index = self
             .flat_index(row, col)
-            .unwrap_or_else(|| panic!(&quot;matrix index ({row}, {col}) is out of bounds&quot;));
+            .unwrap_or_else(|| panic!("matrix index ({row}, {col}) is out of bounds"));
         &amp;mut self.data[flat_index]
     }
-}
-</code></pre>
+}</code></pre>
 <p>The method takes <code>&amp;mut self</code> and returns a mutable reference to the selected
 element. This allows code such as:</p>
-<pre><code class="language-rust">matrix[(row, col)] = (row * matrix.cols() + col) as f64;
-</code></pre>
+<pre class="highlight"><code class="language-rust">matrix[(row, col)] = (row * matrix.cols() + col) as f64;</code></pre>
 <p>This should feel connected to the previous ownership module: mutable indexing
 works because the matrix is mutably borrowed for the assignment.</p>
 <h2 id="formatting-with-display">Formatting With <code>Display</code><a class="headerlink" href="#formatting-with-display" title="Permanent link">&para;</a></h2>
 <p>The <code>Display</code> trait defines how a value is formatted with <code>{}</code>:</p>
-<pre><code class="language-rust">impl&lt;T: Display&gt; Display for Matrix&lt;T&gt; {
+<pre class="highlight"><code class="language-rust">impl&lt;T: Display&gt; Display for Matrix&lt;T&gt; {
     fn fmt(&amp;self, formatter: &amp;mut fmt::Formatter&lt;'_&gt;) -&gt; fmt::Result {
         for row in 0..self.rows {
             for col in 0..self.cols {
                 if col &gt; 0 {
-                    write!(formatter, &quot; &quot;)?;
+                    write!(formatter, " ")?;
                 }
-                write!(formatter, &quot;{}&quot;, self[(row, col)])?;
+                write!(formatter, "{}", self[(row, col)])?;
             }
             if row + 1 &lt; self.rows {
                 writeln!(formatter)?;
@@ -284,21 +274,18 @@ works because the matrix is mutably borrowed for the assignment.</p>
         }
         Ok(())
     }
-}
-</code></pre>
+}</code></pre>
 <p>The implementation has a trait bound:</p>
-<pre><code class="language-rust">T: Display
-</code></pre>
+<pre class="highlight"><code class="language-rust">T: Display</code></pre>
 <p>This is needed because printing a <code>Matrix&lt;T&gt;</code> requires printing each element.
 Rust cannot format arbitrary <code>T</code> values unless <code>T</code> itself implements
 <code>Display</code>.</p>
 <p>After implementing <code>Display</code>, the matrix can be printed directly:</p>
-<pre><code class="language-rust">println!(&quot;{matrix}&quot;);
-</code></pre>
+<pre class="highlight"><code class="language-rust">println!("{matrix}");</code></pre>
 <h2 id="fallible-conversion-with-tryfrom">Fallible Conversion With <code>TryFrom</code><a class="headerlink" href="#fallible-conversion-with-tryfrom" title="Permanent link">&para;</a></h2>
 <p>The <code>TryFrom</code> trait expresses a conversion that can fail. The matrix example
 uses it to build a matrix from nested vectors:</p>
-<pre><code class="language-rust">impl&lt;T&gt; TryFrom&lt;Vec&lt;Vec&lt;T&gt;&gt;&gt; for Matrix&lt;T&gt; {
+<pre class="highlight"><code class="language-rust">impl&lt;T&gt; TryFrom&lt;Vec&lt;Vec&lt;T&gt;&gt;&gt; for Matrix&lt;T&gt; {
     type Error = String;
 
     fn try_from(rows: Vec&lt;Vec&lt;T&gt;&gt;) -&gt; Result&lt;Self, Self::Error&gt; {
@@ -306,7 +293,7 @@ uses it to build a matrix from nested vectors:</p>
         let col_count = rows.first().map_or(0, Vec::len);
 
         if rows.iter().any(|row| row.len() != col_count) {
-            return Err(&quot;all matrix rows must have the same length&quot;.to_string());
+            return Err("all matrix rows must have the same length".to_string());
         }
 
         let data = rows.into_iter().flatten().collect();
@@ -316,40 +303,35 @@ uses it to build a matrix from nested vectors:</p>
             data,
         })
     }
-}
-</code></pre>
+}</code></pre>
 <p>The associated type:</p>
-<pre><code class="language-rust">type Error = String;
-</code></pre>
+<pre class="highlight"><code class="language-rust">type Error = String;</code></pre>
 <p>tells Rust what kind of error the conversion can return.</p>
 <p>The caller can then write:</p>
-<pre><code class="language-rust">let integer_matrix =
+<pre class="highlight"><code class="language-rust">let integer_matrix =
     Matrix::try_from(vec![vec![1, 0], vec![0, 2]])
-        .expect(&quot;all rows have the same length&quot;);
-</code></pre>
+        .expect("all rows have the same length");</code></pre>
 <p>This is a good fit because nested vectors may be ragged: one row might have a
 different length from another.</p>
 <h2 id="crate-provided-numeric-traits">Crate-Provided Numeric Traits<a class="headerlink" href="#crate-provided-numeric-traits" title="Permanent link">&para;</a></h2>
 <p>Trait bounds are not limited to traits from the standard library or traits
 defined inside the current project. The <code>generic-numerics</code> example uses the
 <code>num-traits</code> crate to define a running-statistics type:</p>
-<pre><code class="language-bash">cd source-code/generic-numerics
-cargo run
-</code></pre>
+<pre class="highlight"><code class="language-bash">cd source-code/generic-numerics
+cargo run</code></pre>
 <p>The accumulator is generic over the floating-point type used for the stored
 statistics:</p>
-<pre><code class="language-rust">struct Stats&lt;T: Float + FromPrimitive&gt; {
+<pre class="highlight"><code class="language-rust">struct Stats&lt;T: Float + FromPrimitive&gt; {
     sum: T,
     sum_sqr: T,
     count: usize,
-}
-</code></pre>
+}</code></pre>
 <p>The bound <code>Float</code> says that <code>T</code> supports floating-point operations such as
 division and square root. The bound <code>FromPrimitive</code> says that values such as
 the count can be converted into <code>T</code>.</p>
 <p>The <code>add</code> method accepts any input type that can be converted to a primitive
 numeric value:</p>
-<pre><code class="language-rust">fn add&lt;U&gt;(&amp;mut self, value: U) -&gt; Option&lt;()&gt;
+<pre class="highlight"><code class="language-rust">fn add&lt;U&gt;(&amp;mut self, value: U) -&gt; Option&lt;()&gt;
 where
     U: ToPrimitive,
 {
@@ -358,8 +340,7 @@ where
     self.sum_sqr = self.sum_sqr + value * value;
     self.count += 1;
     Some(())
-}
-</code></pre>
+}</code></pre>
 <p>This keeps the conversion explicit. If a value cannot be converted into the
 accumulator's floating-point type, <code>add</code> returns <code>None</code>.</p>
 <p>For scientific code, this is a useful pattern: use trait bounds to state the
@@ -372,40 +353,36 @@ numeric behavior the algorithm needs, rather than relying on implicit casts.</p>
 <li>mutable borrowed matrix iteration.</li>
 </ul>
 <p>Owned iteration consumes the matrix and yields owned elements:</p>
-<pre><code class="language-rust">impl&lt;T&gt; IntoIterator for Matrix&lt;T&gt; {
+<pre class="highlight"><code class="language-rust">impl&lt;T&gt; IntoIterator for Matrix&lt;T&gt; {
     type Item = T;
     type IntoIter = std::vec::IntoIter&lt;T&gt;;
 
     fn into_iter(self) -&gt; Self::IntoIter {
         self.data.into_iter()
     }
-}
-</code></pre>
+}</code></pre>
 <p>Borrowed iteration yields shared references:</p>
-<pre><code class="language-rust">impl&lt;'a, T&gt; IntoIterator for &amp;'a Matrix&lt;T&gt; {
+<pre class="highlight"><code class="language-rust">impl&lt;'a, T&gt; IntoIterator for &amp;'a Matrix&lt;T&gt; {
     type Item = &amp;'a T;
     type IntoIter = std::slice::Iter&lt;'a, T&gt;;
 
     fn into_iter(self) -&gt; Self::IntoIter {
         self.data.iter()
     }
-}
-</code></pre>
+}</code></pre>
 <p>Mutable borrowed iteration yields mutable references:</p>
-<pre><code class="language-rust">impl&lt;'a, T&gt; IntoIterator for &amp;'a mut Matrix&lt;T&gt; {
+<pre class="highlight"><code class="language-rust">impl&lt;'a, T&gt; IntoIterator for &amp;'a mut Matrix&lt;T&gt; {
     type Item = &amp;'a mut T;
     type IntoIter = std::slice::IterMut&lt;'a, T&gt;;
 
     fn into_iter(self) -&gt; Self::IntoIter {
         self.data.iter_mut()
     }
-}
-</code></pre>
+}</code></pre>
 <p>This supports ordinary loop syntax:</p>
-<pre><code class="language-rust">for value in &amp;mut matrix {
+<pre class="highlight"><code class="language-rust">for value in &amp;mut matrix {
     *value *= 0.5;
-}
-</code></pre>
+}</code></pre>
 <p>The lifetime parameter <code>'a</code> connects the lifetime of the iterator items to the
 lifetime of the borrowed matrix. The detailed lifetime rules can be studied
 later; here the practical point is that borrowed iteration returns references
@@ -416,17 +393,15 @@ knows about. You can also define your own trait for behavior specific to your
 domain.</p>
 <p>The <code>user-defined-trait</code> example computes numerical integrals using different
 quadrature rules:</p>
-<pre><code class="language-bash">cd source-code/user-defined-trait
+<pre class="highlight"><code class="language-bash">cd source-code/user-defined-trait
 cargo run
-cargo run -- --method gauss
-</code></pre>
+cargo run -- --method gauss</code></pre>
 <p>The shared interface is:</p>
-<pre><code class="language-rust">pub trait QuadratureRule {
+<pre class="highlight"><code class="language-rust">pub trait QuadratureRule {
     fn integrate(&amp;self, f: &amp;dyn Fn(f64) -&gt; f64, a: f64, b: f64) -&gt; f64;
 
     fn name(&amp;self) -&gt; &amp;'static str;
-}
-</code></pre>
+}</code></pre>
 <p>Any quadrature rule that implements this trait must provide:</p>
 <ul>
 <li>an <code>integrate</code> method;</li>
@@ -436,12 +411,11 @@ cargo run -- --method gauss
 algorithm.</p>
 <h2 id="implementing-a-user-defined-trait">Implementing A User-Defined Trait<a class="headerlink" href="#implementing-a-user-defined-trait" title="Permanent link">&para;</a></h2>
 <p>The Simpson rule stores its number of subdivisions:</p>
-<pre><code class="language-rust">pub struct Simpson {
+<pre class="highlight"><code class="language-rust">pub struct Simpson {
     subdivisions: usize,
-}
-</code></pre>
+}</code></pre>
 <p>It implements the shared trait:</p>
-<pre><code class="language-rust">impl QuadratureRule for Simpson {
+<pre class="highlight"><code class="language-rust">impl QuadratureRule for Simpson {
     fn integrate(&amp;self, f: &amp;dyn Fn(f64) -&gt; f64, a: f64, b: f64) -&gt; f64 {
         let h = (b - a) / self.subdivisions as f64;
         let mut sum = f(a) + f(b);
@@ -456,40 +430,35 @@ algorithm.</p>
     }
 
     fn name(&amp;self) -&gt; &amp;'static str {
-        &quot;composite Simpson&quot;
+        "composite Simpson"
     }
-}
-</code></pre>
+}</code></pre>
 <p>The Gauss-Legendre rule also implements the same trait, but with a different
 algorithm and no stored fields:</p>
-<pre><code class="language-rust">pub struct GaussLegendre10;
-</code></pre>
+<pre class="highlight"><code class="language-rust">pub struct GaussLegendre10;</code></pre>
 <p>Both types can now be treated as quadrature rules, even though their
 implementations are different.</p>
 <h2 id="trait-objects-and-dyn-trait">Trait Objects And <code>dyn Trait</code><a class="headerlink" href="#trait-objects-and-dyn-trait" title="Permanent link">&para;</a></h2>
 <p>The concrete quadrature rule is selected from command-line arguments at run
 time:</p>
-<pre><code class="language-rust">fn select_rule(args: &amp;Args) -&gt; Box&lt;dyn QuadratureRule&gt; {
+<pre class="highlight"><code class="language-rust">fn select_rule(args: &amp;Args) -&gt; Box&lt;dyn QuadratureRule&gt; {
     match args.method {
         QuadratureMethod::Simpson =&gt; Box::new(Simpson::new(args.subdivisions)),
         QuadratureMethod::Gauss =&gt; Box::new(GaussLegendre10),
     }
-}
-</code></pre>
+}</code></pre>
 <p>The return type:</p>
-<pre><code class="language-rust">Box&lt;dyn QuadratureRule&gt;
-</code></pre>
+<pre class="highlight"><code class="language-rust">Box&lt;dyn QuadratureRule&gt;</code></pre>
 <p>means "a heap-allocated value of some concrete type that implements
 <code>QuadratureRule</code>." The concrete type might be <code>Simpson</code> or <code>GaussLegendre10</code>,
 but the caller only relies on the trait methods.</p>
 <p>The <code>dyn</code> keyword marks dynamic dispatch. The exact method implementation is
 chosen at run time through the trait object.</p>
 <p>That lets <code>main</code> use the selected rule uniformly:</p>
-<pre><code class="language-rust">let rule = select_rule(&amp;args);
+<pre class="highlight"><code class="language-rust">let rule = select_rule(&amp;args);
 let result = rule.integrate(&amp;f, a, b);
 
-println!(&quot;using {} quadrature&quot;, rule.name());
-</code></pre>
+println!("using {} quadrature", rule.name());</code></pre>
 <h2 id="static-and-dynamic-dispatch">Static And Dynamic Dispatch<a class="headerlink" href="#static-and-dynamic-dispatch" title="Permanent link">&para;</a></h2>
 <p>Rust has two common ways to use traits:</p>
 <ul>
@@ -497,13 +466,11 @@ println!(&quot;using {} quadrature&quot;, rule.name());
 <li>dynamic dispatch through trait objects such as <code>dyn Trait</code>.</li>
 </ul>
 <p>Static dispatch is visible in a generic bound such as:</p>
-<pre><code class="language-rust">impl&lt;T: Display&gt; Display for Matrix&lt;T&gt;
-</code></pre>
+<pre class="highlight"><code class="language-rust">impl&lt;T: Display&gt; Display for Matrix&lt;T&gt;</code></pre>
 <p>The compiler knows the concrete type at compile time and can generate code for
 that type.</p>
 <p>Dynamic dispatch is visible in:</p>
-<pre><code class="language-rust">Box&lt;dyn QuadratureRule&gt;
-</code></pre>
+<pre class="highlight"><code class="language-rust">Box&lt;dyn QuadratureRule&gt;</code></pre>
 <p>The concrete type is selected at run time, and method calls go through the
 trait object.</p>
 <p>A practical rule of thumb:</p>
@@ -516,12 +483,11 @@ trait object.</p>
 <h2 id="suggested-hands-on-work">Suggested Hands-On Work<a class="headerlink" href="#suggested-hands-on-work" title="Permanent link">&para;</a></h2>
 <p>Use this sequence as a practical lab.</p>
 <ol>
-<li>Run <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/traits"><code>source-code/traits</code></a>:</li>
-</ol>
-<p><code>bash
-   cd source-code/traits
-   cargo run</code></p>
-<ol>
+<li>
+<p>Run <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/traits"><code>source-code/traits</code></a>:</p>
+<pre class="highlight"><code class="language-bash">cd source-code/traits
+cargo run</code></pre>
+</li>
 <li>
 <p>Identify where <code>IndexMut</code> enables assignment with <code>matrix[(row, col)] = ...</code>.</p>
 </li>
@@ -541,14 +507,11 @@ trait object.</p>
 </li>
 <li>
 <p>Run <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/user-defined-trait"><code>source-code/user-defined-trait</code></a> with both quadrature methods:</p>
+<pre class="highlight"><code class="language-bash">cd source-code/user-defined-trait
+cargo run
+cargo run -- --method gauss
+cargo run -- --method simpson --subdivisions 2000</code></pre>
 </li>
-</ol>
-<p><code>bash
-   cd source-code/user-defined-trait
-   cargo run
-   cargo run -- --method gauss
-   cargo run -- --method simpson --subdivisions 2000</code></p>
-<ol>
 <li>
 <p>Change the string returned by one <code>name</code> implementation and observe the
    program output.</p>

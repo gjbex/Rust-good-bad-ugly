@@ -255,10 +255,10 @@ Use this sequence as a short practical lab.
 
 1. Run the minimal program.
 
-   ```bash
-   cd source-code/hello-world
-   cargo run
-   ```
+    ```bash
+    cd source-code/hello-world
+    cargo run
+    ```
 
 2. Change the printed message and run it again.
 
@@ -266,9 +266,9 @@ Use this sequence as a short practical lab.
 
 4. Open `source-code/hello-clap` and run:
 
-   ```bash
-   cargo run -- --help
-   ```
+    ```bash
+    cargo run -- --help
+    ```
 
 5. Run the same program with one or more command-line options.
 

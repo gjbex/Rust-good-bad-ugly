@@ -383,9 +383,9 @@ Use this sequence as a practical lab.
 6. Run `source-code/numerical-function` with different polynomial
    coefficients:
 
-   ```bash
-   cargo run -- --a 2.0 --b -1.0 --c 0.5
-   ```
+    ```bash
+    cargo run -- --a 2.0 --b -1.0 --c 0.5
+    ```
 
 7. Remove one `as f64` conversion from `source-code/numerical-function` and run
    `cargo check`. Read the compiler diagnostic, then restore the conversion.

@@ -624,10 +624,10 @@ Use this sequence as a practical lab.
 
 1. Run the iterator example:
 
-   ```bash
-   cd source-code/iterators
-   cargo run -- --file data.txt
-   ```
+    ```bash
+    cd source-code/iterators
+    cargo run -- --file data.txt
+    ```
 
 2. Change the `filter` threshold from `10.0` to another value and inspect the
    output.
@@ -643,10 +643,10 @@ Use this sequence as a practical lab.
 
 7. Run the nucleotide-counting example:
 
-   ```bash
-   cd source-code/hashmap-hashset
-   cargo run --bin count-nucleotides -- --file errors.txt
-   ```
+    ```bash
+    cd source-code/hashmap-hashset
+    cargo run --bin count-nucleotides -- --file errors.txt
+    ```
 
 8. Add a second `HashMap` that counts invalid tokens instead of storing only
    the unique invalid tokens.

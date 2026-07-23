@@ -194,13 +194,12 @@ number of time steps. Optionally, the program writes CSV files containing:</p>
 <li>particle positions, velocities, and masses at each step.</li>
 </ul>
 <p>Run the default simulation with:</p>
-<pre><code class="language-bash">cd source-code/n-body-simulation/rust
-cargo run
-</code></pre>
+<pre class="highlight"><code class="language-bash">cd source-code/n-body-simulation/rust
+cargo run</code></pre>
 <h2 id="command-line-parameters">Command-Line Parameters<a class="headerlink" href="#command-line-parameters" title="Permanent link">&para;</a></h2>
 <p>The simulation is configured with command-line arguments:</p>
-<pre><code class="language-rust">#[derive(Parser, Debug)]
-#[command(version, about = &quot;A simple n-body simulation&quot;)]
+<pre class="highlight"><code class="language-rust">#[derive(Parser, Debug)]
+#[command(version, about = "A simple n-body simulation")]
 struct Args {
     #[arg(long, default_value_t = 100)]
     num_particles: usize,
@@ -211,7 +210,7 @@ struct Args {
     #[arg(long, default_value_t = 0.001)]
     delta_time: f64,
 
-    #[arg(long = &quot;steps&quot;, default_value_t = 100)]
+    #[arg(long = "steps", default_value_t = 100)]
     num_steps: usize,
 
     #[arg(long, default_value_t = 0.01)]
@@ -222,14 +221,13 @@ struct Args {
 
     #[arg(long)]
     save_states: Option&lt;String&gt;,
-}
-</code></pre>
+}</code></pre>
 <p>This connects earlier CLI material to a more realistic program. Some
 parameters control the model, such as particle count and softening. Others
 control the run, such as time step, number of steps, seed, and output files.</p>
 <h2 id="representing-simulation-state">Representing Simulation State<a class="headerlink" href="#representing-simulation-state" title="Permanent link">&para;</a></h2>
 <p>The simulation state is stored in a <code>System</code> struct:</p>
-<pre><code class="language-rust">pub struct System {
+<pre class="highlight"><code class="language-rust">pub struct System {
     xs: Vec&lt;f64&gt;,
     ys: Vec&lt;f64&gt;,
     zs: Vec&lt;f64&gt;,
@@ -238,8 +236,7 @@ control the run, such as time step, number of steps, seed, and output files.</p>
     vzs: Vec&lt;f64&gt;,
     masses: Vec&lt;f64&gt;,
     softening_length: f64,
-}
-</code></pre>
+}</code></pre>
 <p>The fields are private. Other code does not directly modify the vectors.
 Instead, it uses methods such as:</p>
 <ul>
@@ -255,40 +252,36 @@ Instead, it uses methods such as:</p>
 time-dependent physical system.</p>
 <h2 id="random-initialization">Random Initialization<a class="headerlink" href="#random-initialization" title="Permanent link">&para;</a></h2>
 <p>The constructor initializes the system from a seed:</p>
-<pre><code class="language-rust">pub fn new(num_particles: usize, seed: u64, softening_length: f64) -&gt; Self {
+<pre class="highlight"><code class="language-rust">pub fn new(num_particles: usize, seed: u64, softening_length: f64) -&gt; Self {
     let mut rng = rand::rngs::StdRng::seed_from_u64(seed);
     // allocate vectors and sample values
-}
-</code></pre>
+}</code></pre>
 <p>The example uses distributions for positions, velocities, and masses:</p>
-<pre><code class="language-rust">let position_distribution =
-    Uniform::new(0.0, 1.0).expect(&quot;position distribution bounds should be valid&quot;);
+<pre class="highlight"><code class="language-rust">let position_distribution =
+    Uniform::new(0.0, 1.0).expect("position distribution bounds should be valid");
 let velocity_distribution =
-    Normal::new(0.0, 1.0).expect(&quot;velocity distribution parameters should be valid&quot;);
+    Normal::new(0.0, 1.0).expect("velocity distribution parameters should be valid");
 let mass_distribution =
-    Uniform::new(0.1, 1.0).expect(&quot;mass distribution bounds should be valid&quot;);
-</code></pre>
+    Uniform::new(0.1, 1.0).expect("mass distribution bounds should be valid");</code></pre>
 <p>The seed is part of the run configuration. Using the same seed and parameters
 recreates the same initial condition.</p>
 <h2 id="gravitational-softening">Gravitational Softening<a class="headerlink" href="#gravitational-softening" title="Permanent link">&para;</a></h2>
 <p>The acceleration calculation includes a softening length:</p>
-<pre><code class="language-rust">let distance_squared =
-    dx * dx + dy * dy + dz * dz + self.softening_length * self.softening_length;
-</code></pre>
+<pre class="highlight"><code class="language-rust">let distance_squared =
+    dx * dx + dy * dy + dz * dz + self.softening_length * self.softening_length;</code></pre>
 <p>Softening prevents the force from becoming extremely large when two particles
 come very close together. This is a numerical modeling choice, not just a Rust
 implementation detail.</p>
 <p>The same softening length is used in the potential-energy calculation:</p>
-<pre><code class="language-rust">let distance =
+<pre class="highlight"><code class="language-rust">let distance =
     (dx * dx + dy * dy + dz * dz + self.softening_length * self.softening_length)
-        .sqrt();
-</code></pre>
+        .sqrt();</code></pre>
 <p>Using consistent softening in force and energy diagnostics is important when
 interpreting energy conservation.</p>
 <h2 id="acceleration-calculation">Acceleration Calculation<a class="headerlink" href="#acceleration-calculation" title="Permanent link">&para;</a></h2>
 <p>The acceleration on one particle is computed by summing contributions from all
 other particles:</p>
-<pre><code class="language-rust">fn acceleration_on(&amp;self, index: usize) -&gt; (f64, f64, f64) {
+<pre class="highlight"><code class="language-rust">fn acceleration_on(&amp;self, index: usize) -&gt; (f64, f64, f64) {
     let mut acceleration = (0.0, 0.0, 0.0);
     for i in 0..self.num_particles() {
         if i != index {
@@ -305,50 +298,42 @@ other particles:</p>
         }
     }
     acceleration
-}
-</code></pre>
+}</code></pre>
 <p>The return value is a 3-tuple:</p>
-<pre><code class="language-rust">(f64, f64, f64)
-</code></pre>
+<pre class="highlight"><code class="language-rust">(f64, f64, f64)</code></pre>
 <p>This is a compact local representation for the three acceleration components.
 In a larger code base, a named vector type might be clearer.</p>
 <h2 id="velocity-verlet-update">Velocity Verlet Update<a class="headerlink" href="#velocity-verlet-update" title="Permanent link">&para;</a></h2>
 <p>The <code>update</code> method uses a velocity Verlet step. First it computes the current
 accelerations:</p>
-<pre><code class="language-rust">let accelerations = self.accelerations();
-let half_dt_squared = 0.5 * dt * dt;
-</code></pre>
+<pre class="highlight"><code class="language-rust">let accelerations = self.accelerations();
+let half_dt_squared = 0.5 * dt * dt;</code></pre>
 <p>Then it updates positions:</p>
-<pre><code class="language-rust">for i in 0..self.num_particles() {
+<pre class="highlight"><code class="language-rust">for i in 0..self.num_particles() {
     let (ax, ay, az) = accelerations[i];
     self.xs[i] += self.vxs[i] * dt + ax * half_dt_squared;
     self.ys[i] += self.vys[i] * dt + ay * half_dt_squared;
     self.zs[i] += self.vzs[i] * dt + az * half_dt_squared;
-}
-</code></pre>
+}</code></pre>
 <p>After the positions change, it recomputes accelerations:</p>
-<pre><code class="language-rust">let new_accelerations = self.accelerations();
-</code></pre>
+<pre class="highlight"><code class="language-rust">let new_accelerations = self.accelerations();</code></pre>
 <p>Finally it updates velocities using the average of old and new accelerations:</p>
-<pre><code class="language-rust">for i in 0..self.num_particles() {
+<pre class="highlight"><code class="language-rust">for i in 0..self.num_particles() {
     let (ax, ay, az) = accelerations[i];
     let (new_ax, new_ay, new_az) = new_accelerations[i];
     self.vxs[i] += 0.5 * (ax + new_ax) * dt;
     self.vys[i] += 0.5 * (ay + new_ay) * dt;
     self.vzs[i] += 0.5 * (az + new_az) * dt;
-}
-</code></pre>
+}</code></pre>
 <p>This structure is useful pedagogically because it separates the numerical
 algorithm into visible stages.</p>
 <h2 id="diagnostics">Diagnostics<a class="headerlink" href="#diagnostics" title="Permanent link">&para;</a></h2>
 <p>The system exposes methods for energy diagnostics:</p>
-<pre><code class="language-rust">pub fn kinetic_energy(&amp;self) -&gt; f64
+<pre class="highlight"><code class="language-rust">pub fn kinetic_energy(&amp;self) -&gt; f64
 pub fn potential_energy(&amp;self) -&gt; f64
-pub fn total_energy(&amp;self) -&gt; f64
-</code></pre>
+pub fn total_energy(&amp;self) -&gt; f64</code></pre>
 <p>It also computes the center of mass:</p>
-<pre><code class="language-rust">pub fn center_of_mass(&amp;self) -&gt; (f64, f64, f64)
-</code></pre>
+<pre class="highlight"><code class="language-rust">pub fn center_of_mass(&amp;self) -&gt; (f64, f64, f64)</code></pre>
 <p>These diagnostics are not just output decoration. They help evaluate whether
 the simulation behaves plausibly. For example, total energy should usually vary
 less when the time step is smaller, although the softened model, random initial
@@ -356,7 +341,7 @@ conditions, and finite precision all affect the details.</p>
 <h2 id="csv-output">CSV Output<a class="headerlink" href="#csv-output" title="Permanent link">&para;</a></h2>
 <p>The program writes structured output using <code>csv</code> and <code>serde::Serialize</code>.</p>
 <p>The evolution output contains one row per time step:</p>
-<pre><code class="language-rust">#[derive(Serialize)]
+<pre class="highlight"><code class="language-rust">#[derive(Serialize)]
 struct EvolutionRecord {
     step: usize,
     potential_energy: f64,
@@ -365,10 +350,9 @@ struct EvolutionRecord {
     center_of_mass_x: f64,
     center_of_mass_y: f64,
     center_of_mass_z: f64,
-}
-</code></pre>
+}</code></pre>
 <p>The particle-state output contains one row per particle per time step:</p>
-<pre><code class="language-rust">#[derive(Serialize)]
+<pre class="highlight"><code class="language-rust">#[derive(Serialize)]
 struct ParticleStateRecord {
     step: usize,
     particle: usize,
@@ -379,8 +363,7 @@ struct ParticleStateRecord {
     vy: f64,
     vz: f64,
     mass: f64,
-}
-</code></pre>
+}</code></pre>
 <p>This distinction matters:</p>
 <ul>
 <li>evolution output is compact and useful for diagnostics;</li>
@@ -388,17 +371,15 @@ struct ParticleStateRecord {
 </ul>
 <h2 id="optional-output-files">Optional Output Files<a class="headerlink" href="#optional-output-files" title="Permanent link">&para;</a></h2>
 <p>The output files are optional command-line arguments:</p>
-<pre><code class="language-rust">save_evolution: Option&lt;String&gt;,
-save_states: Option&lt;String&gt;,
-</code></pre>
+<pre class="highlight"><code class="language-rust">save_evolution: Option&lt;String&gt;,
+save_states: Option&lt;String&gt;,</code></pre>
 <p>The writers are also optional:</p>
-<pre><code class="language-rust">let mut evolution_writer = args
+<pre class="highlight"><code class="language-rust">let mut evolution_writer = args
     .save_evolution
     .as_deref()
-    .map(|filename| csv::Writer::from_path(filename).expect(&quot;Failed to create evolution file&quot;));
-</code></pre>
+    .map(|filename| csv::Writer::from_path(filename).expect("Failed to create evolution file"));</code></pre>
 <p>The helper function writes only when a writer exists:</p>
-<pre><code class="language-rust">fn write_evolution_record(
+<pre class="highlight"><code class="language-rust">fn write_evolution_record(
     writer: &amp;mut Option&lt;csv::Writer&lt;std::fs::File&gt;&gt;,
     step: usize,
     system: &amp;System,
@@ -406,47 +387,38 @@ save_states: Option&lt;String&gt;,
     if let Some(writer) = writer.as_mut() {
         writer
             .serialize(evolution_record(step, system))
-            .expect(&quot;Failed to write evolution record&quot;);
+            .expect("Failed to write evolution record");
     }
-}
-</code></pre>
+}</code></pre>
 <p>This is a useful application of <code>Option</code>: no output file is not an error. It is
 just a valid mode of operation.</p>
 <h2 id="running-and-visualizing">Running And Visualizing<a class="headerlink" href="#running-and-visualizing" title="Permanent link">&para;</a></h2>
 <p>Save diagnostics with:</p>
-<pre><code class="language-bash">cargo run -- --steps 200 --save-evolution evolution.csv
-</code></pre>
+<pre class="highlight"><code class="language-bash">cargo run -- --steps 200 --save-evolution evolution.csv</code></pre>
 <p>Visualize energy and center-of-mass displacement with:</p>
-<pre><code class="language-bash">../visualize-evolution.py evolution.csv
-</code></pre>
+<pre class="highlight"><code class="language-bash">../visualize-evolution.py evolution.csv</code></pre>
 <p>Save particle states with:</p>
-<pre><code class="language-bash">cargo run -- --steps 200 --save-states states.csv
-</code></pre>
+<pre class="highlight"><code class="language-bash">cargo run -- --steps 200 --save-states states.csv</code></pre>
 <p>Animate the particle states with:</p>
-<pre><code class="language-bash">../animate-states.py states.csv --output animation.html
-</code></pre>
+<pre class="highlight"><code class="language-bash">../animate-states.py states.csv --output animation.html</code></pre>
 <p>The Python scripts use Plotly, and the animation script also uses pandas:</p>
-<pre><code class="language-bash">python3 -m pip install pandas plotly
-</code></pre>
+<pre class="highlight"><code class="language-bash">python3 -m pip install pandas plotly</code></pre>
 <h2 id="suggested-hands-on-work">Suggested Hands-On Work<a class="headerlink" href="#suggested-hands-on-work" title="Permanent link">&para;</a></h2>
 <p>Use this sequence as a practical lab.</p>
 <ol>
-<li>Run the default simulation:</li>
-</ol>
-<p><code>bash
-   cd source-code/n-body-simulation/rust
-   cargo run</code></p>
-<ol>
-<li>Save evolution diagnostics:</li>
-</ol>
-<p><code>bash
-   cargo run -- --steps 200 --save-evolution evolution.csv</code></p>
-<ol>
-<li>Visualize the diagnostics:</li>
-</ol>
-<p><code>bash
-   ../visualize-evolution.py evolution.csv</code></p>
-<ol>
+<li>
+<p>Run the default simulation:</p>
+<pre class="highlight"><code class="language-bash">cd source-code/n-body-simulation/rust
+cargo run</code></pre>
+</li>
+<li>
+<p>Save evolution diagnostics:</p>
+<pre class="highlight"><code class="language-bash">cargo run -- --steps 200 --save-evolution evolution.csv</code></pre>
+</li>
+<li>
+<p>Visualize the diagnostics:</p>
+<pre class="highlight"><code class="language-bash">../visualize-evolution.py evolution.csv</code></pre>
+</li>
 <li>
 <p>Run the same command with a smaller <code>--delta-time</code> and compare total-energy
    variation.</p>
@@ -456,12 +428,9 @@ just a valid mode of operation.</p>
 </li>
 <li>
 <p>Save particle states and create an animation:</p>
+<pre class="highlight"><code class="language-bash">cargo run -- --steps 100 --save-states states.csv
+../animate-states.py states.csv --output animation.html</code></pre>
 </li>
-</ol>
-<p><code>bash
-   cargo run -- --steps 100 --save-states states.csv
-   ../animate-states.py states.csv --output animation.html</code></p>
-<ol>
 <li>
 <p>Inspect <code>rust/src/system.rs</code> and identify which methods only read the system and
    which method mutates it.</p>

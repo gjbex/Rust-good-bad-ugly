@@ -162,17 +162,15 @@ Cargo, adding a dependency, and making a small change with confidence.</p>
 <li>Basic command-line experience.</li>
 </ul>
 <p>Check the Rust installation with:</p>
-<pre><code class="language-bash">rustc --version
-cargo --version
-</code></pre>
+<pre class="highlight"><code class="language-bash">rustc --version
+cargo --version</code></pre>
 <p>If both commands report a version, the environment is ready for this module.</p>
 <h2 id="project-structure">Project Structure<a class="headerlink" href="#project-structure" title="Permanent link">&para;</a></h2>
 <p>A minimal Rust binary project has the following shape:</p>
-<pre><code class="language-text">project-name/
+<pre class="highlight"><code class="language-text">project-name/
 ├── Cargo.toml
 └── src/
-    └── main.rs
-</code></pre>
+    └── main.rs</code></pre>
 <p>The important files are:</p>
 <ul>
 <li><code>Cargo.toml</code>: project metadata and dependency declarations.</li>
@@ -185,20 +183,18 @@ separate Cargo project. That means commands such as <code>cargo run</code> and
 <h2 id="starting-your-own-project">Starting Your Own Project<a class="headerlink" href="#starting-your-own-project" title="Permanent link">&para;</a></h2>
 <p>Cargo can create the standard project structure for you.</p>
 <p>To create a new binary project in a new directory, use:</p>
-<pre><code class="language-bash">cargo new my-project
+<pre class="highlight"><code class="language-bash">cargo new my-project
 cd my-project
-cargo run
-</code></pre>
+cargo run</code></pre>
 <p>This creates a directory containing <code>Cargo.toml</code> and <code>src/main.rs</code>, initializes
 a Git repository by default, and gives you a small program that can be built
 and run immediately.</p>
 <p>If you already have an existing directory and want to turn it into a Cargo
 project, use <code>cargo init</code> from inside that directory:</p>
-<pre><code class="language-bash">mkdir my-existing-project
+<pre class="highlight"><code class="language-bash">mkdir my-existing-project
 cd my-existing-project
 cargo init
-cargo run
-</code></pre>
+cargo run</code></pre>
 <p>The practical difference is:</p>
 <ul>
 <li><code>cargo new</code> creates a new project directory.</li>
@@ -210,14 +206,12 @@ commands there. For new experiments outside the repository, <code>cargo new</cod
 usually the simplest starting point.</p>
 <h2 id="first-example-hello-world">First Example: Hello World<a class="headerlink" href="#first-example-hello-world" title="Permanent link">&para;</a></h2>
 <p>Start with the minimal example:</p>
-<pre><code class="language-bash">cd source-code/hello-world
-cargo run
-</code></pre>
+<pre class="highlight"><code class="language-bash">cd source-code/hello-world
+cargo run</code></pre>
 <p>The important parts of <code>src/main.rs</code> are:</p>
-<pre><code class="language-rust">fn main() {
-    println!(&quot;Hello, world!&quot;);
-}
-</code></pre>
+<pre class="highlight"><code class="language-rust">fn main() {
+    println!("Hello, world!");
+}</code></pre>
 <p>This illustrates three basic ideas:</p>
 <ul>
 <li><code>main</code> is the function where a binary program starts.</li>
@@ -225,10 +219,9 @@ cargo run
 <li>The <code>!</code> marks <code>println!</code> as a macro, not an ordinary function.</li>
 </ul>
 <p>Useful follow-up commands are:</p>
-<pre><code class="language-bash">cargo check
+<pre class="highlight"><code class="language-bash">cargo check
 cargo build
-cargo run
-</code></pre>
+cargo run</code></pre>
 <p><code>cargo check</code> is often the fastest command while developing because it checks
 whether the code compiles without producing a final executable.</p>
 <h2 id="reading-compiler-diagnostics">Reading Compiler Diagnostics<a class="headerlink" href="#reading-compiler-diagnostics" title="Permanent link">&para;</a></h2>
@@ -256,33 +249,28 @@ once.</p>
 <p>The next step is a small command-line program. This repository uses <code>clap</code> for
 examples that parse command-line options.</p>
 <p>See:</p>
-<pre><code class="language-text">source-code/hello-clap
-</code></pre>
+<pre class="highlight"><code class="language-text">source-code/hello-clap</code></pre>
 <p>Run it with:</p>
-<pre><code class="language-bash">cd source-code/hello-clap
-cargo run -- --help
-</code></pre>
+<pre class="highlight"><code class="language-bash">cd source-code/hello-clap
+cargo run -- --help</code></pre>
 <p>The <code>--</code> separates arguments passed to Cargo from arguments passed to the
 program being run.</p>
 <p>For example:</p>
-<pre><code class="language-bash">cargo run -- --name Rust
-</code></pre>
+<pre class="highlight"><code class="language-bash">cargo run -- --name Rust</code></pre>
 <p>The main project-level change is that <code>Cargo.toml</code> contains a dependency:</p>
-<pre><code class="language-toml">[dependencies]
-clap = { version = &quot;4&quot;, features = [&quot;derive&quot;] }
-</code></pre>
+<pre class="highlight"><code class="language-toml">[dependencies]
+clap = { version = "4", features = ["derive"] }</code></pre>
 <p>The corresponding Rust code derives a parser from a struct definition. This is
 an early example of an important Rust pattern: use a type to describe the shape
 of valid input, then let a library handle the repetitive parsing work.</p>
 <h2 id="cargo-commands-to-know">Cargo Commands To Know<a class="headerlink" href="#cargo-commands-to-know" title="Permanent link">&para;</a></h2>
 <p>The most useful Cargo commands at this stage are:</p>
-<pre><code class="language-bash">cargo check
+<pre class="highlight"><code class="language-bash">cargo check
 cargo build
 cargo run
 cargo test
 cargo fmt
-cargo doc --open
-</code></pre>
+cargo doc --open</code></pre>
 <p>Their roles are:</p>
 <ul>
 <li><code>cargo check</code>: type-check and compile-check the project quickly.</li>
@@ -311,8 +299,7 @@ the exact selected versions in <code>Cargo.lock</code>.</p>
 often more convenient because it updates the manifest using Cargo's normal
 dependency syntax. For example, a command-line example that uses <code>clap</code> with
 derive macros can add the dependency with:</p>
-<pre><code class="language-bash">cargo add clap --features derive
-</code></pre>
+<pre class="highlight"><code class="language-bash">cargo add clap --features derive</code></pre>
 <p>This adds the corresponding entry to <code>Cargo.toml</code> and updates <code>Cargo.lock</code>.
 Using <code>cargo add</code> is especially useful while learning because it avoids small
 formatting mistakes in dependency declarations and makes the dependency change
@@ -322,12 +309,11 @@ version control because it makes builds more reproducible.</p>
 <h2 id="suggested-hands-on-work">Suggested Hands-On Work<a class="headerlink" href="#suggested-hands-on-work" title="Permanent link">&para;</a></h2>
 <p>Use this sequence as a short practical lab.</p>
 <ol>
-<li>Run the minimal program.</li>
-</ol>
-<p><code>bash
-   cd source-code/hello-world
-   cargo run</code></p>
-<ol>
+<li>
+<p>Run the minimal program.</p>
+<pre class="highlight"><code class="language-bash">cd source-code/hello-world
+cargo run</code></pre>
+</li>
 <li>
 <p>Change the printed message and run it again.</p>
 </li>
@@ -336,11 +322,8 @@ version control because it makes builds more reproducible.</p>
 </li>
 <li>
 <p>Open <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/hello-clap"><code>source-code/hello-clap</code></a> and run:</p>
+<pre class="highlight"><code class="language-bash">cargo run -- --help</code></pre>
 </li>
-</ol>
-<p><code>bash
-   cargo run -- --help</code></p>
-<ol>
 <li>
 <p>Run the same program with one or more command-line options.</p>
 </li>
