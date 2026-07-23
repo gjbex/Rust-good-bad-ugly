@@ -3,7 +3,7 @@ mod gauss;
 
 use clap::{Parser, ValueEnum};
 
-#[derive(Clone, ValueEnum)]
+#[derive(Clone, Debug, ValueEnum)]
 enum QuadratureMethod {
     Simpson,
     Gauss,
