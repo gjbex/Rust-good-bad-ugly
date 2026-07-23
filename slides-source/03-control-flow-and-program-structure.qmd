@@ -241,7 +241,7 @@ Open `source-code/enum-match/src/main.rs` after running the commands.
 ## Enums For Fixed Choices
 
 ```rust
-#[derive(Clone, ValueEnum)]
+#[derive(Clone, Debug, ValueEnum)]
 enum QuadratureMethod {
     Simpson,
     Gauss,

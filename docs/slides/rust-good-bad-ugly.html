@@ -1959,7 +1959,7 @@ Geert Jan Bex
 </section>
 <section id="enums-for-fixed-choices" class="slide level2">
 <h2>Enums For Fixed Choices</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb44"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb44-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="at">#[</span>derive<span class="at">(</span><span class="bu">Clone</span><span class="op">,</span> ValueEnum<span class="at">)]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb44"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb44-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="at">#[</span>derive<span class="at">(</span><span class="bu">Clone</span><span class="op">,</span> <span class="bu">Debug</span><span class="op">,</span> ValueEnum<span class="at">)]</span></span>
 <span id="cb44-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> QuadratureMethod <span class="op">{</span></span>
 <span id="cb44-3"><a href="" aria-hidden="true" tabindex="-1"></a>    Simpson<span class="op">,</span></span>
 <span id="cb44-4"><a href="" aria-hidden="true" tabindex="-1"></a>    Gauss<span class="op">,</span></span>

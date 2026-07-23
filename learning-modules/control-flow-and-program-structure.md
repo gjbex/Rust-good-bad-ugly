@@ -234,7 +234,7 @@ cargo run -- --method gauss
 The available methods are represented by an enum:
 
 ```rust
-#[derive(Clone, ValueEnum)]
+#[derive(Clone, Debug, ValueEnum)]
 enum QuadratureMethod {
     Simpson,
     Gauss,

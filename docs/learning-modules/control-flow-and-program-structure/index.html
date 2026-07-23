@@ -286,7 +286,7 @@ quadrature methods:</p>
 cargo run
 cargo run -- --method gauss</code></pre>
 <p>The available methods are represented by an enum:</p>
-<pre class="highlight"><code class="language-rust">#[derive(Clone, ValueEnum)]
+<pre class="highlight"><code class="language-rust">#[derive(Clone, Debug, ValueEnum)]
 enum QuadratureMethod {
     Simpson,
     Gauss,
