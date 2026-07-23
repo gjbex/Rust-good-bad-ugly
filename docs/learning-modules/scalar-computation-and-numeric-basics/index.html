@@ -51,6 +51,10 @@
                 <li class="toctree-l1"><a class="reference internal" href="../learning-module-structure/">Module Structure</a>
                 </li>
               </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../rust-false-friends-by-language/">False Friends By Programming Background</a>
+                </li>
+              </ul>
               <p class="caption"><span class="caption-text">Learning Modules</span></p>
               <ul class="current">
                   <li class="toctree-l1"><a class="reference internal" href="../getting-started-with-rust-projects/">1. Getting Started With Rust Projects</a>
@@ -78,6 +82,8 @@
     <li class="toctree-l2"><a class="reference internal" href="#avoiding-implicit-double-promotion">Avoiding Implicit Double Promotion</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#complex-numbers">Complex Numbers</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#quantities-with-physical-units">Quantities With Physical Units</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#suggested-hands-on-work">Suggested Hands-On Work</a>
     </li>
@@ -157,6 +163,7 @@ ambiguous or accidental computations.</p>
 <li>Convert integer values to floating-point values explicitly.</li>
 <li>Understand why Rust avoids implicit double promotion.</li>
 <li>Use <code>num-complex</code> for complex arithmetic.</li>
+<li>Use <code>uom</code> to make physical units explicit at program boundaries.</li>
 </ul>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
 <p>Participants should already be comfortable with:</p>
@@ -173,6 +180,7 @@ ambiguous or accidental computations.</p>
 <li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/numerical-function"><code>source-code/numerical-function</code></a></li>
 <li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/no-double-promotion"><code>source-code/no-double-promotion</code></a></li>
 <li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/complex-numbers"><code>source-code/complex-numbers</code></a></li>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/units"><code>source-code/units</code></a></li>
 </ul>
 <h2 id="scalar-types">Scalar Types<a class="headerlink" href="#scalar-types" title="Permanent link">&para;</a></h2>
 <p>Rust has several families of scalar types:</p>
@@ -374,6 +382,42 @@ println!(&quot;{}&quot;, z1.norm());
 <li>Numeric behavior can be extended through crates.</li>
 <li>External types are brought into scope with <code>use</code>.</li>
 </ul>
+<h2 id="quantities-with-physical-units">Quantities With Physical Units<a class="headerlink" href="#quantities-with-physical-units" title="Permanent link">&para;</a></h2>
+<p>Plain <code>f64</code> values are convenient for numerical kernels, but they do not say
+what a value means. A solver that accepts <code>t0</code>, <code>delta_t</code>, and <code>x0</code> may use
+<code>f64</code> for all three values even though two are times and one is a position.</p>
+<p>The <code>units</code> example uses the <code>uom</code> crate to make those meanings explicit:</p>
+<pre><code class="language-bash">cd source-code/units
+cargo run -- --x0 1.0 --t0 0.0 --delta-t 0.25
+</code></pre>
+<p>The command-line parser still accepts ordinary numeric values. The conversion
+from raw input to typed quantities happens once, near the program boundary:</p>
+<pre><code class="language-rust">impl From&lt;Args&gt; for SimulationParameters {
+    fn from(args: Args) -&gt; Self {
+        Self {
+            x0: Length::new::&lt;uom::si::length::meter&gt;(args.x0),
+            t0: Time::new::&lt;uom::si::time::second&gt;(args.t0),
+            delta_t: Time::new::&lt;uom::si::time::second&gt;(args.delta_t),
+        }
+    }
+}
+</code></pre>
+<p>This gives the rest of the program a more meaningful type than plain <code>f64</code>.
+When a tight numerical loop needs scalar values in canonical units, the example
+converts back explicitly:</p>
+<pre><code class="language-rust">let t0 = t0.get::&lt;uom::si::time::second&gt;();
+let delta_t = delta_t.get::&lt;uom::si::time::second&gt;();
+let x0 = x0.get::&lt;uom::si::length::meter&gt;();
+</code></pre>
+<p>The important pattern is not that every inner-loop variable must be wrapped in
+a unit type. The useful boundary is often:</p>
+<ul>
+<li>parse simple command-line values;</li>
+<li>convert them into domain-specific quantities;</li>
+<li>pass typed quantities through the configuration or solver interface;</li>
+<li>convert to canonical scalar values where the numerical kernel benefits from
+  plain arithmetic.</li>
+</ul>
 <h2 id="suggested-hands-on-work">Suggested Hands-On Work<a class="headerlink" href="#suggested-hands-on-work" title="Permanent link">&para;</a></h2>
 <p>Use this sequence as a practical lab.</p>
 <ol>
@@ -415,6 +459,12 @@ println!(&quot;{}&quot;, z1.norm());
 <li>
 <p>Run <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/complex-numbers"><code>source-code/complex-numbers</code></a> and add a calculation of <code>z1 - z2</code>.</p>
 </li>
+<li>
+<p>Run <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/units"><code>source-code/units</code></a> and change the time step:</p>
+<p><code>bash
+cargo run -- --x0 1.0 --t0 0.0 --delta-t 0.5</code></p>
+<p>Inspect where the input values become <code>Length</code> and <code>Time</code>.</p>
+</li>
 </ol>
 <h2 id="discussion-points">Discussion Points<a class="headerlink" href="#discussion-points" title="Permanent link">&para;</a></h2>
 <p>This module is a good place to emphasize:</p>
@@ -424,7 +474,9 @@ println!(&quot;{}&quot;, z1.norm());
 <li>Conversions between numeric types should be visible in the code.</li>
 <li>Floating-point constants and mathematical functions are type-specific.</li>
 <li>Scientific code often needs external crates for domain-specific types such
-  as complex numbers.</li>
+  as complex numbers or physical quantities.</li>
+<li>Unit-aware quantities are useful at program boundaries, while inner numerical
+  loops may still use canonical scalar values.</li>
 <li>The compiler is a useful guide when a numeric expression has an ambiguous or
   inconsistent type.</li>
 </ul>
@@ -436,6 +488,8 @@ println!(&quot;{}&quot;, z1.norm());
 <li>The Julia set examples use complex arithmetic and floating-point constants.</li>
 <li>The N-body simulation uses vectors of floating-point values, mathematical
   functions, random initial conditions, and numerical diagnostics.</li>
+<li>Unit-aware configuration values are one way to make simulation parameters
+  less ambiguous before entering a numerical kernel.</li>
 </ul>
 <p>Once participants are comfortable with scalar values and numeric expressions,
 they are ready to move on to control flow, functions, and pattern matching.</p>

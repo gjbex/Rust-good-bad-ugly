@@ -83,6 +83,10 @@
     </ul>
                 </li>
               </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../rust-false-friends-by-language/">False Friends By Programming Background</a>
+                </li>
+              </ul>
               <p class="caption"><span class="caption-text">Learning Modules</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../getting-started-with-rust-projects/">1. Getting Started With Rust Projects</a>
@@ -172,6 +176,7 @@ Rust binary project.</p>
 <li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/numerical-function"><code>source-code/numerical-function</code></a></li>
 <li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/no-double-promotion"><code>source-code/no-double-promotion</code></a></li>
 <li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/complex-numbers"><code>source-code/complex-numbers</code></a></li>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/units"><code>source-code/units</code></a></li>
 </ul>
 <p>Topics:</p>
 <ul>
@@ -182,6 +187,7 @@ Rust binary project.</p>
 <li>Integer division and remainder.</li>
 <li>Floating-point functions and constants.</li>
 <li>Complex numbers through <code>num-complex</code>.</li>
+<li>Physical quantities through <code>uom</code>.</li>
 <li>Differences from C and C++ numeric promotion rules.</li>
 </ul>
 <p>Goal:</p>
@@ -275,6 +281,7 @@ those types using methods.</p>
 <li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/traits"><code>source-code/traits</code></a></li>
 <li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/user-defined-trait"><code>source-code/user-defined-trait</code></a></li>
 <li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/generic-structs"><code>source-code/generic-structs</code></a></li>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/generic-numerics"><code>source-code/generic-numerics</code></a></li>
 </ul>
 <p>Topics:</p>
 <ul>
@@ -282,6 +289,7 @@ those types using methods.</p>
 <li><code>Display</code>, <code>Index</code>, <code>IndexMut</code>, and <code>TryFrom</code>.</li>
 <li>User-defined traits.</li>
 <li>Trait bounds.</li>
+<li>Crate-provided numeric traits.</li>
 <li>Trait objects.</li>
 <li><code>dyn Trait</code>.</li>
 <li>Static and dynamic dispatch at a conceptual level.</li>
@@ -298,6 +306,8 @@ classical inheritance.</p>
 <ul>
 <li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/iterators"><code>source-code/iterators</code></a></li>
 <li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/hashmap-hashset"><code>source-code/hashmap-hashset</code></a></li>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/strings"><code>source-code/strings</code></a></li>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/structural-matching"><code>source-code/structural-matching</code></a></li>
 </ul>
 <p>Topics:</p>
 <ul>
@@ -307,6 +317,10 @@ classical inheritance.</p>
 <li>Hash maps and hash sets.</li>
 <li>Reading and writing text files.</li>
 <li>Buffered I/O.</li>
+<li>Owned <code>String</code> values and borrowed <code>&amp;str</code> views.</li>
+<li>Line-based parsing of timestamped records.</li>
+<li>Date/time parsing with <code>chrono</code>.</li>
+<li>Structural matching while parsing text fields.</li>
 </ul>
 <p>Goal:</p>
 <p>Participants should be able to process collections and simple text data using
@@ -500,7 +514,7 @@ examples.</p>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
         <a href=".." class="btn btn-neutral float-left" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../getting-started-with-rust-projects/" class="btn btn-neutral float-right" title="1. Getting Started With Rust Projects">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../rust-false-friends-by-language/" class="btn btn-neutral float-right" title="False Friends By Programming Background">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -526,7 +540,7 @@ examples.</p>
       <span><a href=".." style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="../getting-started-with-rust-projects/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../rust-false-friends-by-language/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

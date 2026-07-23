@@ -51,6 +51,10 @@
                 <li class="toctree-l1"><a class="reference internal" href="../learning-module-structure/">Module Structure</a>
                 </li>
               </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../rust-false-friends-by-language/">False Friends By Programming Background</a>
+                </li>
+              </ul>
               <p class="caption"><span class="caption-text">Learning Modules</span></p>
               <ul class="current">
                   <li class="toctree-l1"><a class="reference internal" href="../getting-started-with-rust-projects/">1. Getting Started With Rust Projects</a>
@@ -96,6 +100,16 @@
     <li class="toctree-l2"><a class="reference internal" href="#hash-sets-for-unique-values">Hash Sets For Unique Values</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#buffered-text-input">Buffered Text Input</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#line-based-string-processing">Line-Based String Processing</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#splitting-and-parsing-fields">Splitting And Parsing Fields</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#date-and-time-values">Date And Time Values</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#matching-parser-and-aggregator-state">Matching Parser And Aggregator State</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#structural-matching-while-parsing">Structural Matching While Parsing</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#buffered-text-output">Buffered Text Output</a>
     </li>
@@ -170,6 +184,9 @@ summaries, and count or classify tokens.</p>
 <li>Read text input with buffered readers.</li>
 <li>Write text output with buffered writers.</li>
 <li>Process input byte by byte when that is appropriate for the file format.</li>
+<li>Process input line by line when records are naturally text lines.</li>
+<li>Distinguish owned <code>String</code> data from borrowed <code>&amp;str</code> views.</li>
+<li>Parse timestamp strings into date/time values with a crate.</li>
 </ul>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
 <p>Participants should already be comfortable with:</p>
@@ -184,6 +201,8 @@ summaries, and count or classify tokens.</p>
 <ul>
 <li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/iterators"><code>source-code/iterators</code></a></li>
 <li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/hashmap-hashset"><code>source-code/hashmap-hashset</code></a></li>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/strings"><code>source-code/strings</code></a></li>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/structural-matching"><code>source-code/structural-matching</code></a></li>
 </ul>
 <h2 id="vectors">Vectors<a class="headerlink" href="#vectors" title="Permanent link">&para;</a></h2>
 <p>A <code>Vec&lt;T&gt;</code> stores a growable sequence of values of the same type. The
@@ -407,6 +426,133 @@ at a time. This matters for larger files.</p>
 <p>Byte-wise processing is appropriate here because the input is simple
 ASCII-like sequence data. For general Unicode text, line-based or string-based
 processing is usually more appropriate.</p>
+<h2 id="line-based-string-processing">Line-Based String Processing<a class="headerlink" href="#line-based-string-processing" title="Permanent link">&para;</a></h2>
+<p>The <code>strings</code> example uses line-based input for timestamped records:</p>
+<pre><code class="language-bash">cd source-code/strings
+cargo run -- --file data.txt
+</code></pre>
+<p>The input is a small instrument-log format:</p>
+<pre><code class="language-text">time: 2023-06-01T12:00:00Z
+temperature: 42.3
+pressure: 1013.25
+----
+</code></pre>
+<p>Line-based processing keeps the input format visible:</p>
+<pre><code class="language-rust">let reader = BufReader::new(file);
+
+for line in reader.lines() {
+    let line = line.expect(&quot;Failed to read line&quot;);
+    // process one line
+}
+</code></pre>
+<p>Each call to <code>lines</code> yields an owned <code>String</code>. The program builds a record in
+another owned <code>String</code>:</p>
+<pre><code class="language-rust">record_buffer.push_str(&amp;line);
+record_buffer.push('\n');
+</code></pre>
+<p>When a complete record has been collected, parsing borrows the string data:</p>
+<pre><code class="language-rust">fn parse_record(record_str: &amp;str) -&gt; Result&lt;Record, String&gt; {
+    // parse fields from borrowed text
+}
+</code></pre>
+<p>This signature says that parsing reads the text but does not take ownership of
+the buffer.</p>
+<h2 id="splitting-and-parsing-fields">Splitting And Parsing Fields<a class="headerlink" href="#splitting-and-parsing-fields" title="Permanent link">&para;</a></h2>
+<p>The record parser extracts values from lines such as <code>temperature: 42.3</code>.
+Numeric values can be parsed from trimmed strings:</p>
+<pre><code class="language-rust">let temperature_val = temp_str
+    .trim()
+    .parse::&lt;f64&gt;();
+</code></pre>
+<p>The timestamp line is deliberately a little trickier:</p>
+<pre><code class="language-text">time: 2023-06-01T12:00:00Z
+</code></pre>
+<p>The timestamp value itself contains colons, so the example uses <code>split_once</code>
+for that field:</p>
+<pre><code class="language-rust">line.split_once(':').map(|(_, value)| value)
+</code></pre>
+<p>This is a useful parsing lesson: a method that is sufficient for one field may
+be wrong for another field if the data format changes the assumptions.</p>
+<h2 id="date-and-time-values">Date And Time Values<a class="headerlink" href="#date-and-time-values" title="Permanent link">&para;</a></h2>
+<p>Rust's standard library has <code>std::time::Duration</code>, <code>Instant</code>, and
+<code>SystemTime</code>, but it does not provide full calendar date/time parsing. The
+<code>strings</code> example therefore uses the <code>chrono</code> crate:</p>
+<pre><code class="language-rust">use chrono::{DateTime, Utc};
+</code></pre>
+<p>The record stores a parsed UTC timestamp:</p>
+<pre><code class="language-rust">struct Record {
+    time: DateTime&lt;Utc&gt;,
+    temperature: f64,
+    pressure: f64,
+}
+</code></pre>
+<p>Once timestamps are parsed, the program can compute the covered time span:</p>
+<pre><code class="language-rust">let duration = last - first;
+let days = duration.num_seconds() as f64 / 86400.0;
+</code></pre>
+<p>This keeps date/time handling explicit and avoids treating timestamps as raw
+strings after the input boundary.</p>
+<h2 id="matching-parser-and-aggregator-state">Matching Parser And Aggregator State<a class="headerlink" href="#matching-parser-and-aggregator-state" title="Permanent link">&para;</a></h2>
+<p>The same example also shows <code>match</code> on parser results:</p>
+<pre><code class="language-rust">match parse_record(&amp;record_buffer) {
+    Ok(record) =&gt; aggregator.add_record(record),
+    Err(err) =&gt; {
+        eprintln!(&quot;Failed to parse record:\n{}&quot;, record_buffer);
+        eprintln!(&quot;Error: {}&quot;, err);
+    }
+}
+</code></pre>
+<p>The aggregator uses a structural match on the pair of optional timestamps:</p>
+<pre><code class="language-rust">match (self.first_time, self.last_time) {
+    (None, None) =&gt; {
+        self.first_time = Some(record.time);
+        self.last_time = Some(record.time);
+    }
+    (Some(first), Some(last)) =&gt; {
+        if record.time &lt; first {
+            self.first_time = Some(record.time);
+        }
+        if record.time &gt; last {
+            self.last_time = Some(record.time);
+        }
+    }
+    _ =&gt; unreachable!(&quot;first_time and last_time should be updated together&quot;),
+}
+</code></pre>
+<p>This connects the earlier <code>match</code> discussion to data-processing code: patterns
+can describe the structure of ordinary values, not only which enum variant was
+selected at the command line.</p>
+<h2 id="structural-matching-while-parsing">Structural Matching While Parsing<a class="headerlink" href="#structural-matching-while-parsing" title="Permanent link">&para;</a></h2>
+<p>The <code>structural-matching</code> example keeps the same input format as <code>strings</code>, but
+uses a more direct <code>match</code> while parsing fields:</p>
+<pre><code class="language-bash">cd source-code/structural-matching
+cargo run -- --file data.txt
+</code></pre>
+<p>The parser matches on the structure returned by <code>split_once</code>:</p>
+<pre><code class="language-rust">match line.split_once(':') {
+    Some((&quot;time&quot;, value)) =&gt; match value.trim().parse::&lt;DateTime&lt;Utc&gt;&gt;() {
+        Ok(parsed_time) =&gt; time = Some(parsed_time),
+        Err(_) =&gt; return Err(format!(&quot;Failed to parse time: {}&quot;, value.trim())),
+    },
+    Some((&quot;temperature&quot;, value)) =&gt; {
+        // parse temperature
+    }
+    Some((&quot;pressure&quot;, value)) =&gt; {
+        // parse pressure
+    }
+    Some(_) | None =&gt; {}
+}
+</code></pre>
+<p>The arm <code>Some(("time", value))</code> checks several things at once:</p>
+<ul>
+<li>the line contained a separator;</li>
+<li>the field name was exactly <code>time</code>;</li>
+<li>the part after the separator should be bound to <code>value</code>.</li>
+</ul>
+<p>This is the same parsing problem as the previous example, but the match arms
+make the expected shapes explicit. It is a useful place to discuss when pattern
+matching improves readability and when it would be too much structure for a
+small parsing task.</p>
 <h2 id="buffered-text-output">Buffered Text Output<a class="headerlink" href="#buffered-text-output" title="Permanent link">&para;</a></h2>
 <p>The data-generation and error-injection programs use buffered writers:</p>
 <pre><code class="language-rust">let file = std::fs::File::create(args.file).expect(&quot;Unable to create file&quot;);
@@ -487,6 +633,30 @@ cargo run --bin generate-data -- --count 200 --file data.txt
 cargo run --bin read-errors -- --file data.txt --output errors.txt --error-rate 0.2
 cargo run --bin count-nucleotides -- --file errors.txt</code></p>
 </li>
+<li>
+<p>Run the timestamped string parser:</p>
+<p><code>bash
+cd ../strings
+cargo run -- --file data.txt</code></p>
+</li>
+<li>
+<p>Change one timestamp, temperature, or pressure value and inspect how the
+    averages or covered time span change.</p>
+</li>
+<li>
+<p>Remove one field from a record and inspect the parser error message.</p>
+</li>
+<li>
+<p>Run the structural-matching variant:</p>
+<p><code>bash
+cd ../structural-matching
+cargo run -- --file data.txt</code></p>
+</li>
+<li>
+<p>Compare the parsing code in <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/strings"><code>source-code/strings</code></a> and
+    <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/structural-matching"><code>source-code/structural-matching</code></a>. Identify which assumptions are expressed
+    by the match patterns.</p>
+</li>
 </ol>
 <h2 id="discussion-points">Discussion Points<a class="headerlink" href="#discussion-points" title="Permanent link">&para;</a></h2>
 <p>This module is a good place to emphasize:</p>
@@ -502,6 +672,11 @@ cargo run --bin count-nucleotides -- --file errors.txt</code></p>
 <li>Buffered I/O is a sensible default for file-based text processing.</li>
 <li>Choose byte-wise, line-wise, or record-wise processing based on the input
   format.</li>
+<li>Use owned <code>String</code> values when the program needs to keep or grow text.</li>
+<li>Use borrowed <code>&amp;str</code> parameters when a function only needs to read text.</li>
+<li>Convert external timestamps into date/time values near the input boundary.</li>
+<li>Structural matches can make parser assumptions visible at the point where
+  text is classified.</li>
 </ul>
 <h2 id="connection-to-later-modules">Connection To Later Modules<a class="headerlink" href="#connection-to-later-modules" title="Permanent link">&para;</a></h2>
 <p>Collection and iterator patterns appear throughout larger Rust programs:</p>
