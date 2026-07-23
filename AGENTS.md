@@ -150,6 +150,12 @@ When changing `FEATURE_MAP.md`:
 
 Run commands from the repository root unless noted otherwise.
 
+- Build all published training material:
+
+  ```bash
+  scripts/build_training_site.sh
+  ```
+
 - Build the learning-module site:
 
   ```bash
