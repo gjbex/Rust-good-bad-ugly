@@ -47,7 +47,7 @@ impl System {
         }
         self.grid.fill(0.0);
 
-        // initialize the central splot
+        // initialize the central spot
         let mut spot = self.grid.slice_mut(s![
             center_row - spot_radius..center_row + spot_radius + 1,
             center_col - spot_radius..center_col + spot_radius + 1
