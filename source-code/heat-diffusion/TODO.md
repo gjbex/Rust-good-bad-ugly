@@ -1,14 +1,17 @@
 # Heat-Diffusion TODO
 
+Status verified on 2026-07-27. Both implementations compile, pass their seven
+unit tests, and produce identical initial-state output for matching inputs.
+
 ## P1: Keep The Implementations Scientifically Consistent
 
-- [x] Use the same initial-condition geometry in the baseline and
+- [x] Use the same initial-condition geometry in the `naive` and
   `ndarray-features` variants.
   - Both variants create a circular hot spot.
   - Both variants independently test the expected initial grid and fixed
     boundaries.
 
-- [ ] Validate physical and numerical parameters.
+- [x] Validate physical and numerical parameters.
   - Reject grids that are too small for the requested initial region.
   - Require positive time steps and tolerances and non-negative thermal
     diffusivity.
@@ -38,7 +41,8 @@
   - Confirm that `cargo clippy --all-targets -- -D warnings` passes.
 
 - [ ] Expose the computed grid as a read-only view.
-  - Add an accessor returning `ndarray::ArrayView2<'_, f64>`.
+  - Replace or complement the naive implementation's `get_grid` accessor with
+    accessors returning `ndarray::ArrayView2<'_, f64>` from both variants.
   - Use the view in tests or output code so array views and their lifetimes have
     a concrete teaching purpose.
 
@@ -50,7 +54,7 @@
     count.
   - Add a test that a symmetric initial condition remains symmetric after one
     step.
-  - Compare the baseline and `ndarray-features` results for identical inputs
+  - Compare the `naive` and `ndarray-features` results for identical inputs
     after the packages have been restructured for cross-package testing.
 
 - [ ] Modernize the Clap derive attributes.
@@ -58,9 +62,33 @@
   - Prefer typed defaults such as `default_value_t = 100`.
   - Keep all short option names unique.
 
+## P4: Integrate The Example Into The Training Repository
+
+- [ ] Add `source-code/heat-diffusion/README.md`.
+  - Explain the purpose of the two implementations and their teaching order.
+  - Document matching commands for running and testing both variants.
+  - State which behavior should remain equivalent during refactoring.
+
+- [ ] Add the example to `source-code/README.md` and `FEATURE_MAP.md`.
+  - Map `Array2`, slicing, mutable views, `Zip`, stencil computation, unit
+    tests, and behavior-preserving refactoring.
+
+- [ ] Add the example to the appropriate learning module and matching slide
+  source when the multidimensional-array curriculum item is implemented.
+
 ## Validation
 
-Run the following commands in both Cargo projects:
+Verified on 2026-07-27 in both Cargo projects:
+
+- [x] `cargo fmt --check`
+- [x] `cargo check`
+- [x] `cargo test` with seven passing tests per implementation
+- [x] `cargo clippy --all-targets -- -D warnings`
+- [x] Matching 21-by-21 initial states with radius 5 and identical
+  temperatures
+
+Rerun the following commands in both Cargo projects after each remaining
+change:
 
 ```bash
 cargo fmt --check
@@ -69,6 +97,5 @@ cargo test
 cargo clippy --all-targets -- -D warnings
 ```
 
-Run matching small simulations in the baseline and `ndarray-features`
-directories and compare their output after the initial conditions have been
-made equivalent.
+Run matching simulations in the `naive` and `ndarray-features` directories and
+compare their output after any change to their numerical behavior.

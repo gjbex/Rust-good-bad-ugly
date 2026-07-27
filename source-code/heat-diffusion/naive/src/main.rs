@@ -25,21 +25,20 @@ struct Args {
     show: bool,
 }
 
-fn main() {
+fn main() -> Result<(), &'static str> {
     let args = Args::parse();
 
-    let mut simulation = System::new(args.grid_size, args.alpha);
-    simulation
-        .initialize_grid(
-            args.spot_temperature,
-            args.spot_radius,
-            args.boundary_temperature,
-        )
-        .expect("Failed to initialize grid");
+    let mut simulation = System::new(args.grid_size, args.alpha)?;
+    simulation.initialize_grid(
+        args.spot_temperature,
+        args.spot_radius,
+        args.boundary_temperature,
+    )?;
 
-    let steps_taken = simulation.run_simulation(args.dt, args.steps, args.tolerance);
+    let steps_taken = simulation.run_simulation(args.dt, args.steps, args.tolerance)?;
     println!("Simulation completed in {} steps.", steps_taken);
     if args.show {
         println!("{simulation}");
     }
+    Ok(())
 }
