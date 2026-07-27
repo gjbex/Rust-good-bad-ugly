@@ -507,10 +507,10 @@ Use this sequence as a practical lab.
 
 1. Run `source-code/traits`:
 
-   ```bash
-   cd source-code/traits
-   cargo run
-   ```
+    ```bash
+    cd source-code/traits
+    cargo run
+    ```
 
 2. Identify where `IndexMut` enables assignment with `matrix[(row, col)] = ...`.
 
@@ -526,12 +526,12 @@ Use this sequence as a practical lab.
 
 7. Run `source-code/user-defined-trait` with both quadrature methods:
 
-   ```bash
-   cd source-code/user-defined-trait
-   cargo run
-   cargo run -- --method gauss
-   cargo run -- --method simpson --subdivisions 2000
-   ```
+    ```bash
+    cd source-code/user-defined-trait
+    cargo run
+    cargo run -- --method gauss
+    cargo run -- --method simpson --subdivisions 2000
+    ```
 
 8. Change the string returned by one `name` implementation and observe the
    program output.

@@ -329,30 +329,30 @@ Use this sequence as a practical lab.
 
 2. Run each binary:
 
-   ```bash
-   cd source-code/hashmap-hashset
-   cargo run --bin generate-data -- --count 200 --file data.txt
-   cargo run --bin read-errors -- --file data.txt --output errors.txt --error-rate 0.2
-   cargo run --bin count-nucleotides -- --file errors.txt
-   ```
+    ```bash
+    cd source-code/hashmap-hashset
+    cargo run --bin generate-data -- --count 200 --file data.txt
+    cargo run --bin read-errors -- --file data.txt --output errors.txt --error-rate 0.2
+    cargo run --bin count-nucleotides -- --file errors.txt
+    ```
 
 3. Open `src/lib.rs` and identify which items are public.
 
 4. Add a new helper function to `src/lib.rs`, such as:
 
-   ```rust
-   pub fn is_known_token(value: char) -> bool {
-       is_valid_nucleotide(value) || is_error_token(value)
-   }
-   ```
+    ```rust
+    pub fn is_known_token(value: char) -> bool {
+        is_valid_nucleotide(value) || is_error_token(value)
+    }
+    ```
 
 5. Add a unit test for the new helper.
 
 6. Run:
 
-   ```bash
-   cargo test
-   ```
+    ```bash
+    cargo test
+    ```
 
 7. Open `source-code/enum-match/src/simpson.rs` and inspect the numerical test.
 
@@ -360,10 +360,10 @@ Use this sequence as a practical lab.
 
 9. Open `source-code/traits/src/matrix.rs` and run one specific test by name:
 
-   ```bash
-   cd source-code/traits
-   cargo test displays_matrix_rows
-   ```
+    ```bash
+    cd source-code/traits
+    cargo test displays_matrix_rows
+    ```
 
 10. Add a test that checks one additional behavior, such as formatting a
     one-row matrix.

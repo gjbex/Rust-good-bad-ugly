@@ -51,6 +51,10 @@
                 <li class="toctree-l1"><a class="reference internal" href="../learning-module-structure/">Module Structure</a>
                 </li>
               </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../rust-false-friends-by-language/">False Friends By Programming Background</a>
+                </li>
+              </ul>
               <p class="caption"><span class="caption-text">Learning Modules</span></p>
               <ul class="current">
                   <li class="toctree-l1"><a class="reference internal" href="../getting-started-with-rust-projects/">1. Getting Started With Rust Projects</a>
@@ -78,6 +82,8 @@
     <li class="toctree-l2"><a class="reference internal" href="#avoiding-implicit-double-promotion">Avoiding Implicit Double Promotion</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#complex-numbers">Complex Numbers</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#quantities-with-physical-units">Quantities With Physical Units</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#suggested-hands-on-work">Suggested Hands-On Work</a>
     </li>
@@ -157,6 +163,7 @@ ambiguous or accidental computations.</p>
 <li>Convert integer values to floating-point values explicitly.</li>
 <li>Understand why Rust avoids implicit double promotion.</li>
 <li>Use <code>num-complex</code> for complex arithmetic.</li>
+<li>Use <code>uom</code> to make physical units explicit at program boundaries.</li>
 </ul>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
 <p>Participants should already be comfortable with:</p>
@@ -173,6 +180,7 @@ ambiguous or accidental computations.</p>
 <li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/numerical-function"><code>source-code/numerical-function</code></a></li>
 <li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/no-double-promotion"><code>source-code/no-double-promotion</code></a></li>
 <li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/complex-numbers"><code>source-code/complex-numbers</code></a></li>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/units"><code>source-code/units</code></a></li>
 </ul>
 <h2 id="scalar-types">Scalar Types<a class="headerlink" href="#scalar-types" title="Permanent link">&para;</a></h2>
 <p>Rust has several families of scalar types:</p>
@@ -185,9 +193,8 @@ ambiguous or accidental computations.</p>
 </ul>
 <p>The <code>basic-types</code> example prints the minimum and maximum values for many of
 these types:</p>
-<pre><code class="language-bash">cd source-code/basic-types
-cargo run
-</code></pre>
+<pre class="highlight"><code class="language-bash">cd source-code/basic-types
+cargo run</code></pre>
 <p>For fixed-width integer types, the number in the type name is the number of
 bits. For example, <code>i32</code> is a signed 32-bit integer, and <code>u64</code> is an unsigned
 64-bit integer.</p>
@@ -221,24 +228,21 @@ platform. They are commonly used for indexing and sizes, especially <code>usize<
 distinct.</p>
 <h2 id="type-inference-and-explicit-types">Type Inference And Explicit Types<a class="headerlink" href="#type-inference-and-explicit-types" title="Permanent link">&para;</a></h2>
 <p>Rust often infers types from context:</p>
-<pre><code class="language-rust">let x = 17;
-let y = 5.2;
-</code></pre>
+<pre class="highlight"><code class="language-rust">let x = 17;
+let y = 5.2;</code></pre>
 <p>For teaching examples and numerical code, it is often clearer to write the
 type explicitly when the type matters:</p>
-<pre><code class="language-rust">let a: i32 = 17;
+<pre class="highlight"><code class="language-rust">let a: i32 = 17;
 let b: i32 = 5;
 let x: f64 = 17.3;
-let y: f64 = 5.2;
-</code></pre>
+let y: f64 = 5.2;</code></pre>
 <p>Explicit types are especially useful when comparing integer and floating-point
 behavior.</p>
 <h2 id="arithmetic-operators">Arithmetic Operators<a class="headerlink" href="#arithmetic-operators" title="Permanent link">&para;</a></h2>
 <p>The <code>math</code> example illustrates arithmetic for both integers and floating-point
 values:</p>
-<pre><code class="language-bash">cd source-code/math
-cargo run
-</code></pre>
+<pre class="highlight"><code class="language-bash">cd source-code/math
+cargo run</code></pre>
 <p>The main arithmetic operators are:</p>
 <ul>
 <li><code>+</code> for addition.</li>
@@ -248,19 +252,17 @@ cargo run
 <li><code>%</code> for remainder.</li>
 </ul>
 <p>For integers, division discards the fractional part:</p>
-<pre><code class="language-rust">let a: i32 = 17;
+<pre class="highlight"><code class="language-rust">let a: i32 = 17;
 let b: i32 = 5;
 
-println!(&quot;{}&quot;, a / b);
-println!(&quot;{}&quot;, a % b);
-</code></pre>
+println!("{}", a / b);
+println!("{}", a % b);</code></pre>
 <p>For floating-point values, division produces a floating-point result:</p>
-<pre><code class="language-rust">let x: f64 = 17.3;
+<pre class="highlight"><code class="language-rust">let x: f64 = 17.3;
 let y: f64 = 5.2;
 
-println!(&quot;{}&quot;, x / y);
-println!(&quot;{}&quot;, x % y);
-</code></pre>
+println!("{}", x / y);
+println!("{}", x % y);</code></pre>
 <p>This is why the example uses different values for integer and floating-point
 arithmetic: the outputs show that these are related operations, but not the
 same computation.</p>
@@ -268,80 +270,72 @@ same computation.</p>
 <p>Signed integer division can be subtle when negative values are involved. Rust's
 ordinary <code>/</code> and <code>%</code> operators use truncating division. The <code>math</code> example also
 shows Euclidean division:</p>
-<pre><code class="language-rust">let a: i32 = -17;
+<pre class="highlight"><code class="language-rust">let a: i32 = -17;
 let b: i32 = 5;
 
-println!(&quot;{}&quot;, a / b);
-println!(&quot;{}&quot;, a % b);
-println!(&quot;{}&quot;, a.div_euclid(b));
-println!(&quot;{}&quot;, a.rem_euclid(b));
-</code></pre>
+println!("{}", a / b);
+println!("{}", a % b);
+println!("{}", a.div_euclid(b));
+println!("{}", a.rem_euclid(b));</code></pre>
 <p>For algorithms where the remainder should be non-negative, such as indexing
 periodic domains, <code>div_euclid</code> and <code>rem_euclid</code> are often the clearer choice.</p>
 <h2 id="mathematical-functions">Mathematical Functions<a class="headerlink" href="#mathematical-functions" title="Permanent link">&para;</a></h2>
 <p>Floating-point mathematical functions are implemented as methods on <code>f32</code> and
 <code>f64</code> values.</p>
 <p>Examples from <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/math"><code>source-code/math</code></a> include:</p>
-<pre><code class="language-rust">let angle = std::f64::consts::FRAC_PI_6;
+<pre class="highlight"><code class="language-rust">let angle = std::f64::consts::FRAC_PI_6;
 let value = 2.0_f64;
 
-println!(&quot;{}&quot;, angle.sin());
-println!(&quot;{}&quot;, angle.cos());
-println!(&quot;{}&quot;, angle.tan());
-println!(&quot;{}&quot;, value.sqrt());
-println!(&quot;{}&quot;, value.powi(8));
-println!(&quot;{}&quot;, value.powf(0.5));
-println!(&quot;{}&quot;, value.exp());
-println!(&quot;{}&quot;, value.ln());
-println!(&quot;{}&quot;, value.log10());
-</code></pre>
+println!("{}", angle.sin());
+println!("{}", angle.cos());
+println!("{}", angle.tan());
+println!("{}", value.sqrt());
+println!("{}", value.powi(8));
+println!("{}", value.powf(0.5));
+println!("{}", value.exp());
+println!("{}", value.ln());
+println!("{}", value.log10());</code></pre>
 <p>Rounding and absolute-value methods include:</p>
-<pre><code class="language-rust">let x = -3.75_f64;
+<pre class="highlight"><code class="language-rust">let x = -3.75_f64;
 
-println!(&quot;{}&quot;, x.abs());
-println!(&quot;{}&quot;, x.floor());
-println!(&quot;{}&quot;, x.ceil());
-println!(&quot;{}&quot;, x.round());
-println!(&quot;{}&quot;, x.trunc());
-</code></pre>
+println!("{}", x.abs());
+println!("{}", x.floor());
+println!("{}", x.ceil());
+println!("{}", x.round());
+println!("{}", x.trunc());</code></pre>
 <p>The method-call syntax is important: these are functions associated with the
 floating-point type and called on a value.</p>
 <h2 id="numeric-functions-and-explicit-conversion">Numeric Functions And Explicit Conversion<a class="headerlink" href="#numeric-functions-and-explicit-conversion" title="Permanent link">&para;</a></h2>
 <p>The <code>numerical-function</code> example defines a small polynomial function:</p>
-<pre><code class="language-bash">cd source-code/numerical-function
-cargo run -- --help
-</code></pre>
+<pre class="highlight"><code class="language-bash">cd source-code/numerical-function
+cargo run -- --help</code></pre>
 <p>The core function has typed parameters and a typed return value:</p>
-<pre><code class="language-rust">fn polynomial(x: f64, a: f64, b: f64, c: f64) -&gt; f64 {
+<pre class="highlight"><code class="language-rust">fn polynomial(x: f64, a: f64, b: f64, c: f64) -&gt; f64 {
     a * x.powi(2) + b * x + c
-}
-</code></pre>
+}</code></pre>
 <p>The example also loops over integer values and converts them to <code>f64</code> when
 constructing floating-point coordinates:</p>
-<pre><code class="language-rust">let delta_x = (x_max - x_min) / (nr_points as f64 - 1.0);
+<pre class="highlight"><code class="language-rust">let delta_x = (x_max - x_min) / (nr_points as f64 - 1.0);
 
 for i in 0..nr_points {
     let x = x_min + i as f64 * delta_x;
     let result = polynomial(x, args.a, args.b, args.c);
-    println!(&quot;{x} {result}&quot;);
-}
-</code></pre>
+    println!("{x} {result}");
+}</code></pre>
 <p>The <code>as f64</code> conversions are explicit. Rust does not automatically convert an
 integer loop index to a floating-point value.</p>
 <h2 id="avoiding-implicit-double-promotion">Avoiding Implicit Double Promotion<a class="headerlink" href="#avoiding-implicit-double-promotion" title="Permanent link">&para;</a></h2>
 <p>The <code>no-double-promotion</code> example shows that Rust uses context to infer the
 type of floating-point literals:</p>
-<pre><code class="language-bash">cd source-code/no-double-promotion
-cargo run --release
-</code></pre>
+<pre class="highlight"><code class="language-bash">cd source-code/no-double-promotion
+cargo run --release</code></pre>
 <p>In the example, the function argument is <code>f32</code>:</p>
-<pre><code class="language-rust">fn compute_polynom(x: f32) -&gt; f32 {
+<pre class="highlight"><code class="language-rust">fn compute_polynom(x: f32) -&gt; f32 {
     let a = 3.0;
     let b = 2.0;
     let c = 1.0;
     a * x * x + b * x + c
-}
-</code></pre>
+}</code></pre>
 <p>Because the literals are used in an <code>f32</code> expression, Rust infers them as
 <code>f32</code>. This avoids a common problem in C, C++, and Fortran where single
 precision values may accidentally be promoted to double precision and then
@@ -353,26 +347,57 @@ compiler will ask for more information.</p>
 <p>Complex numbers are not built into Rust's standard library. Scientific Rust
 programs commonly use the <code>num-complex</code> crate.</p>
 <p>Run the example with:</p>
-<pre><code class="language-bash">cd source-code/complex-numbers
-cargo run
-</code></pre>
+<pre class="highlight"><code class="language-bash">cd source-code/complex-numbers
+cargo run</code></pre>
 <p>The example imports <code>Complex64</code>, which is a complex number with <code>f64</code> real and
 imaginary parts:</p>
-<pre><code class="language-rust">use num_complex::Complex64;
+<pre class="highlight"><code class="language-rust">use num_complex::Complex64;
 
 let z1 = Complex64 { re: 1.0, im: 2.0 };
 let z2 = Complex64 { re: 3.0, im: 4.0 };
 
-println!(&quot;{}&quot;, z1 + z2);
-println!(&quot;{}&quot;, z1 * z2);
-println!(&quot;{}&quot;, z1.re);
-println!(&quot;{}&quot;, z1.im);
-println!(&quot;{}&quot;, z1.norm());
-</code></pre>
+println!("{}", z1 + z2);
+println!("{}", z1 * z2);
+println!("{}", z1.re);
+println!("{}", z1.im);
+println!("{}", z1.norm());</code></pre>
 <p>This example reinforces two earlier points:</p>
 <ul>
 <li>Numeric behavior can be extended through crates.</li>
 <li>External types are brought into scope with <code>use</code>.</li>
+</ul>
+<h2 id="quantities-with-physical-units">Quantities With Physical Units<a class="headerlink" href="#quantities-with-physical-units" title="Permanent link">&para;</a></h2>
+<p>Plain <code>f64</code> values are convenient for numerical kernels, but they do not say
+what a value means. A solver that accepts <code>t0</code>, <code>delta_t</code>, and <code>x0</code> may use
+<code>f64</code> for all three values even though two are times and one is a position.</p>
+<p>The <code>units</code> example uses the <code>uom</code> crate to make those meanings explicit:</p>
+<pre class="highlight"><code class="language-bash">cd source-code/units
+cargo run -- --x0 1.0 --t0 0.0 --delta-t 0.25</code></pre>
+<p>The command-line parser still accepts ordinary numeric values. The conversion
+from raw input to typed quantities happens once, near the program boundary:</p>
+<pre class="highlight"><code class="language-rust">impl From&lt;Args&gt; for SimulationParameters {
+    fn from(args: Args) -&gt; Self {
+        Self {
+            x0: Length::new::&lt;uom::si::length::meter&gt;(args.x0),
+            t0: Time::new::&lt;uom::si::time::second&gt;(args.t0),
+            delta_t: Time::new::&lt;uom::si::time::second&gt;(args.delta_t),
+        }
+    }
+}</code></pre>
+<p>This gives the rest of the program a more meaningful type than plain <code>f64</code>.
+When a tight numerical loop needs scalar values in canonical units, the example
+converts back explicitly:</p>
+<pre class="highlight"><code class="language-rust">let t0 = t0.get::&lt;uom::si::time::second&gt;();
+let delta_t = delta_t.get::&lt;uom::si::time::second&gt;();
+let x0 = x0.get::&lt;uom::si::length::meter&gt;();</code></pre>
+<p>The important pattern is not that every inner-loop variable must be wrapped in
+a unit type. The useful boundary is often:</p>
+<ul>
+<li>parse simple command-line values;</li>
+<li>convert them into domain-specific quantities;</li>
+<li>pass typed quantities through the configuration or solver interface;</li>
+<li>convert to canonical scalar values where the numerical kernel benefits from
+  plain arithmetic.</li>
 </ul>
 <h2 id="suggested-hands-on-work">Suggested Hands-On Work<a class="headerlink" href="#suggested-hands-on-work" title="Permanent link">&para;</a></h2>
 <p>Use this sequence as a practical lab.</p>
@@ -400,11 +425,8 @@ println!(&quot;{}&quot;, z1.norm());
 <li>
 <p>Run <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/numerical-function"><code>source-code/numerical-function</code></a> with different polynomial
    coefficients:</p>
+<pre class="highlight"><code class="language-bash">cargo run -- --a 2.0 --b -1.0 --c 0.5</code></pre>
 </li>
-</ol>
-<p><code>bash
-   cargo run -- --a 2.0 --b -1.0 --c 0.5</code></p>
-<ol>
 <li>
 <p>Remove one <code>as f64</code> conversion from <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/numerical-function"><code>source-code/numerical-function</code></a> and run
    <code>cargo check</code>. Read the compiler diagnostic, then restore the conversion.</p>
@@ -415,6 +437,11 @@ println!(&quot;{}&quot;, z1.norm());
 <li>
 <p>Run <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/complex-numbers"><code>source-code/complex-numbers</code></a> and add a calculation of <code>z1 - z2</code>.</p>
 </li>
+<li>
+<p>Run <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/units"><code>source-code/units</code></a> and change the time step:</p>
+<pre class="highlight"><code class="language-bash">cargo run -- --x0 1.0 --t0 0.0 --delta-t 0.5</code></pre>
+<p>Inspect where the input values become <code>Length</code> and <code>Time</code>.</p>
+</li>
 </ol>
 <h2 id="discussion-points">Discussion Points<a class="headerlink" href="#discussion-points" title="Permanent link">&para;</a></h2>
 <p>This module is a good place to emphasize:</p>
@@ -424,7 +451,9 @@ println!(&quot;{}&quot;, z1.norm());
 <li>Conversions between numeric types should be visible in the code.</li>
 <li>Floating-point constants and mathematical functions are type-specific.</li>
 <li>Scientific code often needs external crates for domain-specific types such
-  as complex numbers.</li>
+  as complex numbers or physical quantities.</li>
+<li>Unit-aware quantities are useful at program boundaries, while inner numerical
+  loops may still use canonical scalar values.</li>
 <li>The compiler is a useful guide when a numeric expression has an ambiguous or
   inconsistent type.</li>
 </ul>
@@ -436,6 +465,8 @@ println!(&quot;{}&quot;, z1.norm());
 <li>The Julia set examples use complex arithmetic and floating-point constants.</li>
 <li>The N-body simulation uses vectors of floating-point values, mathematical
   functions, random initial conditions, and numerical diagnostics.</li>
+<li>Unit-aware configuration values are one way to make simulation parameters
+  less ambiguous before entering a numerical kernel.</li>
 </ul>
 <p>Once participants are comfortable with scalar values and numeric expressions,
 they are ready to move on to control flow, functions, and pattern matching.</p>

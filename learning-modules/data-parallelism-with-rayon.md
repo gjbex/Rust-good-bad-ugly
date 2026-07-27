@@ -288,30 +288,30 @@ Use this sequence as a practical lab.
 
 1. Run the serial baseline:
 
-   ```bash
-   cd source-code/julia-set/julia-set-baseline
-   cargo run --release -- --width 400 --height 300 > /tmp/julia-serial.txt
-   ```
+    ```bash
+    cd source-code/julia-set/julia-set-baseline
+    cargo run --release -- --width 400 --height 300 > /tmp/julia-serial.txt
+    ```
 
 2. Run the Rayon version with the same parameters:
 
-   ```bash
-   cd ../julia-set-rayon
-   cargo run --release -- --width 400 --height 300 > /tmp/julia-rayon.txt
-   ```
+    ```bash
+    cd ../julia-set-rayon
+    cargo run --release -- --width 400 --height 300 > /tmp/julia-rayon.txt
+    ```
 
 3. Compare the outputs:
 
-   ```bash
-   diff /tmp/julia-serial.txt /tmp/julia-rayon.txt
-   ```
+    ```bash
+    diff /tmp/julia-serial.txt /tmp/julia-rayon.txt
+    ```
 
 4. Run the Rayon version with different thread counts:
 
-   ```bash
-   RAYON_NUM_THREADS=1 cargo run --release -- --width 1200 --height 1200 > /dev/null
-   RAYON_NUM_THREADS=4 cargo run --release -- --width 1200 --height 1200 > /dev/null
-   ```
+    ```bash
+    RAYON_NUM_THREADS=1 cargo run --release -- --width 1200 --height 1200 > /dev/null
+    RAYON_NUM_THREADS=4 cargo run --release -- --width 1200 --height 1200 > /dev/null
+    ```
 
 5. Run the benchmark script from `source-code/julia-set`.
 

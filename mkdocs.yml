@@ -15,6 +15,7 @@ theme:
 nav:
   - Home: index.md
   - Module Structure: learning-module-structure.md
+  - False Friends By Programming Background: rust-false-friends-by-language.md
   - Learning Modules:
       - "1. Getting Started With Rust Projects": getting-started-with-rust-projects.md
       - "2. Scalar Computation And Numeric Basics": scalar-computation-and-numeric-basics.md
@@ -34,4 +35,4 @@ markdown_extensions:
   - toc:
       permalink: true
   - tables
-  - fenced_code
+  - pymdownx.superfences

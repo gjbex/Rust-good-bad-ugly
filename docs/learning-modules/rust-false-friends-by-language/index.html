@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>False Friends By Programming Background - Rust, the good, the bad, and the ugly</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "False Friends By Programming Background";
+        var mkdocs_page_input_path = "rust-false-friends-by-language.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/rust.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/bash.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/toml.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Rust, the good, the bad, and the ugly
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../learning-module-structure/">Module Structure</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">False Friends By Programming Background</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#general-rust-habits-that-help-everyone">General Rust habits that help everyone</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#from-c">From C</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#false-friends">False friends</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#practical-advice">Practical advice</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#from-c_1">From C++</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#false-friends_1">False friends</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#practical-advice_1">Practical advice</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#from-fortran">From Fortran</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#false-friends_2">False friends</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#practical-advice_2">Practical advice</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#from-python">From Python</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#false-friends_3">False friends</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#practical-advice_3">Practical advice</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#from-r">From R</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#false-friends_4">False friends</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#practical-advice_4">Practical advice</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#from-matlab">From MATLAB</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#false-friends_5">False friends</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#practical-advice_5">Practical advice</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#cross-language-traps-in-scientific-rust">Cross-language traps in scientific Rust</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#numeric-types-and-precision">Numeric types and precision</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#ownership-borrowing-and-performance">Ownership, borrowing, and performance</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#errors-and-absence">Errors and absence</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#libraries-and-interoperability">Libraries and interoperability</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#summary-table">Summary table</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#teaching-tip">Teaching tip</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Learning Modules</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../getting-started-with-rust-projects/">1. Getting Started With Rust Projects</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scalar-computation-and-numeric-basics/">2. Scalar Computation And Numeric Basics</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../control-flow-and-program-structure/">3. Control Flow And Program Structure</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ownership-borrowing-and-mutation/">4. Ownership, Borrowing, And Mutation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-modeling-with-structs-and-methods/">5. Data Modeling With Structs And Methods</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reusable-abstractions-with-traits/">6. Reusable Abstractions With Traits</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../collections-iterators-and-text-data/">7. Collections, Iterators, And Text Data</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error-handling/">8. Error Handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../project-organization-libraries-and-tests/">9. Project Organization, Libraries, And Tests</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../randomness-and-reproducible-runs/">10. Randomness And Reproducible Runs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-parallelism-with-rayon/">11. Data Parallelism With Rayon</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-julia-set/">12. Integrated Numerical Example: Julia Set</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-n-body-simulation/">13. Integrated Numerical Example: N-Body Simulation</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Rust, the good, the bad, and the ugly</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">False Friends By Programming Background</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="rust-false-friends-by-programming-background">Rust false friends by programming background<a class="headerlink" href="#rust-false-friends-by-programming-background" title="Permanent link">&para;</a></h1>
+<p>This note highlights common stumbling blocks for researchers learning Rust
+after using C, C++, Fortran, Python, R, or MATLAB. The goal is not to compare
+languages in general, but to point out places where familiar habits can lead to
+incorrect, unidiomatic, or unnecessarily complicated Rust.</p>
+<p>The examples assume ordinary, stable Rust: prefer clear ownership, borrowed
+slices, standard collection types, <code>Result</code> and <code>Option</code>, iterators, tests, and
+Cargo-based project structure before reaching for advanced features.</p>
+<h2 id="general-rust-habits-that-help-everyone">General Rust habits that help everyone<a class="headerlink" href="#general-rust-habits-that-help-everyone" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Rust distinguishes between owned values, shared references, mutable
+  references, and lifetimes. Many mistakes come from treating these as
+  interchangeable.</li>
+<li>Bindings are immutable by default. Use <code>mut</code> when the binding or borrowed
+  value really needs to change.</li>
+<li>Assignment usually moves non-<code>Copy</code> values. If a value should remain usable,
+  borrow it, clone it deliberately, or redesign the data flow.</li>
+<li>Prefer borrowed function parameters when ownership is not needed: <code>&amp;[T]</code>
+  instead of <code>Vec&lt;T&gt;</code>, <code>&amp;str</code> instead of <code>String</code>, and <code>&amp;T</code> instead of <code>T</code>.</li>
+<li>Use <code>Result&lt;T, E&gt;</code> for recoverable errors and <code>Option&lt;T&gt;</code> for values that may
+  be absent. Avoid using sentinel values when the type system can represent the
+  case directly.</li>
+<li>Rust uses zero-based indexing and half-open ranges, such as <code>0..n</code>.</li>
+<li>Integer division truncates: <code>1 / 2</code> is <code>0</code>, while <code>1.0 / 2.0</code> is <code>0.5</code>.</li>
+<li>Rust does not perform many implicit numeric conversions. Convert explicitly
+  when changing numeric type.</li>
+<li>Compiler errors are part of the workflow. Read the first relevant error in
+  your own code, and treat the borrow checker as feedback about data ownership.</li>
+<li>Prefer <code>cargo check</code>, small examples, and tests for fast iteration.</li>
+<li>Reach for <code>unsafe</code> only when a safe abstraction cannot express the operation
+  and the invariants are documented locally.</li>
+</ul>
+<h2 id="from-c">From C<a class="headerlink" href="#from-c" title="Permanent link">&para;</a></h2>
+<p>C programmers often appreciate Rust's explicitness and low-level control. The
+false friend is assuming that Rust is C with stricter syntax.</p>
+<h3 id="false-friends">False friends<a class="headerlink" href="#false-friends" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Pointers as the default model</strong>: Rust has raw pointers, but ordinary code
+  should use owned values, references, slices, <code>Box&lt;T&gt;</code>, <code>Rc&lt;T&gt;</code>, <code>Arc&lt;T&gt;</code>, or
+  collection types depending on ownership.</li>
+<li><strong>Manual allocation and cleanup</strong>: Rust releases resources automatically when
+  values go out of scope. Prefer ownership and RAII-style cleanup over explicit
+  free-like logic.</li>
+<li><strong>Null pointers</strong>: Safe Rust references cannot be null. Use <code>Option&lt;&amp;T&gt;</code>,
+  <code>Option&lt;Box&lt;T&gt;&gt;</code>, or another explicit optional type when absence is valid.</li>
+<li><strong>Aliasing and mutation</strong>: C permits many aliasing patterns that are unsafe or
+  hard to reason about. Rust enforces either many shared references or one
+  mutable reference at a time.</li>
+<li><strong>Raw arrays as normal containers</strong>: Use <code>Vec&lt;T&gt;</code> for growable owned data,
+  <code>[T; N]</code> for fixed-size arrays, and <code>&amp;[T]</code> or <code>&amp;mut [T]</code> for borrowed views.</li>
+<li><strong>Integer and pointer casts</strong>: Rust casts with <code>as</code> are explicit but still
+  require care. Do not translate C cast-heavy code mechanically.</li>
+<li><strong>Macros for constants and small utilities</strong>: Prefer <code>const</code>, <code>static</code>,
+  functions, generic functions, and traits before writing macros.</li>
+<li><strong>Unchecked error codes</strong>: Rust code normally makes error handling visible in
+  the type with <code>Result</code>, and the <code>?</code> operator propagates errors explicitly.</li>
+<li><strong>Assuming uninitialized memory is routine</strong>: Safe Rust requires initialized
+  values. Low-level uninitialized memory APIs exist, but they belong in small,
+  carefully reviewed abstractions.</li>
+</ul>
+<h3 id="practical-advice">Practical advice<a class="headerlink" href="#practical-advice" title="Permanent link">&para;</a></h3>
+<p>Start with safe Rust and let the type system express ownership, optionality, and
+errors. Only drop to raw pointers or <code>unsafe</code> after the safe shape of the data
+structure is clear.</p>
+<h2 id="from-c_1">From C++<a class="headerlink" href="#from-c_1" title="Permanent link">&para;</a></h2>
+<p>C++ programmers are often comfortable with value semantics, RAII, generics, and
+performance-oriented design. The main surprise is that Rust makes ownership and
+aliasing rules part of the type system rather than relying on conventions.</p>
+<h3 id="false-friends_1">False friends<a class="headerlink" href="#false-friends_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Move semantics as an optimization detail</strong>: In C++, a moved-from object
+  remains valid but unspecified. In Rust, moving a non-<code>Copy</code> value normally
+  makes the original binding unusable.</li>
+<li><strong>References as just aliases</strong>: Rust references are borrowed access with
+  lifetime and aliasing rules. A <code>&amp;mut T</code> is exclusive access, not merely a
+  non-const reference.</li>
+<li><strong><code>const</code> habits</strong>: Rust's default binding immutability is not the same as
+  C++ <code>const</code>. Mutability is controlled by bindings and references, and interior
+  mutability uses types such as <code>Cell</code>, <code>RefCell</code>, <code>Mutex</code>, or <code>RwLock</code>.</li>
+<li><strong>RAII alone is enough</strong>: Rust has deterministic destruction through <code>Drop</code>,
+  but memory safety also depends on ownership, borrowing, and lifetime checks.</li>
+<li><strong>Class hierarchies and virtual methods</strong>: Rust has structs, enums, traits,
+  generics, and trait objects. Prefer composition, enums, and trait bounds
+  before trying to reproduce inheritance.</li>
+<li><strong>Templates map directly to generics</strong>: Rust generics use trait bounds and
+  monomorphization, but specialization, overloading, and template metaprogramming
+  do not translate directly.</li>
+<li><strong>Function overloading</strong>: Rust does not support ordinary function overloading
+  by argument type. Use different names, traits, generic functions, or builder
+  patterns.</li>
+<li><strong>Exceptions</strong>: Rust does not use exceptions for recoverable errors. Use
+  <code>Result</code> and propagate with <code>?</code>; reserve panics for bugs or unrecoverable
+  conditions.</li>
+<li><strong>Operator overloading as a broad design tool</strong>: Rust supports operator traits
+  such as <code>Add</code> and <code>Index</code>, but fewer operators and conversions are overloadable
+  than in C++.</li>
+<li><strong>Headers and separate declarations</strong>: Rust modules do not use header files.
+  Visibility is expressed with <code>pub</code>, and Cargo manages crates and dependencies.</li>
+<li><strong>Smart pointers as direct equivalents</strong>: <code>Box&lt;T&gt;</code>, <code>Rc&lt;T&gt;</code>, <code>Arc&lt;T&gt;</code>,
+  <code>RefCell&lt;T&gt;</code>, <code>Mutex&lt;T&gt;</code>, and <code>RwLock&lt;T&gt;</code> encode different ownership and
+  borrowing policies. Pick the one that matches the sharing and threading
+  semantics, not the one with the most familiar name.</li>
+<li><strong>Assuming zero-cost means no constraints</strong>: Rust can generate efficient code,
+  but clone operations, bounds checks, allocation, dynamic dispatch, and
+  synchronization still matter.</li>
+</ul>
+<h3 id="practical-advice_1">Practical advice<a class="headerlink" href="#practical-advice_1" title="Permanent link">&para;</a></h3>
+<p>Think less in terms of "what is the Rust version of this C++ feature?" and more
+in terms of who owns each value, who may read or mutate it, and how errors and
+variants are represented in the type system.</p>
+<h2 id="from-fortran">From Fortran<a class="headerlink" href="#from-fortran" title="Permanent link">&para;</a></h2>
+<p>Fortran programmers often bring strong numerical-programming habits. The main
+surprises in Rust are explicit ownership, library-based array support, and the
+absence of built-in whole-array syntax.</p>
+<h3 id="false-friends_2">False friends<a class="headerlink" href="#false-friends_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Array indexing</strong>: Fortran arrays are commonly one-based; Rust slices,
+  vectors, arrays, and ranges are zero-based.</li>
+<li><strong>Memory layout</strong>: Fortran arrays are column-major. Rust's standard <code>Vec&lt;T&gt;</code>
+  is one-dimensional contiguous storage; multidimensional layout depends on the
+  library or indexing scheme you choose.</li>
+<li><strong>Array slicing</strong>: Rust slices such as <code>&amp;data[start..end]</code> are views into
+  contiguous one-dimensional data. Multidimensional slicing requires a library
+  or explicit indexing design.</li>
+<li><strong>Whole-array operations</strong>: Rust has no built-in array language. Use loops,
+  iterators, or numerical crates when expressing vector and matrix operations.</li>
+<li><strong>Pass-by-reference assumptions</strong>: Rust requires explicit borrowing with
+  <code>&amp;T</code> or <code>&amp;mut T</code>, and the compiler enforces whether mutation is allowed.</li>
+<li><strong>Implicit shape information</strong>: A borrowed slice knows its length, but raw
+  numeric kernels still need explicit shape, stride, and layout conventions.</li>
+<li><strong>Module expectations</strong>: Rust modules organize names and visibility, but they
+  are not Fortran modules. Cargo packages code into crates.</li>
+<li><strong>Assuming mature numerical coverage everywhere</strong>: Rust's scientific
+  ecosystem is useful but uneven compared with long-established Fortran, C, C++,
+  Python, or MATLAB ecosystems.</li>
+</ul>
+<h3 id="practical-advice_2">Practical advice<a class="headerlink" href="#practical-advice_2" title="Permanent link">&para;</a></h3>
+<p>Be explicit about shape, layout, and ownership from the start. For scientific
+code, choose the array and linear algebra crates deliberately, and document
+layout conventions near the data structure or kernel.</p>
+<h2 id="from-python">From Python<a class="headerlink" href="#from-python" title="Permanent link">&para;</a></h2>
+<p>Python programmers often expect dynamic behavior, automatic memory management,
+and quick feedback. Rust asks for more up-front precision, but the compiler then
+checks many mistakes before the program runs.</p>
+<h3 id="false-friends_3">False friends<a class="headerlink" href="#false-friends_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Names versus values</strong>: Python variables are names bound to objects. Rust
+  bindings own, borrow, or copy values with specific types and lifetimes.</li>
+<li><strong>Assignment as rebinding</strong>: In Python, assignment usually rebinds a name. In
+  Rust, assignment to an existing mutable binding changes the stored value, and
+  assigning a non-<code>Copy</code> value elsewhere may move it.</li>
+<li><strong>Automatic garbage collection</strong>: Rust normally has deterministic ownership
+  instead of a tracing garbage collector. Reference-counted types exist but are
+  explicit.</li>
+<li><strong>Duck typing</strong>: Rust generic code uses traits and compile-time checks. If a
+  function needs a capability, express it as a trait bound.</li>
+<li><strong>Lists versus vectors</strong>: Python lists are growable arrays of references to
+  arbitrary objects. <code>Vec&lt;T&gt;</code> stores homogeneous values contiguously.</li>
+<li><strong>Strings</strong>: Rust distinguishes owned <code>String</code>, borrowed <code>&amp;str</code>, bytes, and
+  Unicode scalar values. Indexing a string by integer is not supported because
+  UTF-8 characters are variable width.</li>
+<li><strong>Exceptions</strong>: Rust uses <code>Result</code> for recoverable errors. The <code>?</code> operator
+  can make this concise, but the possibility of failure remains visible.</li>
+<li><strong>Implicit truthiness</strong>: Rust conditionals require <code>bool</code>. Values such as
+  integers, strings, vectors, and options are not automatically truthy or falsy.</li>
+<li><strong>Interactive workflow</strong>: Rust is compiled. Use <code>cargo check</code>, focused tests,
+  and small examples instead of expecting notebook-like edit-and-run behavior.</li>
+</ul>
+<h3 id="practical-advice_3">Practical advice<a class="headerlink" href="#practical-advice_3" title="Permanent link">&para;</a></h3>
+<p>Treat Rust code as a precise description of data representation and allowed
+operations. When porting Python, first decide which values are owned data,
+borrowed views, optional results, and recoverable errors.</p>
+<h2 id="from-r">From R<a class="headerlink" href="#from-r" title="Permanent link">&para;</a></h2>
+<p>R programmers often come from a vectorized, data-analysis-oriented environment.
+Rust is more explicit about types, sizes, missing values, and control flow.</p>
+<h3 id="false-friends_4">False friends<a class="headerlink" href="#false-friends_4" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Vectorization as the default</strong>: Rust standard-library code usually uses
+  loops, iterators, or crate-provided array operations rather than implicit
+  whole-vector arithmetic.</li>
+<li><strong>One-based indexing</strong>: R is one-based; Rust is zero-based.</li>
+<li><strong>Recycling rules</strong>: Rust does not recycle shorter vectors. Size mismatches
+  must be checked or represented explicitly.</li>
+<li><strong>Missing values</strong>: Rust has no universal <code>NA</code>. Use <code>Option&lt;T&gt;</code>, masks,
+  sentinel values with clear documentation, or library-specific missing-data
+  support.</li>
+<li><strong>Copy-on-modify intuition</strong>: Rust makes moves, clones, borrows, and mutable
+  borrows explicit. A <code>clone()</code> should be a deliberate choice.</li>
+<li><strong>Data frames</strong>: Rust has data-frame crates, but no data frame in the standard
+  library. Decide whether the task is tabular analysis, a numerical kernel, or a
+  reusable command-line tool.</li>
+<li><strong>Type coercion</strong>: Rust avoids many implicit coercions. Convert numeric and
+  string types explicitly.</li>
+<li><strong>Formula interfaces</strong>: Statistical formula syntax does not have a direct
+  language-level equivalent. Models are usually expressed through functions,
+  structs, enums, traits, or crate APIs.</li>
+</ul>
+<h3 id="practical-advice_4">Practical advice<a class="headerlink" href="#practical-advice_4" title="Permanent link">&para;</a></h3>
+<p>Make data representation part of the design. For research pipelines, Rust is
+often strongest as a reliable parser, simulator, numerical kernel, or
+reproducible command-line tool that can interoperate with R for analysis and
+visualization.</p>
+<h2 id="from-matlab">From MATLAB<a class="headerlink" href="#from-matlab" title="Permanent link">&para;</a></h2>
+<p>MATLAB programmers often expect matrix-first syntax and interactive numerical
+workflows. Rust can support numerical work, but most matrix behavior comes from
+crates rather than the core language.</p>
+<h3 id="false-friends_5">False friends<a class="headerlink" href="#false-friends_5" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>One-based indexing</strong>: MATLAB is one-based; Rust is zero-based.</li>
+<li><strong>Matrix as the default data type</strong>: Rust has scalars, arrays, slices,
+  vectors, structs, enums, and crate-provided matrix types. There is no built-in
+  general matrix type.</li>
+<li><strong>Column-major layout</strong>: MATLAB arrays are column-major. Rust layout depends
+  on the chosen storage representation or numerical crate.</li>
+<li><strong>Element-wise versus matrix operations</strong>: MATLAB distinguishes <code>*</code> from
+  <code>.*</code>. In Rust, operator meaning depends on the implemented traits for the
+  chosen type or crate.</li>
+<li><strong>Broadcasting</strong>: Rust has no standard broadcasting rules. Numerical crates
+  may provide them, but the semantics are library-specific.</li>
+<li><strong>Growing arrays in loops</strong>: Repeated growth can cause reallocations. Use
+  known sizes, <code>Vec::with_capacity</code>, <code>push</code>, or crate-specific constructors.</li>
+<li><strong>Scripts and shared workspace state</strong>: Rust programs should express inputs,
+  outputs, and dependencies through functions, structs, configuration, and files.</li>
+<li><strong>Plotting and visualization</strong>: Rust has plotting crates, but many scientific
+  workflows still compute in Rust and visualize with Python, R, MATLAB, or
+  external tools.</li>
+</ul>
+<h3 id="practical-advice_5">Practical advice<a class="headerlink" href="#practical-advice_5" title="Permanent link">&para;</a></h3>
+<p>Translate the mathematical intent, not the MATLAB syntax. Decide which crate or
+data representation owns the arrays, and keep indexing and layout conventions
+visible in the code.</p>
+<h2 id="cross-language-traps-in-scientific-rust">Cross-language traps in scientific Rust<a class="headerlink" href="#cross-language-traps-in-scientific-rust" title="Permanent link">&para;</a></h2>
+<h3 id="numeric-types-and-precision">Numeric types and precision<a class="headerlink" href="#numeric-types-and-precision" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Be explicit about <code>f32</code>, <code>f64</code>, signed integer types, unsigned integer types,
+  and literals.</li>
+<li>Rust does not promote <code>f32</code> to <code>f64</code> automatically in mixed expressions.</li>
+<li><code>usize</code> is useful for indexing but is not a universal integer type for
+  numerical formulas.</li>
+<li>Integer overflow checks depend on build mode: debug builds check overflow for
+  ordinary integer arithmetic, while optimized builds wrap unless you use
+  checked, wrapping, saturating, or overflowing operations explicitly.</li>
+<li>Floating-point equality is usually the wrong test for computed values; use
+  tolerances appropriate to the problem.</li>
+</ul>
+<h3 id="ownership-borrowing-and-performance">Ownership, borrowing, and performance<a class="headerlink" href="#ownership-borrowing-and-performance" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Passing <code>Vec&lt;T&gt;</code> by value transfers ownership. Use <code>&amp;[T]</code> or <code>&amp;mut [T]</code> when
+  a function only needs to read or mutate existing data.</li>
+<li>Returning owned values is normal and often efficient. Avoid premature
+  lifetime-heavy APIs when ownership would be clearer.</li>
+<li><code>clone()</code> can be useful, but it is a real operation. Use it deliberately and
+  look for avoidable large clones in performance-sensitive paths.</li>
+<li>Bounds checks protect indexing operations. Iterators, slices, and careful
+  structure often express the same computation without scattered indexing.</li>
+<li>Views and references must not outlive the data they refer to. The compiler
+  catches many mistakes, but API design still matters.</li>
+</ul>
+<h3 id="errors-and-absence">Errors and absence<a class="headerlink" href="#errors-and-absence" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use <code>Option&lt;T&gt;</code> when a value may be absent.</li>
+<li>Use <code>Result&lt;T, E&gt;</code> when an operation may fail.</li>
+<li>Avoid encoding missing values as magic numbers unless interoperability or file
+  format constraints require it.</li>
+<li><code>panic!</code> is usually for bugs, violated invariants, or unrecoverable situations,
+  not ordinary input errors.</li>
+</ul>
+<h3 id="libraries-and-interoperability">Libraries and interoperability<a class="headerlink" href="#libraries-and-interoperability" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Rust scientific projects often depend on crates for arrays, linear algebra,
+  random numbers, command-line parsing, serialization, and parallelism. Learn
+  the crate's ownership and layout conventions early.</li>
+<li>Interoperability with C, C++, Fortran, Python, R, or MATLAB can be valuable,
+  but data layout, ownership, error handling, and build systems must be handled
+  carefully.</li>
+<li>For HPC code, understand whether the project uses threads, Rayon, MPI, CUDA,
+  HIP, SYCL, Kokkos, C/Fortran libraries, or another layer before choosing the
+  Rust abstraction.</li>
+</ul>
+<h2 id="summary-table">Summary table<a class="headerlink" href="#summary-table" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Background</th>
+<th>Most likely false friend</th>
+<th>Rust habit to develop</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C</td>
+<td>Treating Rust as safer C syntax</td>
+<td>Use ownership, references, slices, <code>Option</code>, and <code>Result</code> before raw pointers</td>
+</tr>
+<tr>
+<td>C++</td>
+<td>Translating classes, references, exceptions, and templates directly</td>
+<td>Design around ownership, borrowing, traits, enums, and explicit errors</td>
+</tr>
+<tr>
+<td>Fortran</td>
+<td>Assuming familiar array layout and whole-array semantics</td>
+<td>Make shape, layout, indexing, and crate choices explicit</td>
+</tr>
+<tr>
+<td>Python</td>
+<td>Expecting dynamic names and automatic runtime behavior</td>
+<td>Use static types, ownership, borrowing, traits, and <code>Result</code> as design tools</td>
+</tr>
+<tr>
+<td>R</td>
+<td>Expecting vectorized data-frame semantics</td>
+<td>Represent sizes, missing values, and data structures explicitly</td>
+</tr>
+<tr>
+<td>MATLAB</td>
+<td>Expecting matrix-first built-in syntax</td>
+<td>Choose numerical crates and translate mathematical intent</td>
+</tr>
+</tbody>
+</table>
+<h2 id="teaching-tip">Teaching tip<a class="headerlink" href="#teaching-tip" title="Permanent link">&para;</a></h2>
+<p>When participants ask "what is the Rust equivalent of this feature?", first
+identify whether they mean syntax, semantics, performance behavior, or workflow.
+The best Rust answer is often not a direct translation, but a design that makes
+ownership, borrowing, errors, variants, and data layout explicit.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../learning-module-structure/" class="btn btn-neutral float-left" title="Module Structure"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../getting-started-with-rust-projects/" class="btn btn-neutral float-right" title="1. Getting Started With Rust Projects">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../learning-module-structure/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../getting-started-with-rust-projects/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

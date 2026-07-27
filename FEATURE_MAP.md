@@ -11,7 +11,7 @@ several places when they combine multiple ideas.
 | Minimal Rust binary | `source-code/hello-world/src/main.rs` |
 | Cargo project layout | `source-code/hello-world/` |
 | Building and running with Cargo | `source-code/hello-world/README.md` |
-| External crates in `Cargo.toml` | `source-code/hello-clap/Cargo.toml`, `source-code/complex-numbers/Cargo.toml`, `source-code/random-numbers/Cargo.toml`, `source-code/smart-pointers/Cargo.toml`, `source-code/strings/Cargo.toml`, `source-code/structural-matching/Cargo.toml`, `source-code/julia-set/julia-set-toml-config/Cargo.toml`, `source-code/n-body-simulation/rust/Cargo.toml` |
+| External crates in `Cargo.toml` | `source-code/hello-clap/Cargo.toml`, `source-code/complex-numbers/Cargo.toml`, `source-code/units/Cargo.toml`, `source-code/random-numbers/Cargo.toml`, `source-code/smart-pointers/Cargo.toml`, `source-code/strings/Cargo.toml`, `source-code/structural-matching/Cargo.toml`, `source-code/julia-set/julia-set-toml-config/Cargo.toml`, `source-code/n-body-simulation/rust/Cargo.toml` |
 | Reproducible dependency lockfiles | `source-code/*/Cargo.lock`, `source-code/julia-set/*/Cargo.lock`, `source-code/n-body-simulation/rust/Cargo.lock` |
 | Multiple binaries in one package | `source-code/hashmap-hashset/src/generate-data.rs`, `source-code/hashmap-hashset/src/count-nucleotides.rs`, `source-code/hashmap-hashset/src/read-errors.rs` |
 | Shared package code in `lib.rs` | `source-code/smart-pointers/src/lib.rs`, `source-code/hashmap-hashset/src/lib.rs` |
@@ -21,8 +21,8 @@ several places when they combine multiple ideas.
 
 | Feature | Where to look |
 |---|---|
-| `clap::Parser` derive | `source-code/hello-clap/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
-| Typed command-line argument struct | `source-code/hello-clap/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
+| `clap::Parser` derive | `source-code/hello-clap/src/main.rs`, `source-code/units/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
+| Typed command-line argument struct | `source-code/hello-clap/src/main.rs`, `source-code/units/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
 | Argument defaults | `source-code/numerical-function/src/main.rs`, `source-code/enum-match/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
 | Restricted argument values with `ValueEnum` | `source-code/enum-match/src/main.rs`, `source-code/random-numbers/src/main.rs`, `source-code/user-defined-trait/src/main.rs` |
 | File path arguments | `source-code/iterators/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
@@ -48,6 +48,8 @@ several places when they combine multiple ideas.
 | Floating-point rounding and absolute-value methods | `source-code/math/src/main.rs` |
 | Complex numbers with `num-complex` | `source-code/complex-numbers/src/main.rs` |
 | Complex arithmetic and norms | `source-code/complex-numbers/src/main.rs` |
+| Physical quantities with `uom` | `source-code/units/src/main.rs` |
+| Boundary conversion between `f64` and typed quantities | `source-code/units/src/main.rs` |
 
 ## Functions, Control Flow, And Patterns
 
@@ -205,6 +207,7 @@ several places when they combine multiple ideas.
 | Feature | Where to look |
 |---|---|
 | Scalar numerical function sampled over an interval | `source-code/numerical-function/src/main.rs` |
+| Unit-aware ODE-style parameters | `source-code/units/src/main.rs` |
 | Numerical quadrature with multiple algorithms | `source-code/enum-match/`, `source-code/user-defined-trait/` |
 | Numerical reference tests | `source-code/enum-match/src/simpson.rs`, `source-code/enum-match/src/gauss.rs`, `source-code/user-defined-trait/src/simpson.rs`, `source-code/user-defined-trait/src/gauss.rs` |
 | Julia set as an end-to-end numerical example | `source-code/julia-set/` |

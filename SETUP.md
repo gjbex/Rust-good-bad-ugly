@@ -163,10 +163,21 @@ cargo run -- --steps 200 --save-evolution evolution.csv
 ../visualize-evolution.py evolution.csv
 ```
 
-## Building The Learning-Module Site
+## Building The Published Training Material
 
-The learning modules in `learning-modules` are configured as an MkDocs
-site. From the repository root, build the static site with:
+From the repository root, build the learning-module site and Quarto slide deck
+with:
+
+```bash
+scripts/build_training_site.sh
+```
+
+The script builds the MkDocs site under `docs/learning-modules`, links inline
+`source-code/...` references to GitHub, and renders the slide deck under
+`docs/slides`.
+
+To build only the learning-module site without updating the published output,
+run:
 
 ```bash
 mkdocs build

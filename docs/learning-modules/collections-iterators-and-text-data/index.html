@@ -51,6 +51,10 @@
                 <li class="toctree-l1"><a class="reference internal" href="../learning-module-structure/">Module Structure</a>
                 </li>
               </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../rust-false-friends-by-language/">False Friends By Programming Background</a>
+                </li>
+              </ul>
               <p class="caption"><span class="caption-text">Learning Modules</span></p>
               <ul class="current">
                   <li class="toctree-l1"><a class="reference internal" href="../getting-started-with-rust-projects/">1. Getting Started With Rust Projects</a>
@@ -204,106 +208,92 @@ summaries, and count or classify tokens.</p>
 <p>A <code>Vec&lt;T&gt;</code> stores a growable sequence of values of the same type. The
 <code>iterators</code> example reads two numeric columns from a CSV file and stores them in
 separate vectors:</p>
-<pre><code class="language-bash">cd source-code/iterators
-cargo run -- --file data.txt
-</code></pre>
+<pre class="highlight"><code class="language-bash">cd source-code/iterators
+cargo run -- --file data.txt</code></pre>
 <p>The relevant setup is:</p>
-<pre><code class="language-rust">let mut xs = Vec::new();
-let mut ys = Vec::new();
-</code></pre>
+<pre class="highlight"><code class="language-rust">let mut xs = Vec::new();
+let mut ys = Vec::new();</code></pre>
 <p>Values are appended with <code>push</code>:</p>
-<pre><code class="language-rust">xs.push(value.x);
-ys.push(value.y);
-</code></pre>
+<pre class="highlight"><code class="language-rust">xs.push(value.x);
+ys.push(value.y);</code></pre>
 <p>The vectors are mutable because reading the file grows them one record at a
 time.</p>
 <h2 id="reading-structured-text-with-csv-and-serde">Reading Structured Text With <code>csv</code> And <code>serde</code><a class="headerlink" href="#reading-structured-text-with-csv-and-serde" title="Permanent link">&para;</a></h2>
 <p>The <code>iterators</code> example uses the <code>csv</code> crate to read records and <code>serde</code> to
 deserialize each record into a Rust struct:</p>
-<pre><code class="language-rust">#[derive(Deserialize, Debug)]
+<pre class="highlight"><code class="language-rust">#[derive(Deserialize, Debug)]
 struct Values {
     x: f64,
     y: f64,
-}
-</code></pre>
+}</code></pre>
 <p>The file is opened through the CSV reader:</p>
-<pre><code class="language-rust">let mut reader = csv::Reader::from_path(args.file)?;
-</code></pre>
+<pre class="highlight"><code class="language-rust">let mut reader = csv::Reader::from_path(args.file)?;</code></pre>
 <p>Each record is deserialized in a loop:</p>
-<pre><code class="language-rust">for result in reader.deserialize() {
+<pre class="highlight"><code class="language-rust">for result in reader.deserialize() {
     let value: Values = result?;
     xs.push(value.x);
     ys.push(value.y);
-}
-</code></pre>
+}</code></pre>
 <p>The important pattern is that external text data is converted into typed Rust
 values near the input boundary. The rest of the program can then work with
 <code>Vec&lt;f64&gt;</code> rather than raw strings.</p>
 <h2 id="borrowed-iteration-and-copied">Borrowed Iteration And <code>copied</code><a class="headerlink" href="#borrowed-iteration-and-copied" title="Permanent link">&para;</a></h2>
 <p>Calling <code>iter</code> on a vector yields references to the elements:</p>
-<pre><code class="language-rust">xs.iter()
-</code></pre>
+<pre class="highlight"><code class="language-rust">xs.iter()</code></pre>
 <p>For a <code>Vec&lt;f64&gt;</code>, this produces items of type <code>&amp;f64</code>. When the program wants
 independent <code>f64</code> values in the iterator pipeline, it can use <code>copied</code>:</p>
-<pre><code class="language-rust">let filtered_xs: Vec&lt;f64&gt; = xs
+<pre class="highlight"><code class="language-rust">let filtered_xs: Vec&lt;f64&gt; = xs
     .iter()
     .copied()
     .filter(|x| *x &gt;= 10.0)
-    .collect();
-</code></pre>
+    .collect();</code></pre>
 <p>The <code>copied</code> adapter is appropriate here because <code>f64</code> is a small scalar type
 that implements <code>Copy</code>.</p>
 <p>Without <code>copied</code>, the pipeline would operate on references. That is often fine,
 but collecting owned scalar values is clearer for this example.</p>
 <h2 id="filtering-values">Filtering Values<a class="headerlink" href="#filtering-values" title="Permanent link">&para;</a></h2>
 <p>The <code>filter</code> adapter keeps only values that satisfy a predicate:</p>
-<pre><code class="language-rust">let filtered_xs: Vec&lt;f64&gt; = xs
+<pre class="highlight"><code class="language-rust">let filtered_xs: Vec&lt;f64&gt; = xs
     .iter()
     .copied()
     .filter(|x| *x &gt;= 10.0)
-    .collect();
-</code></pre>
+    .collect();</code></pre>
 <p>The closure:</p>
-<pre><code class="language-rust">|x| *x &gt;= 10.0
-</code></pre>
+<pre class="highlight"><code class="language-rust">|x| *x &gt;= 10.0</code></pre>
 <p>decides whether each value should be kept.</p>
 <p>Iterator adapters are lazy. The pipeline does not produce the final vector
 until <code>collect</code> is called.</p>
 <h2 id="mapping-values">Mapping Values<a class="headerlink" href="#mapping-values" title="Permanent link">&para;</a></h2>
 <p>The <code>map</code> adapter transforms each item:</p>
-<pre><code class="language-rust">let cubed_xs: Vec&lt;f64&gt; = xs
+<pre class="highlight"><code class="language-rust">let cubed_xs: Vec&lt;f64&gt; = xs
     .iter()
     .copied()
     .map(|x| x.powi(3))
-    .collect();
-</code></pre>
+    .collect();</code></pre>
 <p>This pipeline reads the <code>x</code> values, copies each scalar value, computes its
 cube, and collects the results into a new vector.</p>
 <p>This is often clearer than writing a manual loop when the computation is a
 straightforward element-wise transformation.</p>
 <h2 id="collecting-results">Collecting Results<a class="headerlink" href="#collecting-results" title="Permanent link">&para;</a></h2>
 <p>The <code>collect</code> adapter consumes an iterator and builds a collection:</p>
-<pre><code class="language-rust">let cubed_xs: Vec&lt;f64&gt; = xs
+<pre class="highlight"><code class="language-rust">let cubed_xs: Vec&lt;f64&gt; = xs
     .iter()
     .copied()
     .map(|x| x.powi(3))
-    .collect();
-</code></pre>
+    .collect();</code></pre>
 <p>The type annotation is important:</p>
-<pre><code class="language-rust">Vec&lt;f64&gt;
-</code></pre>
+<pre class="highlight"><code class="language-rust">Vec&lt;f64&gt;</code></pre>
 <p>Rust can usually infer the iterator item type, but it often needs help knowing
 which collection type to build. The same iterator could sometimes be collected
 into a <code>Vec</code>, a <code>HashSet</code>, or another collection.</p>
 <h2 id="combining-iterators-with-zip">Combining Iterators With <code>zip</code><a class="headerlink" href="#combining-iterators-with-zip" title="Permanent link">&para;</a></h2>
 <p>The <code>zip</code> adapter combines two iterators into one iterator over 2-tuples:</p>
-<pre><code class="language-rust">let filtered_pairs: Vec&lt;(f64, f64)&gt; = xs
+<pre class="highlight"><code class="language-rust">let filtered_pairs: Vec&lt;(f64, f64)&gt; = xs
     .iter()
     .copied()
     .zip(ys.iter().copied())
     .filter(|(x, _)| *x &gt;= 10.0)
-    .collect();
-</code></pre>
+    .collect();</code></pre>
 <p>Here, the <code>x</code> and <code>y</code> columns are combined again after being stored in separate
 vectors. The filter then keeps only 2-tuples whose <code>x</code> value is at least
 <code>10.0</code>.</p>
@@ -312,74 +302,63 @@ processed together.</p>
 <h2 id="splitting-2-tuples-with-unzip">Splitting 2-Tuples With <code>unzip</code><a class="headerlink" href="#splitting-2-tuples-with-unzip" title="Permanent link">&para;</a></h2>
 <p>The inverse operation is <code>unzip</code>, which splits an iterator over 2-tuples into
 two collections:</p>
-<pre><code class="language-rust">let (filtered_xs_unpacked, filtered_ys_unpacked): (Vec&lt;f64&gt;, Vec&lt;f64&gt;) =
+<pre class="highlight"><code class="language-rust">let (filtered_xs_unpacked, filtered_ys_unpacked): (Vec&lt;f64&gt;, Vec&lt;f64&gt;) =
     filtered_pairs
         .iter()
         .copied()
-        .unzip();
-</code></pre>
+        .unzip();</code></pre>
 <p>The result type is written explicitly:</p>
-<pre><code class="language-rust">(Vec&lt;f64&gt;, Vec&lt;f64&gt;)
-</code></pre>
+<pre class="highlight"><code class="language-rust">(Vec&lt;f64&gt;, Vec&lt;f64&gt;)</code></pre>
 <p>This tells Rust that the first components should be collected into one vector
 and the second components into another vector.</p>
 <h2 id="reductions-with-sum-fold-and-scan">Reductions With <code>sum</code>, <code>fold</code>, And <code>scan</code><a class="headerlink" href="#reductions-with-sum-fold-and-scan" title="Permanent link">&para;</a></h2>
 <p>Some iterator operations reduce many values to one value. The <code>iterators</code>
 example computes the sum of the <code>y</code> values:</p>
-<pre><code class="language-rust">let sum_y: f64 = ys.iter().sum();
-</code></pre>
+<pre class="highlight"><code class="language-rust">let sum_y: f64 = ys.iter().sum();</code></pre>
 <p>The type annotation tells Rust which numeric type the sum should produce.</p>
 <p>For more general accumulation, use <code>fold</code>:</p>
-<pre><code class="language-rust">let sum_of_squares = xs
+<pre class="highlight"><code class="language-rust">let sum_of_squares = xs
     .iter()
     .copied()
-    .fold(0.0, |accumulator, x| accumulator + x * x);
-</code></pre>
+    .fold(0.0, |accumulator, x| accumulator + x * x);</code></pre>
 <p><code>fold</code> carries an accumulator through the iterator and returns the final
 accumulated value.</p>
 <p>Use <code>scan</code> when the intermediate accumulated states are also part of the
 result:</p>
-<pre><code class="language-rust">let cumulative_sum: Vec&lt;f64&gt; = xs
+<pre class="highlight"><code class="language-rust">let cumulative_sum: Vec&lt;f64&gt; = xs
     .iter()
     .copied()
     .scan(0.0, |state, x| {
         *state += x;
         Some(*state)
     })
-    .collect();
-</code></pre>
+    .collect();</code></pre>
 <p>This produces the running sum after each input value. Conceptually, <code>fold</code>
 returns only the final accumulated value, while <code>scan</code> yields the sequence of
 accumulated states.</p>
 <h2 id="adding-indices-with-enumerate">Adding Indices With <code>enumerate</code><a class="headerlink" href="#adding-indices-with-enumerate" title="Permanent link">&para;</a></h2>
 <p>The <code>enumerate</code> adapter attaches an index to each item:</p>
-<pre><code class="language-rust">let indexed_xs: Vec&lt;(usize, f64)&gt; = xs
+<pre class="highlight"><code class="language-rust">let indexed_xs: Vec&lt;(usize, f64)&gt; = xs
     .iter()
     .copied()
     .enumerate()
-    .collect();
-</code></pre>
+    .collect();</code></pre>
 <p>This produces 2-tuples of the form:</p>
-<pre><code class="language-rust">(index, value)
-</code></pre>
+<pre class="highlight"><code class="language-rust">(index, value)</code></pre>
 <p>It can also be used directly in a loop:</p>
-<pre><code class="language-rust">for (i, y) in ys.iter().enumerate() {
-    println!(&quot;Index: {i}, y value: {y:.1}&quot;);
-}
-</code></pre>
+<pre class="highlight"><code class="language-rust">for (i, y) in ys.iter().enumerate() {
+    println!("Index: {i}, y value: {y:.1}");
+}</code></pre>
 <p>This is usually preferable to manually maintaining a separate counter.</p>
 <h2 id="hash-maps-for-counting">Hash Maps For Counting<a class="headerlink" href="#hash-maps-for-counting" title="Permanent link">&para;</a></h2>
 <p>A <code>HashMap&lt;K, V&gt;</code> stores values by key. The <code>hashmap-hashset</code> example uses a
 hash map to count nucleotide characters:</p>
-<pre><code class="language-bash">cd source-code/hashmap-hashset
-cargo run --bin count-nucleotides -- --file errors.txt
-</code></pre>
+<pre class="highlight"><code class="language-bash">cd source-code/hashmap-hashset
+cargo run --bin count-nucleotides -- --file errors.txt</code></pre>
 <p>The count map is created with:</p>
-<pre><code class="language-rust">let mut counts = HashMap::new();
-</code></pre>
+<pre class="highlight"><code class="language-rust">let mut counts = HashMap::new();</code></pre>
 <p>Each valid nucleotide updates its count:</p>
-<pre><code class="language-rust">*counts.entry(nucleotide).or_insert(0) += 1;
-</code></pre>
+<pre class="highlight"><code class="language-rust">*counts.entry(nucleotide).or_insert(0) += 1;</code></pre>
 <p>This pattern is common enough to read carefully:</p>
 <ul>
 <li><code>entry(nucleotide)</code> selects the map entry for that key.</li>
@@ -388,118 +367,101 @@ cargo run --bin count-nucleotides -- --file errors.txt
 </ul>
 <p>After processing the file, the program ensures that every valid nucleotide has
 an entry:</p>
-<pre><code class="language-rust">for nucleotide in VALID_NUCLEOTIDES {
+<pre class="highlight"><code class="language-rust">for nucleotide in VALID_NUCLEOTIDES {
     counts.entry(nucleotide).or_insert(0);
-    println!(&quot;{nucleotide}: {}&quot;, counts[&amp;nucleotide]);
-}
-</code></pre>
+    println!("{nucleotide}: {}", counts[&amp;nucleotide]);
+}</code></pre>
 <p>This makes the output stable even if a nucleotide did not occur in the input.</p>
 <h2 id="hash-sets-for-unique-values">Hash Sets For Unique Values<a class="headerlink" href="#hash-sets-for-unique-values" title="Permanent link">&para;</a></h2>
 <p>A <code>HashSet&lt;T&gt;</code> stores unique values. The same example uses a hash set to record
 which invalid tokens appeared in the input:</p>
-<pre><code class="language-rust">let mut error_tokens = HashSet::new();
-</code></pre>
+<pre class="highlight"><code class="language-rust">let mut error_tokens = HashSet::new();</code></pre>
 <p>When an invalid token is found, it is inserted:</p>
-<pre><code class="language-rust">error_tokens.insert(nucleotide);
-</code></pre>
+<pre class="highlight"><code class="language-rust">error_tokens.insert(nucleotide);</code></pre>
 <p>If the same invalid token appears many times, the set still stores it once.
 That makes <code>HashSet</code> a natural choice when the question is "which values were
 seen?" rather than "how many times did each value occur?"</p>
 <h2 id="buffered-text-input">Buffered Text Input<a class="headerlink" href="#buffered-text-input" title="Permanent link">&para;</a></h2>
 <p>The nucleotide-counting example reads a text file through a buffered reader:</p>
-<pre><code class="language-rust">let file = std::fs::File::open(args.file)
-    .expect(&quot;Failed to open the DNA sequence file&quot;);
-let reader = BufReader::new(file);
-</code></pre>
+<pre class="highlight"><code class="language-rust">let file = std::fs::File::open(args.file)
+    .expect("Failed to open the DNA sequence file");
+let reader = BufReader::new(file);</code></pre>
 <p>Buffered input avoids asking the operating system for tiny pieces of data one
 at a time. This matters for larger files.</p>
 <p>The example then iterates over bytes:</p>
-<pre><code class="language-rust">for byte in reader.bytes() {
-    let nucleotide = byte.expect(&quot;Failed to read the DNA sequence file&quot;) as char;
+<pre class="highlight"><code class="language-rust">for byte in reader.bytes() {
+    let nucleotide = byte.expect("Failed to read the DNA sequence file") as char;
     // process nucleotide
-}
-</code></pre>
+}</code></pre>
 <p>Byte-wise processing is appropriate here because the input is simple
 ASCII-like sequence data. For general Unicode text, line-based or string-based
 processing is usually more appropriate.</p>
 <h2 id="line-based-string-processing">Line-Based String Processing<a class="headerlink" href="#line-based-string-processing" title="Permanent link">&para;</a></h2>
 <p>The <code>strings</code> example uses line-based input for timestamped records:</p>
-<pre><code class="language-bash">cd source-code/strings
-cargo run -- --file data.txt
-</code></pre>
+<pre class="highlight"><code class="language-bash">cd source-code/strings
+cargo run -- --file data.txt</code></pre>
 <p>The input is a small instrument-log format:</p>
-<pre><code class="language-text">time: 2023-06-01T12:00:00Z
+<pre class="highlight"><code class="language-text">time: 2023-06-01T12:00:00Z
 temperature: 42.3
 pressure: 1013.25
-----
-</code></pre>
+----</code></pre>
 <p>Line-based processing keeps the input format visible:</p>
-<pre><code class="language-rust">let reader = BufReader::new(file);
+<pre class="highlight"><code class="language-rust">let reader = BufReader::new(file);
 
 for line in reader.lines() {
-    let line = line.expect(&quot;Failed to read line&quot;);
+    let line = line.expect("Failed to read line");
     // process one line
-}
-</code></pre>
+}</code></pre>
 <p>Each call to <code>lines</code> yields an owned <code>String</code>. The program builds a record in
 another owned <code>String</code>:</p>
-<pre><code class="language-rust">record_buffer.push_str(&amp;line);
-record_buffer.push('\n');
-</code></pre>
+<pre class="highlight"><code class="language-rust">record_buffer.push_str(&amp;line);
+record_buffer.push('\n');</code></pre>
 <p>When a complete record has been collected, parsing borrows the string data:</p>
-<pre><code class="language-rust">fn parse_record(record_str: &amp;str) -&gt; Result&lt;Record, String&gt; {
+<pre class="highlight"><code class="language-rust">fn parse_record(record_str: &amp;str) -&gt; Result&lt;Record, String&gt; {
     // parse fields from borrowed text
-}
-</code></pre>
+}</code></pre>
 <p>This signature says that parsing reads the text but does not take ownership of
 the buffer.</p>
 <h2 id="splitting-and-parsing-fields">Splitting And Parsing Fields<a class="headerlink" href="#splitting-and-parsing-fields" title="Permanent link">&para;</a></h2>
 <p>The record parser extracts values from lines such as <code>temperature: 42.3</code>.
 Numeric values can be parsed from trimmed strings:</p>
-<pre><code class="language-rust">let temperature_val = temp_str
+<pre class="highlight"><code class="language-rust">let temperature_val = temp_str
     .trim()
-    .parse::&lt;f64&gt;();
-</code></pre>
+    .parse::&lt;f64&gt;();</code></pre>
 <p>The timestamp line is deliberately a little trickier:</p>
-<pre><code class="language-text">time: 2023-06-01T12:00:00Z
-</code></pre>
+<pre class="highlight"><code class="language-text">time: 2023-06-01T12:00:00Z</code></pre>
 <p>The timestamp value itself contains colons, so the example uses <code>split_once</code>
 for that field:</p>
-<pre><code class="language-rust">line.split_once(':').map(|(_, value)| value)
-</code></pre>
+<pre class="highlight"><code class="language-rust">line.split_once(':').map(|(_, value)| value)</code></pre>
 <p>This is a useful parsing lesson: a method that is sufficient for one field may
 be wrong for another field if the data format changes the assumptions.</p>
 <h2 id="date-and-time-values">Date And Time Values<a class="headerlink" href="#date-and-time-values" title="Permanent link">&para;</a></h2>
 <p>Rust's standard library has <code>std::time::Duration</code>, <code>Instant</code>, and
 <code>SystemTime</code>, but it does not provide full calendar date/time parsing. The
 <code>strings</code> example therefore uses the <code>chrono</code> crate:</p>
-<pre><code class="language-rust">use chrono::{DateTime, Utc};
-</code></pre>
+<pre class="highlight"><code class="language-rust">use chrono::{DateTime, Utc};</code></pre>
 <p>The record stores a parsed UTC timestamp:</p>
-<pre><code class="language-rust">struct Record {
+<pre class="highlight"><code class="language-rust">struct Record {
     time: DateTime&lt;Utc&gt;,
     temperature: f64,
     pressure: f64,
-}
-</code></pre>
+}</code></pre>
 <p>Once timestamps are parsed, the program can compute the covered time span:</p>
-<pre><code class="language-rust">let duration = last - first;
-let days = duration.num_seconds() as f64 / 86400.0;
-</code></pre>
+<pre class="highlight"><code class="language-rust">let duration = last - first;
+let days = duration.num_seconds() as f64 / 86400.0;</code></pre>
 <p>This keeps date/time handling explicit and avoids treating timestamps as raw
 strings after the input boundary.</p>
 <h2 id="matching-parser-and-aggregator-state">Matching Parser And Aggregator State<a class="headerlink" href="#matching-parser-and-aggregator-state" title="Permanent link">&para;</a></h2>
 <p>The same example also shows <code>match</code> on parser results:</p>
-<pre><code class="language-rust">match parse_record(&amp;record_buffer) {
+<pre class="highlight"><code class="language-rust">match parse_record(&amp;record_buffer) {
     Ok(record) =&gt; aggregator.add_record(record),
     Err(err) =&gt; {
-        eprintln!(&quot;Failed to parse record:\n{}&quot;, record_buffer);
-        eprintln!(&quot;Error: {}&quot;, err);
+        eprintln!("Failed to parse record:\n{}", record_buffer);
+        eprintln!("Error: {}", err);
     }
-}
-</code></pre>
+}</code></pre>
 <p>The aggregator uses a structural match on the pair of optional timestamps:</p>
-<pre><code class="language-rust">match (self.first_time, self.last_time) {
+<pre class="highlight"><code class="language-rust">match (self.first_time, self.last_time) {
     (None, None) =&gt; {
         self.first_time = Some(record.time);
         self.last_time = Some(record.time);
@@ -512,33 +474,30 @@ strings after the input boundary.</p>
             self.last_time = Some(record.time);
         }
     }
-    _ =&gt; unreachable!(&quot;first_time and last_time should be updated together&quot;),
-}
-</code></pre>
+    _ =&gt; unreachable!("first_time and last_time should be updated together"),
+}</code></pre>
 <p>This connects the earlier <code>match</code> discussion to data-processing code: patterns
 can describe the structure of ordinary values, not only which enum variant was
 selected at the command line.</p>
 <h2 id="structural-matching-while-parsing">Structural Matching While Parsing<a class="headerlink" href="#structural-matching-while-parsing" title="Permanent link">&para;</a></h2>
 <p>The <code>structural-matching</code> example keeps the same input format as <code>strings</code>, but
 uses a more direct <code>match</code> while parsing fields:</p>
-<pre><code class="language-bash">cd source-code/structural-matching
-cargo run -- --file data.txt
-</code></pre>
+<pre class="highlight"><code class="language-bash">cd source-code/structural-matching
+cargo run -- --file data.txt</code></pre>
 <p>The parser matches on the structure returned by <code>split_once</code>:</p>
-<pre><code class="language-rust">match line.split_once(':') {
-    Some((&quot;time&quot;, value)) =&gt; match value.trim().parse::&lt;DateTime&lt;Utc&gt;&gt;() {
+<pre class="highlight"><code class="language-rust">match line.split_once(':') {
+    Some(("time", value)) =&gt; match value.trim().parse::&lt;DateTime&lt;Utc&gt;&gt;() {
         Ok(parsed_time) =&gt; time = Some(parsed_time),
-        Err(_) =&gt; return Err(format!(&quot;Failed to parse time: {}&quot;, value.trim())),
+        Err(_) =&gt; return Err(format!("Failed to parse time: {}", value.trim())),
     },
-    Some((&quot;temperature&quot;, value)) =&gt; {
+    Some(("temperature", value)) =&gt; {
         // parse temperature
     }
-    Some((&quot;pressure&quot;, value)) =&gt; {
+    Some(("pressure", value)) =&gt; {
         // parse pressure
     }
     Some(_) | None =&gt; {}
-}
-</code></pre>
+}</code></pre>
 <p>The arm <code>Some(("time", value))</code> checks several things at once:</p>
 <ul>
 <li>the line contained a separator;</li>
@@ -551,19 +510,17 @@ matching improves readability and when it would be too much structure for a
 small parsing task.</p>
 <h2 id="buffered-text-output">Buffered Text Output<a class="headerlink" href="#buffered-text-output" title="Permanent link">&para;</a></h2>
 <p>The data-generation and error-injection programs use buffered writers:</p>
-<pre><code class="language-rust">let file = std::fs::File::create(args.file).expect(&quot;Unable to create file&quot;);
-let mut output = std::io::BufWriter::new(file);
-</code></pre>
+<pre class="highlight"><code class="language-rust">let file = std::fs::File::create(args.file).expect("Unable to create file");
+let mut output = std::io::BufWriter::new(file);</code></pre>
 <p>Values are written with <code>write!</code> and <code>writeln!</code>:</p>
-<pre><code class="language-rust">write!(output, &quot;{random_nucleotide}&quot;).expect(&quot;Unable to write file&quot;);
-writeln!(output).expect(&quot;Unable to write file&quot;);
-</code></pre>
+<pre class="highlight"><code class="language-rust">write!(output, "{random_nucleotide}").expect("Unable to write file");
+writeln!(output).expect("Unable to write file");</code></pre>
 <p>Buffered output is the counterpart to buffered input: it groups many small
 writes into fewer larger writes.</p>
 <h2 id="matching-while-processing-input">Matching While Processing Input<a class="headerlink" href="#matching-while-processing-input" title="Permanent link">&para;</a></h2>
 <p>The nucleotide-counting example classifies each character with <code>match</code> and
 match guards:</p>
-<pre><code class="language-rust">match nucleotide {
+<pre class="highlight"><code class="language-rust">match nucleotide {
     nucleotide if is_valid_nucleotide(nucleotide) =&gt; {
         *counts.entry(nucleotide).or_insert(0) += 1;
     }
@@ -571,8 +528,7 @@ match guards:</p>
     _ =&gt; {
         error_tokens.insert(nucleotide);
     }
-}
-</code></pre>
+}</code></pre>
 <p>The cases are:</p>
 <ul>
 <li>valid nucleotide: increment its count;</li>
@@ -583,12 +539,11 @@ match guards:</p>
 <h2 id="suggested-hands-on-work">Suggested Hands-On Work<a class="headerlink" href="#suggested-hands-on-work" title="Permanent link">&para;</a></h2>
 <p>Use this sequence as a practical lab.</p>
 <ol>
-<li>Run the iterator example:</li>
-</ol>
-<p><code>bash
-   cd source-code/iterators
-   cargo run -- --file data.txt</code></p>
-<ol>
+<li>
+<p>Run the iterator example:</p>
+<pre class="highlight"><code class="language-bash">cd source-code/iterators
+cargo run -- --file data.txt</code></pre>
+</li>
 <li>
 <p>Change the <code>filter</code> threshold from <code>10.0</code> to another value and inspect the
    output.</p>
@@ -608,12 +563,9 @@ match guards:</p>
 </li>
 <li>
 <p>Run the nucleotide-counting example:</p>
+<pre class="highlight"><code class="language-bash">cd source-code/hashmap-hashset
+cargo run --bin count-nucleotides -- --file errors.txt</code></pre>
 </li>
-</ol>
-<p><code>bash
-   cd source-code/hashmap-hashset
-   cargo run --bin count-nucleotides -- --file errors.txt</code></p>
-<ol>
 <li>
 <p>Add a second <code>HashMap</code> that counts invalid tokens instead of storing only
    the unique invalid tokens.</p>
@@ -624,16 +576,14 @@ match guards:</p>
 </li>
 <li>
 <p>Run the data generator and error injector to produce a new input file:</p>
-<p><code>bash
-cargo run --bin generate-data -- --count 200 --file data.txt
+<pre class="highlight"><code class="language-bash">cargo run --bin generate-data -- --count 200 --file data.txt
 cargo run --bin read-errors -- --file data.txt --output errors.txt --error-rate 0.2
-cargo run --bin count-nucleotides -- --file errors.txt</code></p>
+cargo run --bin count-nucleotides -- --file errors.txt</code></pre>
 </li>
 <li>
 <p>Run the timestamped string parser:</p>
-<p><code>bash
-cd ../strings
-cargo run -- --file data.txt</code></p>
+<pre class="highlight"><code class="language-bash">cd ../strings
+cargo run -- --file data.txt</code></pre>
 </li>
 <li>
 <p>Change one timestamp, temperature, or pressure value and inspect how the
@@ -644,9 +594,8 @@ cargo run -- --file data.txt</code></p>
 </li>
 <li>
 <p>Run the structural-matching variant:</p>
-<p><code>bash
-cd ../structural-matching
-cargo run -- --file data.txt</code></p>
+<pre class="highlight"><code class="language-bash">cd ../structural-matching
+cargo run -- --file data.txt</code></pre>
 </li>
 <li>
 <p>Compare the parsing code in <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/strings"><code>source-code/strings</code></a> and

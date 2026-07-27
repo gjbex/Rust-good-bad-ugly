@@ -51,6 +51,10 @@
                 <li class="toctree-l1"><a class="reference internal" href="../learning-module-structure/">Module Structure</a>
                 </li>
               </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../rust-false-friends-by-language/">False Friends By Programming Background</a>
+                </li>
+              </ul>
               <p class="caption"><span class="caption-text">Learning Modules</span></p>
               <ul class="current">
                   <li class="toctree-l1"><a class="reference internal" href="../getting-started-with-rust-projects/">1. Getting Started With Rust Projects</a>
@@ -179,44 +183,40 @@ and control the number of worker threads when benchmarking or experimenting.</p>
 <p>In the Julia set computation, each output grid point is computed independently.
 For one grid point, the program starts from one complex value <code>z</code>, repeatedly
 applies:</p>
-<pre><code class="language-text">z &lt;- z * z + c
-</code></pre>
+<pre class="highlight"><code class="language-text">z &lt;- z * z + c</code></pre>
 <p>and records the number of iterations before escape.</p>
 <p>The computation for one grid point does not need the result from any other grid
 point. That independence is the main reason this is a good data-parallel
 example.</p>
 <h2 id="adding-rayon">Adding Rayon<a class="headerlink" href="#adding-rayon" title="Permanent link">&para;</a></h2>
 <p>The Rayon implementation adds the crate in <code>Cargo.toml</code>:</p>
-<pre><code class="language-toml">[dependencies]
-clap = { version = &quot;4.0&quot;, features = [&quot;derive&quot;] }
-num-complex = &quot;0.4&quot;
-rayon = &quot;1.10&quot;
-</code></pre>
+<pre class="highlight"><code class="language-toml">[dependencies]
+clap = { version = "4.0", features = ["derive"] }
+num-complex = "0.4"
+rayon = "1.10"</code></pre>
 <p>The program imports Rayon's prelude:</p>
-<pre><code class="language-rust">use rayon::prelude::*;
-</code></pre>
+<pre class="highlight"><code class="language-rust">use rayon::prelude::*;</code></pre>
 <p>The prelude brings the parallel iterator traits into scope, including the trait
 that provides <code>into_par_iter</code>.</p>
 <h2 id="serial-matrix-computation">Serial Matrix Computation<a class="headerlink" href="#serial-matrix-computation" title="Permanent link">&para;</a></h2>
 <p>The baseline computes the result matrix with nested loops:</p>
-<pre><code class="language-rust">fn iterate_z_matrix(z: &amp;Matrix&lt;Complex64&gt;, c: Complex64, max_iterations: usize) -&gt; Matrix&lt;usize&gt; {
+<pre class="highlight"><code class="language-rust">fn iterate_z_matrix(z: &amp;Matrix&lt;Complex64&gt;, c: Complex64, max_iterations: usize) -&gt; Matrix&lt;usize&gt; {
     let mut result = Matrix::new(z.rows(), z.cols(), 0);
     for i in 0..z.rows() {
         for j in 0..z.cols() {
-            let z_value = *z.get(i, j).expect(&quot;loop indices should be in bounds&quot;);
+            let z_value = *z.get(i, j).expect("loop indices should be in bounds");
             let iterations = iterate_z_value(z_value, c, max_iterations);
             result.set(i, j, iterations)
-                .expect(&quot;loop indices should be in bounds&quot;);
+                .expect("loop indices should be in bounds");
         }
     }
     result
-}
-</code></pre>
+}</code></pre>
 <p>This is clear and useful as a reference implementation, but it performs one
 grid point after another on one thread.</p>
 <h2 id="parallel-matrix-computation">Parallel Matrix Computation<a class="headerlink" href="#parallel-matrix-computation" title="Permanent link">&para;</a></h2>
 <p>The Rayon version computes a flat vector of result values in parallel:</p>
-<pre><code class="language-rust">fn iterate_z_matrix(z: &amp;Matrix&lt;Complex64&gt;, c: Complex64, max_iterations: usize) -&gt; Matrix&lt;usize&gt; {
+<pre class="highlight"><code class="language-rust">fn iterate_z_matrix(z: &amp;Matrix&lt;Complex64&gt;, c: Complex64, max_iterations: usize) -&gt; Matrix&lt;usize&gt; {
     let rows = z.rows();
     let cols = z.cols();
     let data: Vec&lt;usize&gt; = (0..rows * cols)
@@ -224,98 +224,84 @@ grid point after another on one thread.</p>
         .map(|index| {
             let row = index / cols;
             let col = index % cols;
-            let z_value = *z.get(row, col).expect(&quot;flat index should be in bounds&quot;);
+            let z_value = *z.get(row, col).expect("flat index should be in bounds");
             iterate_z_value(z_value, c, max_iterations)
         })
         .collect();
 
-    Matrix::from_vec(rows, cols, data).expect(&quot;parallel result should match matrix shape&quot;)
-}
-</code></pre>
+    Matrix::from_vec(rows, cols, data).expect("parallel result should match matrix shape")
+}</code></pre>
 <p>The range:</p>
-<pre><code class="language-rust">0..rows * cols
-</code></pre>
+<pre class="highlight"><code class="language-rust">0..rows * cols</code></pre>
 <p>represents all flat matrix indices. Rayon splits that range across worker
 threads.</p>
 <p>Each worker maps an index to a row and column:</p>
-<pre><code class="language-rust">let row = index / cols;
-let col = index % cols;
-</code></pre>
+<pre class="highlight"><code class="language-rust">let row = index / cols;
+let col = index % cols;</code></pre>
 <p>Then it computes one independent output value.</p>
 <h2 id="avoiding-shared-mutable-state">Avoiding Shared Mutable State<a class="headerlink" href="#avoiding-shared-mutable-state" title="Permanent link">&para;</a></h2>
 <p>A tempting parallel design would be to create one mutable result matrix and let
 multiple threads write into it. That would introduce shared mutable state.</p>
 <p>The Rayon version avoids that by having each parallel task produce one value:</p>
-<pre><code class="language-rust">.map(|index| {
+<pre class="highlight"><code class="language-rust">.map(|index| {
     // compute one usize
-})
-</code></pre>
+})</code></pre>
 <p>The values are collected into a new vector:</p>
-<pre><code class="language-rust">let data: Vec&lt;usize&gt; = ...collect();
-</code></pre>
+<pre class="highlight"><code class="language-rust">let data: Vec&lt;usize&gt; = ...collect();</code></pre>
 <p>After the parallel computation is complete, the vector is wrapped in a matrix:</p>
-<pre><code class="language-rust">Matrix::from_vec(rows, cols, data)
-</code></pre>
+<pre class="highlight"><code class="language-rust">Matrix::from_vec(rows, cols, data)</code></pre>
 <p>This pattern is often the cleanest first approach to data parallelism: compute
 independent output values and collect them, rather than coordinating concurrent
 writes.</p>
 <h2 id="creating-a-matrix-from-computed-data">Creating A Matrix From Computed Data<a class="headerlink" href="#creating-a-matrix-from-computed-data" title="Permanent link">&para;</a></h2>
 <p>The Rayon variant adds a constructor to the simple matrix type:</p>
-<pre><code class="language-rust">pub fn from_vec(rows: usize, cols: usize, data: Vec&lt;T&gt;) -&gt; Result&lt;Self, String&gt; {
+<pre class="highlight"><code class="language-rust">pub fn from_vec(rows: usize, cols: usize, data: Vec&lt;T&gt;) -&gt; Result&lt;Self, String&gt; {
     if data.len() == rows * cols {
         Ok(Self { rows, cols, data })
     } else {
         Err(format!(
-            &quot;matrix data has {} elements, but shape ({rows}, {cols}) requires {}&quot;,
+            "matrix data has {} elements, but shape ({rows}, {cols}) requires {}",
             data.len(),
             rows * cols
         ))
     }
-}
-</code></pre>
+}</code></pre>
 <p>This constructor checks that the flat vector has the expected number of
 elements. The parallel computation should produce exactly one value per grid
 point, but the check keeps the matrix invariant explicit.</p>
 <h2 id="running-the-parallel-version">Running The Parallel Version<a class="headerlink" href="#running-the-parallel-version" title="Permanent link">&para;</a></h2>
 <p>Run the Rayon implementation with:</p>
-<pre><code class="language-bash">cd source-code/julia-set/julia-set-rayon
-cargo run --release -- --width 800 --height 600 | ../view-fractal.py
-</code></pre>
+<pre class="highlight"><code class="language-bash">cd source-code/julia-set/julia-set-rayon
+cargo run --release -- --width 800 --height 600 | ../view-fractal.py</code></pre>
 <p>It uses the same command-line arguments and output format as the baseline, so
 the outputs can be compared directly.</p>
 <h2 id="controlling-the-number-of-threads">Controlling The Number Of Threads<a class="headerlink" href="#controlling-the-number-of-threads" title="Permanent link">&para;</a></h2>
 <p>Rayon uses a thread pool by default. The number of worker threads can be
 controlled with <code>RAYON_NUM_THREADS</code>:</p>
-<pre><code class="language-bash">RAYON_NUM_THREADS=4 cargo run --release -- --width 800 --height 600 | ../view-fractal.py
-</code></pre>
+<pre class="highlight"><code class="language-bash">RAYON_NUM_THREADS=4 cargo run --release -- --width 800 --height 600 | ../view-fractal.py</code></pre>
 <p>This is useful when comparing runs on shared machines or when studying scaling.</p>
 <p>For example:</p>
-<pre><code class="language-bash">RAYON_NUM_THREADS=1 cargo run --release -- --width 1200 --height 1200 &gt; /dev/null
+<pre class="highlight"><code class="language-bash">RAYON_NUM_THREADS=1 cargo run --release -- --width 1200 --height 1200 &gt; /dev/null
 RAYON_NUM_THREADS=2 cargo run --release -- --width 1200 --height 1200 &gt; /dev/null
-RAYON_NUM_THREADS=4 cargo run --release -- --width 1200 --height 1200 &gt; /dev/null
-</code></pre>
+RAYON_NUM_THREADS=4 cargo run --release -- --width 1200 --height 1200 &gt; /dev/null</code></pre>
 <p>Thread counts should be interpreted together with the available CPU cores and
 the size of the workload.</p>
 <h2 id="benchmarking">Benchmarking<a class="headerlink" href="#benchmarking" title="Permanent link">&para;</a></h2>
 <p>The Julia set directory includes a benchmark script that compares all Julia set
 implementations:</p>
-<pre><code class="language-bash">cd source-code/julia-set
-./benchmark.sh
-</code></pre>
+<pre class="highlight"><code class="language-bash">cd source-code/julia-set
+./benchmark.sh</code></pre>
 <p>The script builds all Julia set implementations in release mode, smoke-tests
 them, and compares them with <code>hyperfine</code>.</p>
 <p>For a quick experiment, reduce the number of runs:</p>
-<pre><code class="language-bash">WARMUP=1 RUNS=3 ./benchmark.sh
-</code></pre>
+<pre class="highlight"><code class="language-bash">WARMUP=1 RUNS=3 ./benchmark.sh</code></pre>
 <p>For a more meaningful Rayon comparison, use a larger image size:</p>
-<pre><code class="language-bash">WIDTH=1600 HEIGHT=1600 MAX_ITERATIONS=1000 WARMUP=1 RUNS=5 ./benchmark.sh
-</code></pre>
+<pre class="highlight"><code class="language-bash">WIDTH=1600 HEIGHT=1600 MAX_ITERATIONS=1000 WARMUP=1 RUNS=5 ./benchmark.sh</code></pre>
 <p>Very small workloads may make the parallel version look slower because thread
 pool and scheduling overhead dominate the actual computation.</p>
 <p>The Rayon implementation also has its own thread-scaling benchmark script:</p>
-<pre><code class="language-bash">cd source-code/julia-set/julia-set-rayon
-THREAD_COUNTS=&quot;1 2 4 8&quot; ./benchmark.sh
-</code></pre>
+<pre class="highlight"><code class="language-bash">cd source-code/julia-set/julia-set-rayon
+THREAD_COUNTS="1 2 4 8" ./benchmark.sh</code></pre>
 <p>This script builds only the Rayon implementation and runs it repeatedly with
 different <code>RAYON_NUM_THREADS</code> values.</p>
 <h2 id="when-rayon-is-a-good-fit">When Rayon Is A Good Fit<a class="headerlink" href="#when-rayon-is-a-good-fit" title="Permanent link">&para;</a></h2>
@@ -338,29 +324,25 @@ different <code>RAYON_NUM_THREADS</code> values.</p>
 <h2 id="suggested-hands-on-work">Suggested Hands-On Work<a class="headerlink" href="#suggested-hands-on-work" title="Permanent link">&para;</a></h2>
 <p>Use this sequence as a practical lab.</p>
 <ol>
-<li>Run the serial baseline:</li>
-</ol>
-<p><code>bash
-   cd source-code/julia-set/julia-set-baseline
-   cargo run --release -- --width 400 --height 300 &gt; /tmp/julia-serial.txt</code></p>
-<ol>
-<li>Run the Rayon version with the same parameters:</li>
-</ol>
-<p><code>bash
-   cd ../julia-set-rayon
-   cargo run --release -- --width 400 --height 300 &gt; /tmp/julia-rayon.txt</code></p>
-<ol>
-<li>Compare the outputs:</li>
-</ol>
-<p><code>bash
-   diff /tmp/julia-serial.txt /tmp/julia-rayon.txt</code></p>
-<ol>
-<li>Run the Rayon version with different thread counts:</li>
-</ol>
-<p><code>bash
-   RAYON_NUM_THREADS=1 cargo run --release -- --width 1200 --height 1200 &gt; /dev/null
-   RAYON_NUM_THREADS=4 cargo run --release -- --width 1200 --height 1200 &gt; /dev/null</code></p>
-<ol>
+<li>
+<p>Run the serial baseline:</p>
+<pre class="highlight"><code class="language-bash">cd source-code/julia-set/julia-set-baseline
+cargo run --release -- --width 400 --height 300 &gt; /tmp/julia-serial.txt</code></pre>
+</li>
+<li>
+<p>Run the Rayon version with the same parameters:</p>
+<pre class="highlight"><code class="language-bash">cd ../julia-set-rayon
+cargo run --release -- --width 400 --height 300 &gt; /tmp/julia-rayon.txt</code></pre>
+</li>
+<li>
+<p>Compare the outputs:</p>
+<pre class="highlight"><code class="language-bash">diff /tmp/julia-serial.txt /tmp/julia-rayon.txt</code></pre>
+</li>
+<li>
+<p>Run the Rayon version with different thread counts:</p>
+<pre class="highlight"><code class="language-bash">RAYON_NUM_THREADS=1 cargo run --release -- --width 1200 --height 1200 &gt; /dev/null
+RAYON_NUM_THREADS=4 cargo run --release -- --width 1200 --height 1200 &gt; /dev/null</code></pre>
+</li>
 <li>
 <p>Run the benchmark script from <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/julia-set"><code>source-code/julia-set</code></a>.</p>
 </li>

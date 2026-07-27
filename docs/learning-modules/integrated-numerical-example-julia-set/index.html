@@ -51,6 +51,10 @@
                 <li class="toctree-l1"><a class="reference internal" href="../learning-module-structure/">Module Structure</a>
                 </li>
               </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../rust-false-friends-by-language/">False Friends By Programming Background</a>
+                </li>
+              </ul>
               <p class="caption"><span class="caption-text">Learning Modules</span></p>
               <ul class="current">
                   <li class="toctree-l1"><a class="reference internal" href="../getting-started-with-rust-projects/">1. Getting Started With Rust Projects</a>
@@ -192,12 +196,11 @@ implementations make different design choices.</p>
 how many iterations are needed before the complex recurrence escapes.</p>
 <h2 id="mathematical-core">Mathematical Core<a class="headerlink" href="#mathematical-core" title="Permanent link">&para;</a></h2>
 <p>The Julia set iteration is based on the recurrence:</p>
-<pre><code class="language-text">z &lt;- z * z + c
-</code></pre>
+<pre class="highlight"><code class="language-text">z &lt;- z * z + c</code></pre>
 <p>Here, <code>z</code> and <code>c</code> are complex numbers. The parameter <code>c</code> is fixed for one run,
 while the initial value of <code>z</code> varies over a grid in the complex plane.</p>
 <p>The scalar iteration is implemented as:</p>
-<pre><code class="language-rust">fn iterate_z_value(z: Complex64, c: Complex64, max_iterations: usize) -&gt; usize {
+<pre class="highlight"><code class="language-rust">fn iterate_z_value(z: Complex64, c: Complex64, max_iterations: usize) -&gt; usize {
     let mut z_n = z;
     for n in 0..max_iterations {
         if z_n.norm() &gt; 2.0 {
@@ -206,8 +209,7 @@ while the initial value of <code>z</code> varies over a grid in the complex plan
         z_n = z_n * z_n + c;
     }
     max_iterations
-}
-</code></pre>
+}</code></pre>
 <p>This function is a good example of keeping the scalar numerical kernel small:</p>
 <ul>
 <li>it receives one complex starting value;</li>
@@ -218,25 +220,21 @@ while the initial value of <code>z</code> varies over a grid in the complex plan
 <h2 id="complex-numbers">Complex Numbers<a class="headerlink" href="#complex-numbers" title="Permanent link">&para;</a></h2>
 <p>Rust's standard library does not provide a complex number type. The examples
 use <code>num-complex</code>:</p>
-<pre><code class="language-rust">use num_complex::Complex64;
-</code></pre>
+<pre class="highlight"><code class="language-rust">use num_complex::Complex64;</code></pre>
 <p>The fixed parameter is created from real and imaginary parts:</p>
-<pre><code class="language-rust">let c = Complex64::new(args.c_real, args.c_imag);
-</code></pre>
+<pre class="highlight"><code class="language-rust">let c = Complex64::new(args.c_real, args.c_imag);</code></pre>
 <p>Complex arithmetic then uses ordinary operators:</p>
-<pre><code class="language-rust">z_n = z_n * z_n + c;
-</code></pre>
+<pre class="highlight"><code class="language-rust">z_n = z_n * z_n + c;</code></pre>
 <p>The escape condition uses the complex norm:</p>
-<pre><code class="language-rust">if z_n.norm() &gt; 2.0 {
+<pre class="highlight"><code class="language-rust">if z_n.norm() &gt; 2.0 {
     return n;
-}
-</code></pre>
+}</code></pre>
 <p>This illustrates a common Rust pattern for scientific computing: use a crate
 for domain-specific numeric types that are not part of the standard library.</p>
 <h2 id="mapping-a-grid-to-the-complex-plane">Mapping A Grid To The Complex Plane<a class="headerlink" href="#mapping-a-grid-to-the-complex-plane" title="Permanent link">&para;</a></h2>
 <p>The grid is defined by a number of rows and columns. Each grid position is
 mapped to a point in the square domain from <code>-2.0</code> to <code>2.0</code> in both directions:</p>
-<pre><code class="language-rust">fn initialize_z(rows: usize, cols: usize) -&gt; Matrix&lt;Complex64&gt; {
+<pre class="highlight"><code class="language-rust">fn initialize_z(rows: usize, cols: usize) -&gt; Matrix&lt;Complex64&gt; {
     let mut z = Matrix::new(rows, cols, Complex64::new(0.0, 0.0));
     let domain_min = -2.0;
     let domain_max = 2.0;
@@ -250,12 +248,11 @@ mapped to a point in the square domain from <code>-2.0</code> to <code>2.0</code
                 domain_min + i as f64 * delta_im,
             );
             z.set(i, j, z_value)
-                .expect(&quot;loop indices should be in bounds&quot;);
+                .expect("loop indices should be in bounds");
         }
     }
     z
-}
-</code></pre>
+}</code></pre>
 <p>This combines several earlier topics:</p>
 <ul>
 <li>half-open ranges with <code>0..rows</code> and <code>0..cols</code>;</li>
@@ -267,36 +264,31 @@ mapped to a point in the square domain from <code>-2.0</code> to <code>2.0</code
 <h2 id="matrix-level-iteration">Matrix-Level Iteration<a class="headerlink" href="#matrix-level-iteration" title="Permanent link">&para;</a></h2>
 <p>Once the initial complex grid has been created, the program computes an
 iteration count for every element:</p>
-<pre><code class="language-rust">fn iterate_z_matrix(z: &amp;Matrix&lt;Complex64&gt;, c: Complex64, max_iterations: usize) -&gt; Matrix&lt;usize&gt; {
+<pre class="highlight"><code class="language-rust">fn iterate_z_matrix(z: &amp;Matrix&lt;Complex64&gt;, c: Complex64, max_iterations: usize) -&gt; Matrix&lt;usize&gt; {
     let mut result = Matrix::new(z.rows(), z.cols(), 0);
     for i in 0..z.rows() {
         for j in 0..z.cols() {
-            let z_value = *z.get(i, j).expect(&quot;loop indices should be in bounds&quot;);
+            let z_value = *z.get(i, j).expect("loop indices should be in bounds");
             let iterations = iterate_z_value(z_value, c, max_iterations);
             result.set(i, j, iterations)
-                .expect(&quot;loop indices should be in bounds&quot;);
+                .expect("loop indices should be in bounds");
         }
     }
     result
-}
-</code></pre>
+}</code></pre>
 <p>The input matrix is borrowed:</p>
-<pre><code class="language-rust">z: &amp;Matrix&lt;Complex64&gt;
-</code></pre>
+<pre class="highlight"><code class="language-rust">z: &amp;Matrix&lt;Complex64&gt;</code></pre>
 <p>The result matrix is owned and returned:</p>
-<pre><code class="language-rust">Matrix&lt;usize&gt;
-</code></pre>
+<pre class="highlight"><code class="language-rust">Matrix&lt;usize&gt;</code></pre>
 <p>This is a useful ownership pattern for numerical code: read from borrowed input
 data, construct new output data, and return ownership of the result.</p>
 <h2 id="baseline-implementation">Baseline Implementation<a class="headerlink" href="#baseline-implementation" title="Permanent link">&para;</a></h2>
 <p>The baseline implementation uses the custom matrix type introduced in earlier
 modules:</p>
-<pre><code class="language-text">source-code/julia-set/julia-set-baseline
-</code></pre>
+<pre class="highlight"><code class="language-text">source-code/julia-set/julia-set-baseline</code></pre>
 <p>Run it with:</p>
-<pre><code class="language-bash">cd source-code/julia-set/julia-set-baseline
-cargo run --release -- --width 800 --height 600 | ../view-fractal.py
-</code></pre>
+<pre class="highlight"><code class="language-bash">cd source-code/julia-set/julia-set-baseline
+cargo run --release -- --width 800 --height 600 | ../view-fractal.py</code></pre>
 <p>The baseline is valuable because it is explicit:</p>
 <ul>
 <li>grid initialization is written with nested loops;</li>
@@ -308,30 +300,25 @@ cargo run --release -- --width 800 --height 600 | ../view-fractal.py
 <h2 id="external-array-storage-with-mdarray">External Array Storage With <code>mdarray</code><a class="headerlink" href="#external-array-storage-with-mdarray" title="Permanent link">&para;</a></h2>
 <p>The <code>julia-set-mdarray</code> implementation replaces the custom matrix with the
 <code>mdarray</code> crate:</p>
-<pre><code class="language-text">source-code/julia-set/julia-set-mdarray
-</code></pre>
+<pre class="highlight"><code class="language-text">source-code/julia-set/julia-set-mdarray</code></pre>
 <p>It defines type aliases:</p>
-<pre><code class="language-rust">type MatrixC = DArray&lt;Complex64, 2&gt;;
+<pre class="highlight"><code class="language-rust">type MatrixC = DArray&lt;Complex64, 2&gt;;
 type MatrixCSlice = DSlice&lt;Complex64, 2&gt;;
-type MatrixI = DArray&lt;usize, 2&gt;;
-</code></pre>
+type MatrixI = DArray&lt;usize, 2&gt;;</code></pre>
 <p>The array is initialized with:</p>
-<pre><code class="language-rust">let mut z = MatrixC::from_elem([rows, cols], Complex64::new(0.0, 0.0));
-</code></pre>
+<pre class="highlight"><code class="language-rust">let mut z = MatrixC::from_elem([rows, cols], Complex64::new(0.0, 0.0));</code></pre>
 <p>Indexing uses array syntax:</p>
-<pre><code class="language-rust">z[[i, j]] = z_value;
-let z_value = z[[i, j]];
-</code></pre>
+<pre class="highlight"><code class="language-rust">z[[i, j]] = z_value;
+let z_value = z[[i, j]];</code></pre>
 <p>This version illustrates a common transition in scientific code: start with a
 small custom data structure to learn the mechanics, then use a dedicated array
 crate when the problem becomes more realistic.</p>
 <h2 id="expression-evaluation-variant">Expression Evaluation Variant<a class="headerlink" href="#expression-evaluation-variant" title="Permanent link">&para;</a></h2>
 <p>The <code>julia-set-mdarray-expr-eval</code> implementation keeps <code>mdarray</code> but uses
 expression evaluation for some matrix operations:</p>
-<pre><code class="language-text">source-code/julia-set/julia-set-mdarray-expr-eval
-</code></pre>
+<pre class="highlight"><code class="language-text">source-code/julia-set/julia-set-mdarray-expr-eval</code></pre>
 <p>Grid initialization is expressed as a function over indices:</p>
-<pre><code class="language-rust">expr::from_fn([rows, cols], |idx| {
+<pre class="highlight"><code class="language-rust">expr::from_fn([rows, cols], |idx| {
     let i = idx[0];
     let j = idx[1];
 
@@ -340,13 +327,11 @@ expression evaluation for some matrix operations:</p>
         domain_min + i as f64 * delta_im,
     )
 })
-.eval()
-</code></pre>
+.eval()</code></pre>
 <p>The matrix iteration also becomes more expression-oriented:</p>
-<pre><code class="language-rust">z.expr()
+<pre class="highlight"><code class="language-rust">z.expr()
     .map(|&amp;z_value| iterate_z_value(z_value, c, max_iterations))
-    .eval()
-</code></pre>
+    .eval()</code></pre>
 <p>This version is useful for comparison. It is shorter and more declarative, but
 it also relies more heavily on library abstractions. Learners can compare it
 with the explicit-loop implementation and discuss readability, control, and
@@ -354,29 +339,25 @@ performance.</p>
 <h2 id="toml-configuration-variant">TOML Configuration Variant<a class="headerlink" href="#toml-configuration-variant" title="Permanent link">&para;</a></h2>
 <p>The <code>julia-set-toml-config</code> implementation reads run parameters from a TOML
 file instead of taking each parameter separately from the command line:</p>
-<pre><code class="language-text">source-code/julia-set/julia-set-toml-config
-</code></pre>
+<pre class="highlight"><code class="language-text">source-code/julia-set/julia-set-toml-config</code></pre>
 <p>The command line selects the configuration file:</p>
-<pre><code class="language-bash">cd source-code/julia-set/julia-set-toml-config
-cargo run --release -- julia-set.toml | ../view-fractal.py
-</code></pre>
+<pre class="highlight"><code class="language-bash">cd source-code/julia-set/julia-set-toml-config
+cargo run --release -- julia-set.toml | ../view-fractal.py</code></pre>
 <p>The configuration structure is:</p>
-<pre><code class="language-rust">#[derive(Debug, Deserialize)]
+<pre class="highlight"><code class="language-rust">#[derive(Debug, Deserialize)]
 struct Config {
     max_iterations: usize,
     width: usize,
     height: usize,
     c_real: f64,
     c_imag: f64,
-}
-</code></pre>
+}</code></pre>
 <p>The file is read and deserialized with:</p>
-<pre><code class="language-rust">fn read_config(path: PathBuf) -&gt; Result&lt;Config, Box&lt;dyn Error&gt;&gt; {
+<pre class="highlight"><code class="language-rust">fn read_config(path: PathBuf) -&gt; Result&lt;Config, Box&lt;dyn Error&gt;&gt; {
     let config_text = fs::read_to_string(path)?;
     let config = toml::from_str(&amp;config_text)?;
     Ok(config)
-}
-</code></pre>
+}</code></pre>
 <p>This combines several earlier topics:</p>
 <ul>
 <li><code>clap</code> for command-line parsing;</li>
@@ -390,18 +371,15 @@ shared, or reused.</p>
 <h2 id="text-output-and-visualization">Text Output And Visualization<a class="headerlink" href="#text-output-and-visualization" title="Permanent link">&para;</a></h2>
 <p>The Rust programs print the iteration-count matrix as text. The visualization
 script reads that output and displays a heatmap:</p>
-<pre><code class="language-bash">cargo run --release -- --width 800 --height 600 | ../view-fractal.py
-</code></pre>
+<pre class="highlight"><code class="language-bash">cargo run --release -- --width 800 --height 600 | ../view-fractal.py</code></pre>
 <p>The Python helper can also read from a file:</p>
-<pre><code class="language-bash">./view-fractal.py julia-set-baseline/julia-set.txt
-</code></pre>
+<pre class="highlight"><code class="language-bash">./view-fractal.py julia-set-baseline/julia-set.txt</code></pre>
 <p>The script uses Plotly:</p>
-<pre><code class="language-python">go.Heatmap(
+<pre class="highlight"><code class="language-python">go.Heatmap(
     z=data,
-    colorscale=&quot;Viridis&quot;,
-    colorbar={&quot;title&quot;: &quot;Iterations&quot;},
-)
-</code></pre>
+    colorscale="Viridis",
+    colorbar={"title": "Iterations"},
+)</code></pre>
 <p>This division of labor is pragmatic: Rust computes the numerical data, and
 Python provides a lightweight visualization workflow.</p>
 <h2 id="comparing-implementations">Comparing Implementations<a class="headerlink" href="#comparing-implementations" title="Permanent link">&para;</a></h2>
@@ -419,17 +397,15 @@ variant makes easier to read, test, modify, or reuse.</p>
 <h2 id="suggested-hands-on-work">Suggested Hands-On Work<a class="headerlink" href="#suggested-hands-on-work" title="Permanent link">&para;</a></h2>
 <p>Use this sequence as a practical lab.</p>
 <ol>
-<li>Run the baseline implementation and visualize the result:</li>
-</ol>
-<p><code>bash
-   cd source-code/julia-set/julia-set-baseline
-   cargo run --release -- --width 400 --height 300 | ../view-fractal.py</code></p>
-<ol>
-<li>Change <code>c_real</code> and <code>c_imag</code> on the command line and compare the image:</li>
-</ol>
-<p><code>bash
-   cargo run --release -- --width 400 --height 300 --c-real -0.8 --c-imag 0.156 | ../view-fractal.py</code></p>
-<ol>
+<li>
+<p>Run the baseline implementation and visualize the result:</p>
+<pre class="highlight"><code class="language-bash">cd source-code/julia-set/julia-set-baseline
+cargo run --release -- --width 400 --height 300 | ../view-fractal.py</code></pre>
+</li>
+<li>
+<p>Change <code>c_real</code> and <code>c_imag</code> on the command line and compare the image:</p>
+<pre class="highlight"><code class="language-bash">cargo run --release -- --width 400 --height 300 --c-real -0.8 --c-imag 0.156 | ../view-fractal.py</code></pre>
+</li>
 <li>
 <p>Inspect <code>initialize_z</code> and identify where integer indices are converted to
    floating-point coordinates.</p>
@@ -447,12 +423,9 @@ variant makes easier to read, test, modify, or reuse.</p>
 </li>
 <li>
 <p>Run the TOML configuration implementation:</p>
+<pre class="highlight"><code class="language-bash">cd ../julia-set-toml-config
+cargo run --release -- julia-set.toml | ../view-fractal.py</code></pre>
 </li>
-</ol>
-<p><code>bash
-   cd ../julia-set-toml-config
-   cargo run --release -- julia-set.toml | ../view-fractal.py</code></p>
-<ol>
 <li>
 <p>Edit <code>julia-set.toml</code> to change the image size or complex parameter, then
    rerun the program.</p>

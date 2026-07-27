@@ -51,6 +51,10 @@
                 <li class="toctree-l1"><a class="reference internal" href="../learning-module-structure/">Module Structure</a>
                 </li>
               </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../rust-false-friends-by-language/">False Friends By Programming Background</a>
+                </li>
+              </ul>
               <p class="caption"><span class="caption-text">Learning Modules</span></p>
               <ul class="current">
                   <li class="toctree-l1"><a class="reference internal" href="../getting-started-with-rust-projects/">1. Getting Started With Rust Projects</a>
@@ -181,95 +185,81 @@ to learn when each program isolates one rule at a time.</p>
 </ul>
 <h2 id="immutable-by-default">Immutable By Default<a class="headerlink" href="#immutable-by-default" title="Permanent link">&para;</a></h2>
 <p>Rust bindings are immutable by default:</p>
-<pre><code class="language-rust">let x = 1.0;
-</code></pre>
+<pre class="highlight"><code class="language-rust">let x = 1.0;</code></pre>
 <p>Once <code>x</code> has been assigned, it cannot be changed unless the binding is declared
 with <code>mut</code>:</p>
-<pre><code class="language-rust">let mut x = 1.0;
-x += 0.1;
-</code></pre>
+<pre class="highlight"><code class="language-rust">let mut x = 1.0;
+x += 0.1;</code></pre>
 <p>The <code>mutable-variables</code> example uses a mutable <code>x</code> value while stepping through
 the points where a polynomial is evaluated:</p>
-<pre><code class="language-bash">cd source-code/mutable-variables
-cargo run -- --help
-</code></pre>
+<pre class="highlight"><code class="language-bash">cd source-code/mutable-variables
+cargo run -- --help</code></pre>
 <p>The relevant part is:</p>
-<pre><code class="language-rust">let mut x = x_min;
+<pre class="highlight"><code class="language-rust">let mut x = x_min;
 let delta_x = (x_max - x_min) / (nr_points as f64 - 1.0);
 
 for _ in 0..nr_points {
     let result = polynomial(x, args.a, args.b, args.c);
-    println!(&quot;{x} {result}&quot;);
+    println!("{x} {result}");
     x += delta_x;
-}
-</code></pre>
+}</code></pre>
 <p>The <code>mut</code> keyword says that the binding <code>x</code> may be assigned a new value. This
 does not make every value in the program mutable; mutation is still local and
 explicit.</p>
 <h2 id="mutable-references">Mutable References<a class="headerlink" href="#mutable-references" title="Permanent link">&para;</a></h2>
 <p>Sometimes a function needs to modify a value owned by its caller. Rust makes
 that visible with a mutable reference:</p>
-<pre><code class="language-rust">fn rhs(x: f64, dxdt: &amp;mut f64, _t: f64) {
+<pre class="highlight"><code class="language-rust">fn rhs(x: f64, dxdt: &amp;mut f64, _t: f64) {
     *dxdt = -x;
-}
-</code></pre>
+}</code></pre>
 <p>This appears in <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/mutable-borrowing"><code>source-code/mutable-borrowing</code></a>:</p>
-<pre><code class="language-bash">cd source-code/mutable-borrowing
-cargo run
-</code></pre>
+<pre class="highlight"><code class="language-bash">cd source-code/mutable-borrowing
+cargo run</code></pre>
 <p>The caller passes a mutable reference with <code>&amp;mut</code>:</p>
-<pre><code class="language-rust">rhs(x, &amp;mut dxdt, t);
-</code></pre>
+<pre class="highlight"><code class="language-rust">rhs(x, &amp;mut dxdt, t);</code></pre>
 <p>Inside the function, <code>dxdt</code> is a reference to a value owned elsewhere. The
 assignment uses <code>*dxdt</code> to write through the reference:</p>
-<pre><code class="language-rust">*dxdt = -x;
-</code></pre>
+<pre class="highlight"><code class="language-rust">*dxdt = -x;</code></pre>
 <p>This style is similar to a non-const reference parameter in C++. It is useful
 for explaining mutable borrowing, but it is not always the most idiomatic Rust
 API. For a simple computation, returning the computed value is often clearer:</p>
-<pre><code class="language-rust">fn rhs(x: f64, _t: f64) -&gt; f64 {
+<pre class="highlight"><code class="language-rust">fn rhs(x: f64, _t: f64) -&gt; f64 {
     -x
-}
-</code></pre>
+}</code></pre>
 <p>The important point is that mutation through a reference is explicit both in
 the function signature and at the call site.</p>
 <h2 id="copying-scalars">Copying Scalars<a class="headerlink" href="#copying-scalars" title="Permanent link">&para;</a></h2>
 <p>Simple scalar values such as <code>f64</code> implement the <code>Copy</code> trait. Assigning them
 to another binding copies the value:</p>
-<pre><code class="language-rust">let x = 5.0;
+<pre class="highlight"><code class="language-rust">let x = 5.0;
 let y = x;
-println!(&quot;x: {x}, y: {y}&quot;);
-</code></pre>
+println!("x: {x}, y: {y}");</code></pre>
 <p>After the assignment, both <code>x</code> and <code>y</code> can still be used. This is the behavior
 most programmers expect for small numeric values.</p>
 <p>The <code>copy-vs-move</code> example starts with this contrast:</p>
-<pre><code class="language-bash">cd source-code/copy-vs-move
-cargo run
-</code></pre>
+<pre class="highlight"><code class="language-bash">cd source-code/copy-vs-move
+cargo run</code></pre>
 <h2 id="moving-owned-data">Moving Owned Data<a class="headerlink" href="#moving-owned-data" title="Permanent link">&para;</a></h2>
 <p>Owned data structures such as <code>Vec&lt;f64&gt;</code> do not implement <code>Copy</code>. Assigning a
 vector to another binding moves ownership:</p>
-<pre><code class="language-rust">let xs = vec![1.0, 2.0, 3.0];
-let ys = xs;
-</code></pre>
+<pre class="highlight"><code class="language-rust">let xs = vec![1.0, 2.0, 3.0];
+let ys = xs;</code></pre>
 <p>After this assignment, <code>ys</code> owns the vector and <code>xs</code> can no longer be used. The
 data was not silently copied.</p>
 <p>The same rule applies when passing a vector by value to a function:</p>
-<pre><code class="language-rust">fn mean_move(values: Vec&lt;f64&gt;) -&gt; f64 {
+<pre class="highlight"><code class="language-rust">fn mean_move(values: Vec&lt;f64&gt;) -&gt; f64 {
     values.iter().sum::&lt;f64&gt;() / (values.len() as f64)
 }
 
 let xs = vec![1.0, 2.0, 3.0];
-let mean = mean_move(xs);
-</code></pre>
+let mean = mean_move(xs);</code></pre>
 <p>After the call, <code>xs</code> has been moved into <code>mean_move</code>. That is usually the wrong
 signature for a read-only computation, because computing a mean should not need
 to take ownership of the vector.</p>
 <h2 id="cloning-owned-data">Cloning Owned Data<a class="headerlink" href="#cloning-owned-data" title="Permanent link">&para;</a></h2>
 <p>If a real copy of owned data is needed, Rust makes that explicit with <code>clone</code>:</p>
-<pre><code class="language-rust">let xs = vec![1.0, 2.0, 3.0];
-let ys = xs.clone();
-</code></pre>
+<pre class="highlight"><code class="language-rust">let xs = vec![1.0, 2.0, 3.0];
+let ys = xs.clone();</code></pre>
 <p>After cloning, both vectors can be used because the vector contents have been
 copied into a separate allocation.</p>
 <p>This explicitness matters for performance. A vector clone may copy a large
@@ -278,74 +268,64 @@ assignment.</p>
 <h2 id="shared-borrowing">Shared Borrowing<a class="headerlink" href="#shared-borrowing" title="Permanent link">&para;</a></h2>
 <p>Most read-only functions should borrow data rather than take ownership of it.
 The <code>copy-vs-move</code> example includes:</p>
-<pre><code class="language-rust">fn mean_borrow(values: &amp;Vec&lt;f64&gt;) -&gt; f64 {
+<pre class="highlight"><code class="language-rust">fn mean_borrow(values: &amp;Vec&lt;f64&gt;) -&gt; f64 {
     values.iter().sum::&lt;f64&gt;() / (values.len() as f64)
-}
-</code></pre>
+}</code></pre>
 <p>The caller passes a shared reference:</p>
-<pre><code class="language-rust">let xs = vec![1.0, 2.0, 3.0];
+<pre class="highlight"><code class="language-rust">let xs = vec![1.0, 2.0, 3.0];
 let mean = mean_borrow(&amp;xs);
-println!(&quot;Mean of xs: {mean}&quot;);
-</code></pre>
+println!("Mean of xs: {mean}");</code></pre>
 <p>Because <code>mean_borrow</code> only borrows <code>xs</code>, ownership remains with the caller and
 <code>xs</code> can still be used after the function call.</p>
 <h2 id="prefer-slices-for-sequences">Prefer Slices For Sequences<a class="headerlink" href="#prefer-slices-for-sequences" title="Permanent link">&para;</a></h2>
 <p>For read-only sequence data, a slice is usually more flexible than <code>&amp;Vec&lt;T&gt;</code>:</p>
-<pre><code class="language-rust">fn mean_borrow_slice(values: &amp;[f64]) -&gt; f64 {
+<pre class="highlight"><code class="language-rust">fn mean_borrow_slice(values: &amp;[f64]) -&gt; f64 {
     values.iter().sum::&lt;f64&gt;() / (values.len() as f64)
-}
-</code></pre>
+}</code></pre>
 <p>A slice, <code>&amp;[f64]</code>, means "a borrowed view of contiguous <code>f64</code> values." It can
 refer to an entire vector, part of a vector, or other contiguous storage.</p>
 <p>The caller can pass a vector as a slice:</p>
-<pre><code class="language-rust">let xs = vec![1.0, 2.0, 3.0];
-let mean = mean_borrow_slice(&amp;xs);
-</code></pre>
+<pre class="highlight"><code class="language-rust">let xs = vec![1.0, 2.0, 3.0];
+let mean = mean_borrow_slice(&amp;xs);</code></pre>
 <p>This is a common Rust API design rule: if a function only needs to read a
 sequence, prefer <code>&amp;[T]</code> over <code>&amp;Vec&lt;T&gt;</code>.</p>
 <h2 id="mutable-slices">Mutable Slices<a class="headerlink" href="#mutable-slices" title="Permanent link">&para;</a></h2>
 <p>When a function needs to modify a sequence in place, it can take a mutable
 slice:</p>
-<pre><code class="language-rust">fn normalize(data: &amp;mut [f64]) {
+<pre class="highlight"><code class="language-rust">fn normalize(data: &amp;mut [f64]) {
     let mean_value = mean(data);
     for value in data.iter_mut() {
         *value /= mean_value;
     }
-}
-</code></pre>
+}</code></pre>
 <p>This appears in <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/borrowing-vectors"><code>source-code/borrowing-vectors</code></a>:</p>
-<pre><code class="language-bash">cd source-code/borrowing-vectors
-cargo run
-</code></pre>
+<pre class="highlight"><code class="language-bash">cd source-code/borrowing-vectors
+cargo run</code></pre>
 <p>The caller must have a mutable vector binding and must pass a mutable borrow:</p>
-<pre><code class="language-rust">let mut data = vec![3.1, 2.4, 5.6, 1.2, 4.8];
-normalize(&amp;mut data);
-</code></pre>
+<pre class="highlight"><code class="language-rust">let mut data = vec![3.1, 2.4, 5.6, 1.2, 4.8];
+normalize(&amp;mut data);</code></pre>
 <p>The <code>iter_mut</code> method produces mutable references to the elements. The loop
 writes through those references:</p>
-<pre><code class="language-rust">*value /= mean_value;
-</code></pre>
+<pre class="highlight"><code class="language-rust">*value /= mean_value;</code></pre>
 <p>Again, mutation is visible in the function signature, the call site, and the
 body of the loop.</p>
 <h2 id="borrowing-rules">Borrowing Rules<a class="headerlink" href="#borrowing-rules" title="Permanent link">&para;</a></h2>
 <p>Rust allows many shared references or one mutable reference, but not both at
 the same time when the references could overlap.</p>
 <p>This is accepted:</p>
-<pre><code class="language-rust">{
+<pre class="highlight"><code class="language-rust">{
     let first_value = &amp;data[0];
     let this_mean = mean(&amp;data);
-    println!(&quot;First value: {first_value}, no problem using data&quot;);
-}
-</code></pre>
+    println!("First value: {first_value}, no problem using data");
+}</code></pre>
 <p>Both borrows are read-only. The shared reference <code>first_value</code> is compatible
 with the shared borrow used by <code>mean</code>.</p>
 <p>This pattern is rejected:</p>
-<pre><code class="language-rust">{
+<pre class="highlight"><code class="language-rust">{
     let first_value = &amp;data[0];
     normalize(&amp;mut data);
-    println!(&quot;First value before normalization: {first_value}&quot;);
-}
-</code></pre>
+    println!("First value before normalization: {first_value}");
+}</code></pre>
 <p>The reference <code>first_value</code> points into <code>data</code> and is used after the call to
 <code>normalize</code>. Rust therefore rejects the mutable borrow in between, because
 <code>normalize(&amp;mut data)</code> could change the data while <code>first_value</code> is still
@@ -354,24 +334,21 @@ expected to refer to the old value.</p>
 referenced data is being modified elsewhere.</p>
 <h2 id="borrowed-references-in-collections">Borrowed References In Collections<a class="headerlink" href="#borrowed-references-in-collections" title="Permanent link">&para;</a></h2>
 <p>Borrowing can also be extended by storing references in another collection:</p>
-<pre><code class="language-rust">let xs = vec![1.0, 2.0, 3.0];
-let x_filtered: Vec&lt;&amp;f64&gt; = xs.iter().filter(|&amp;&amp;x| x &gt; 1.5).collect();
-</code></pre>
+<pre class="highlight"><code class="language-rust">let xs = vec![1.0, 2.0, 3.0];
+let x_filtered: Vec&lt;&amp;f64&gt; = xs.iter().filter(|&amp;&amp;x| x &gt; 1.5).collect();</code></pre>
 <p>The values in <code>x_filtered</code> are references into <code>xs</code>. As long as those
 references are used, <code>xs</code> remains borrowed.</p>
 <p>If independent scalar values are needed instead, copy the values out:</p>
-<pre><code class="language-rust">let x_filtered: Vec&lt;f64&gt; = xs.iter().filter(|&amp;&amp;x| x &gt; 1.5).copied().collect();
-</code></pre>
+<pre class="highlight"><code class="language-rust">let x_filtered: Vec&lt;f64&gt; = xs.iter().filter(|&amp;&amp;x| x &gt; 1.5).copied().collect();</code></pre>
 <p>The <code>copied</code> adapter turns <code>&amp;f64</code> items into independent <code>f64</code> values. After
 that, the filtered vector no longer borrows from <code>xs</code>.</p>
 <h2 id="returning-owned-values">Returning Owned Values<a class="headerlink" href="#returning-owned-values" title="Permanent link">&para;</a></h2>
 <p>Ownership can also be transferred from a function to its caller:</p>
-<pre><code class="language-rust">fn return_vector() -&gt; Vec&lt;f64&gt; {
+<pre class="highlight"><code class="language-rust">fn return_vector() -&gt; Vec&lt;f64&gt; {
     vec![1.0, 2.0, 3.0]
 }
 
-let xs = return_vector();
-</code></pre>
+let xs = return_vector();</code></pre>
 <p>The function creates a vector and returns ownership to the caller. This is a
 normal and efficient Rust pattern. Returning owned data does not mean the whole
 vector is copied element by element.</p>
@@ -386,19 +363,17 @@ vector is copied element by element.</p>
 <li>If the function creates new owned data, return it.</li>
 </ul>
 <p>For example, a mean function should usually read data without taking ownership:</p>
-<pre><code class="language-rust">fn mean(data: &amp;[f64]) -&gt; f64 {
+<pre class="highlight"><code class="language-rust">fn mean(data: &amp;[f64]) -&gt; f64 {
     let sum: f64 = data.iter().sum();
     sum / (data.len() as f64)
-}
-</code></pre>
+}</code></pre>
 <p>A normalization function can modify data in place:</p>
-<pre><code class="language-rust">fn normalize(data: &amp;mut [f64]) {
+<pre class="highlight"><code class="language-rust">fn normalize(data: &amp;mut [f64]) {
     let mean_value = mean(data);
     for value in data.iter_mut() {
         *value /= mean_value;
     }
-}
-</code></pre>
+}</code></pre>
 <p>These signatures communicate intent and let the compiler enforce it.</p>
 <h2 id="suggested-hands-on-work">Suggested Hands-On Work<a class="headerlink" href="#suggested-hands-on-work" title="Permanent link">&para;</a></h2>
 <p>Use this sequence as a practical lab.</p>
@@ -439,12 +414,11 @@ vector is copied element by element.</p>
 </li>
 <li>
 <p>Add a function that shifts all values in a mutable slice by a constant:</p>
-<p><code>rust
-fn shift(data: &amp;mut [f64], offset: f64) {
+<pre class="highlight"><code class="language-rust">fn shift(data: &amp;mut [f64], offset: f64) {
     for value in data.iter_mut() {
         *value += offset;
     }
-}</code></p>
+}</code></pre>
 </li>
 </ol>
 <h2 id="discussion-points">Discussion Points<a class="headerlink" href="#discussion-points" title="Permanent link">&para;</a></h2>

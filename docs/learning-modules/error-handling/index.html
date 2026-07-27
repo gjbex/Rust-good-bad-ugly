@@ -51,6 +51,10 @@
                 <li class="toctree-l1"><a class="reference internal" href="../learning-module-structure/">Module Structure</a>
                 </li>
               </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../rust-false-friends-by-language/">False Friends By Programming Background</a>
+                </li>
+              </ul>
               <p class="caption"><span class="caption-text">Learning Modules</span></p>
               <ul class="current">
                   <li class="toctree-l1"><a class="reference internal" href="../getting-started-with-rust-projects/">1. Getting Started With Rust Projects</a>
@@ -169,30 +173,26 @@ signature instead of silently producing invalid behavior.</p>
 </ul>
 <h2 id="missing-values-with-option">Missing Values With <code>Option</code><a class="headerlink" href="#missing-values-with-option" title="Permanent link">&para;</a></h2>
 <p><code>Option&lt;T&gt;</code> represents either a value of type <code>T</code> or no value:</p>
-<pre><code class="language-rust">Some(value)
-None
-</code></pre>
+<pre class="highlight"><code class="language-rust">Some(value)
+None</code></pre>
 <p>The matrix example uses <code>Option&lt;usize&gt;</code> for checked index calculation:</p>
-<pre><code class="language-rust">fn index(&amp;self, row: usize, col: usize) -&gt; Option&lt;usize&gt; {
+<pre class="highlight"><code class="language-rust">fn index(&amp;self, row: usize, col: usize) -&gt; Option&lt;usize&gt; {
     if row &lt; self.rows &amp;&amp; col &lt; self.cols {
         Some(row * self.cols + col)
     } else {
         None
     }
-}
-</code></pre>
+}</code></pre>
 <p>This function returns <code>Some(flat_index)</code> when the row and column are valid. It
 returns <code>None</code> when the requested element is outside the matrix.</p>
 <p>Run the example with:</p>
-<pre><code class="language-bash">cd source-code/error-handling
-cargo run -- --help
-</code></pre>
+<pre class="highlight"><code class="language-bash">cd source-code/error-handling
+cargo run -- --help</code></pre>
 <h2 id="transforming-option-with-map">Transforming <code>Option</code> With <code>map</code><a class="headerlink" href="#transforming-option-with-map" title="Permanent link">&para;</a></h2>
 <p>The <code>get</code> method uses the checked index to return a matrix value:</p>
-<pre><code class="language-rust">pub fn get(&amp;self, row: usize, col: usize) -&gt; Option&lt;f64&gt; {
+<pre class="highlight"><code class="language-rust">pub fn get(&amp;self, row: usize, col: usize) -&gt; Option&lt;f64&gt; {
     self.index(row, col).map(|index| self.data[index])
-}
-</code></pre>
+}</code></pre>
 <p>The <code>map</code> call transforms the value inside <code>Some</code>:</p>
 <ul>
 <li>If <code>index(row, col)</code> returns <code>Some(index)</code>, <code>map</code> applies the closure and
@@ -201,23 +201,20 @@ cargo run -- --help
 </ul>
 <p>This avoids a manual <code>match</code> for a simple transformation.</p>
 <p>The return type communicates the possibility of absence:</p>
-<pre><code class="language-rust">Option&lt;f64&gt;
-</code></pre>
+<pre class="highlight"><code class="language-rust">Option&lt;f64&gt;</code></pre>
 <p>A caller cannot ignore that possibility accidentally.</p>
 <h2 id="recoverable-failure-with-result">Recoverable Failure With <code>Result</code><a class="headerlink" href="#recoverable-failure-with-result" title="Permanent link">&para;</a></h2>
 <p><code>Result&lt;T, E&gt;</code> represents either success or failure:</p>
-<pre><code class="language-rust">Ok(value)
-Err(error)
-</code></pre>
+<pre class="highlight"><code class="language-rust">Ok(value)
+Err(error)</code></pre>
 <p>The matrix <code>set</code> method can fail if the requested index is out of bounds:</p>
-<pre><code class="language-rust">pub fn set(&amp;mut self, row: usize, col: usize, value: f64) -&gt; Result&lt;(), String&gt; {
+<pre class="highlight"><code class="language-rust">pub fn set(&amp;mut self, row: usize, col: usize, value: f64) -&gt; Result&lt;(), String&gt; {
     let index = self
         .index(row, col)
-        .ok_or_else(|| format!(&quot;matrix index ({row}, {col}) is out of bounds&quot;))?;
+        .ok_or_else(|| format!("matrix index ({row}, {col}) is out of bounds"))?;
     self.data[index] = value;
     Ok(())
-}
-</code></pre>
+}</code></pre>
 <p>The success type is <code>()</code> because a successful <code>set</code> operation does not need to
 return a meaningful value. It only needs to signal that the mutation succeeded.</p>
 <p>The error type is <code>String</code> because the example returns a human-readable error
@@ -225,70 +222,62 @@ message.</p>
 <h2 id="converting-option-to-result">Converting <code>Option</code> To <code>Result</code><a class="headerlink" href="#converting-option-to-result" title="Permanent link">&para;</a></h2>
 <p>The <code>index</code> helper returns <code>Option&lt;usize&gt;</code>, but <code>set</code> wants to return a
 <code>Result&lt;(), String&gt;</code>. The conversion happens here:</p>
-<pre><code class="language-rust">.ok_or_else(|| format!(&quot;matrix index ({row}, {col}) is out of bounds&quot;))?
-</code></pre>
+<pre class="highlight"><code class="language-rust">.ok_or_else(|| format!("matrix index ({row}, {col}) is out of bounds"))?</code></pre>
 <p><code>ok_or_else</code> converts:</p>
 <ul>
 <li><code>Some(index)</code> into <code>Ok(index)</code>;</li>
 <li><code>None</code> into <code>Err(message)</code>.</li>
 </ul>
 <p>The closure:</p>
-<pre><code class="language-rust">|| format!(&quot;matrix index ({row}, {col}) is out of bounds&quot;)
-</code></pre>
+<pre class="highlight"><code class="language-rust">|| format!("matrix index ({row}, {col}) is out of bounds")</code></pre>
 <p>constructs the error message only when it is needed.</p>
 <p>Use this pattern when absence is detected by one helper function, but the
 public operation should report a recoverable error with context.</p>
 <h2 id="the-operator">The <code>?</code> Operator<a class="headerlink" href="#the-operator" title="Permanent link">&para;</a></h2>
 <p>The <code>?</code> operator propagates an error from the current function:</p>
-<pre><code class="language-rust">let index = self
+<pre class="highlight"><code class="language-rust">let index = self
     .index(row, col)
-    .ok_or_else(|| format!(&quot;matrix index ({row}, {col}) is out of bounds&quot;))?;
-</code></pre>
+    .ok_or_else(|| format!("matrix index ({row}, {col}) is out of bounds"))?;</code></pre>
 <p>If the expression before <code>?</code> is <code>Ok(index)</code>, the <code>index</code> value is extracted and
 execution continues.</p>
 <p>If it is <code>Err(error)</code>, the current function returns early with that error.</p>
 <p>This keeps the successful path readable while still handling failure
 explicitly. Without <code>?</code>, the same code would need a <code>match</code>:</p>
-<pre><code class="language-rust">let index = match self
+<pre class="highlight"><code class="language-rust">let index = match self
     .index(row, col)
-    .ok_or_else(|| format!(&quot;matrix index ({row}, {col}) is out of bounds&quot;))
+    .ok_or_else(|| format!("matrix index ({row}, {col}) is out of bounds"))
 {
     Ok(index) =&gt; index,
     Err(error) =&gt; return Err(error),
-};
-</code></pre>
+};</code></pre>
 <p>The <code>?</code> operator is one of the main reasons Rust error-handling code can remain
 compact without hiding the fact that a function can fail.</p>
 <h2 id="handling-errors-at-the-call-site">Handling Errors At The Call Site<a class="headerlink" href="#handling-errors-at-the-call-site" title="Permanent link">&para;</a></h2>
 <p>The example fills the matrix using loop indices that are known to be in bounds:</p>
-<pre><code class="language-rust">for i in 0..matrix.rows() {
+<pre class="highlight"><code class="language-rust">for i in 0..matrix.rows() {
     for j in 0..matrix.cols() {
         matrix
             .set(i, j, (i * matrix.cols() + j) as f64)
-            .expect(&quot;loop indices should be in bounds&quot;);
+            .expect("loop indices should be in bounds");
     }
-}
-</code></pre>
+}</code></pre>
 <p>The call to <code>expect</code> says: if this operation fails, stop the program and print
 this message.</p>
 <p>That is acceptable here because failure would indicate a programming mistake in
 the loop bounds. The loops use <code>0..matrix.rows()</code> and <code>0..matrix.cols()</code>, so
 the indices should be valid.</p>
 <p>The same pattern appears when reading values back:</p>
-<pre><code class="language-rust">let value = matrix.get(i, j).expect(&quot;loop indices should be in bounds&quot;);
-</code></pre>
+<pre class="highlight"><code class="language-rust">let value = matrix.get(i, j).expect("loop indices should be in bounds");</code></pre>
 <p>Use <code>expect</code> when failure would mean the programmer's assumptions are wrong.
 For ordinary user input or file-system errors, returning or reporting the error
 is usually better than panicking.</p>
 <h2 id="option-or-result"><code>Option</code> Or <code>Result</code>?<a class="headerlink" href="#option-or-result" title="Permanent link">&para;</a></h2>
 <p>Use <code>Option&lt;T&gt;</code> when absence is expected and no additional explanation is
 needed:</p>
-<pre><code class="language-rust">fn index(&amp;self, row: usize, col: usize) -&gt; Option&lt;usize&gt;
-</code></pre>
+<pre class="highlight"><code class="language-rust">fn index(&amp;self, row: usize, col: usize) -&gt; Option&lt;usize&gt;</code></pre>
 <p>The caller only needs to know whether the index exists.</p>
 <p>Use <code>Result&lt;T, E&gt;</code> when failure should carry information:</p>
-<pre><code class="language-rust">fn set(&amp;mut self, row: usize, col: usize, value: f64) -&gt; Result&lt;(), String&gt;
-</code></pre>
+<pre class="highlight"><code class="language-rust">fn set(&amp;mut self, row: usize, col: usize, value: f64) -&gt; Result&lt;(), String&gt;</code></pre>
 <p>Here, an out-of-bounds write is a failed operation and the error message can
 explain what went wrong.</p>
 <p>As examples grow, <code>Result</code> becomes especially important for:</p>
@@ -316,35 +305,32 @@ assumptions. Recoverable errors are better represented with <code>Result</code>.
 bugs or unrecoverable internal assumptions.</p>
 <h2 id="toward-fallible-programs">Toward Fallible Programs<a class="headerlink" href="#toward-fallible-programs" title="Permanent link">&para;</a></h2>
 <p>Many real command-line programs have a fallible <code>main</code> function:</p>
-<pre><code class="language-rust">fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
+<pre class="highlight"><code class="language-rust">fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
     // fallible work
     Ok(())
-}
-</code></pre>
+}</code></pre>
 <p>This allows <code>?</code> to be used in <code>main</code> when opening files, reading data, parsing
 input, or writing output.</p>
 <p>The iterator module already uses this style when reading CSV data:</p>
-<pre><code class="language-rust">fn main() -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
+<pre class="highlight"><code class="language-rust">fn main() -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
     let mut reader = csv::Reader::from_path(args.file)?;
     for result in reader.deserialize() {
         let value: Values = result?;
         // use value
     }
     Ok(())
-}
-</code></pre>
+}</code></pre>
 <p>The exact error type can be refined later. At this stage, the important point
 is that errors are part of the function signature and can be propagated with
 <code>?</code>.</p>
 <h2 id="suggested-hands-on-work">Suggested Hands-On Work<a class="headerlink" href="#suggested-hands-on-work" title="Permanent link">&para;</a></h2>
 <p>Use this sequence as a practical lab.</p>
 <ol>
-<li>Run the matrix error-handling example:</li>
-</ol>
-<p><code>bash
-   cd source-code/error-handling
-   cargo run -- --rows 3 --cols 4</code></p>
-<ol>
+<li>
+<p>Run the matrix error-handling example:</p>
+<pre class="highlight"><code class="language-bash">cd source-code/error-handling
+cargo run -- --rows 3 --cols 4</code></pre>
+</li>
 <li>
 <p>Open <a href="https://github.com/gjbex/Rust-good-bad-ugly/blob/main/source-code/error-handling/src/matrix.rs"><code>source-code/error-handling/src/matrix.rs</code></a> and identify the methods
    that return <code>Option</code> and <code>Result</code>.</p>

@@ -341,20 +341,20 @@ Use this sequence as a practical lab.
 1. Run `source-code/structs-and-methods` and create matrices with different
    dimensions:
 
-   ```bash
-   cargo run -- --rows 2 --cols 5
-   ```
+    ```bash
+    cargo run -- --rows 2 --cols 5
+    ```
 
 2. Open `source-code/structs-and-methods/src/matrix.rs` and identify which
    fields are private and which methods are public.
 
 3. Add a public `len` method that returns the total number of stored elements:
 
-   ```rust
-   pub fn len(&self) -> usize {
-       self.data.len()
-   }
-   ```
+    ```rust
+    pub fn len(&self) -> usize {
+        self.data.len()
+    }
+    ```
 
 4. Call `matrix.len()` from `main.rs` and print the value.
 
@@ -363,11 +363,11 @@ Use this sequence as a practical lab.
 
 6. Add a private helper method to compute the flat index:
 
-   ```rust
-   fn index(&self, row: usize, col: usize) -> usize {
-       row * self.cols + col
-   }
-   ```
+    ```rust
+    fn index(&self, row: usize, col: usize) -> usize {
+        row * self.cols + col
+    }
+    ```
 
    Use it from both `get` and `set`.
 

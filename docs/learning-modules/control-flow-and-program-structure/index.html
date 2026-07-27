@@ -51,6 +51,10 @@
                 <li class="toctree-l1"><a class="reference internal" href="../learning-module-structure/">Module Structure</a>
                 </li>
               </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../rust-false-friends-by-language/">False Friends By Programming Background</a>
+                </li>
+              </ul>
               <p class="caption"><span class="caption-text">Learning Modules</span></p>
               <ul class="current">
                   <li class="toctree-l1"><a class="reference internal" href="../getting-started-with-rust-projects/">1. Getting Started With Rust Projects</a>
@@ -175,11 +179,10 @@ of well-defined alternatives.</p>
 <h2 id="branches-with-if-and-else">Branches With <code>if</code> And <code>else</code><a class="headerlink" href="#branches-with-if-and-else" title="Permanent link">&para;</a></h2>
 <p>The <code>control-flow</code> example computes greatest common divisors using a
 subtraction-based Euclidean algorithm:</p>
-<pre><code class="language-bash">cd source-code/control-flow
-cargo run
-</code></pre>
+<pre class="highlight"><code class="language-bash">cd source-code/control-flow
+cargo run</code></pre>
 <p>The key function is:</p>
-<pre><code class="language-rust">fn gcd(mut a: i32, mut b: i32) -&gt; i32 {
+<pre class="highlight"><code class="language-rust">fn gcd(mut a: i32, mut b: i32) -&gt; i32 {
     while a != b {
         if a &gt; b {
             a -= b;
@@ -188,8 +191,7 @@ cargo run
         }
     }
     a
-}
-</code></pre>
+}</code></pre>
 <p>The <code>if</code> expression chooses which value to update:</p>
 <ul>
 <li>If <code>a &gt; b</code>, subtract <code>b</code> from <code>a</code>.</li>
@@ -200,35 +202,31 @@ conditions. This is different from C and C++, where zero and nonzero integer
 values are often used as false and true.</p>
 <h2 id="loops-with-while">Loops With <code>while</code><a class="headerlink" href="#loops-with-while" title="Permanent link">&para;</a></h2>
 <p>A <code>while</code> loop repeats as long as its condition is true:</p>
-<pre><code class="language-rust">while a != b {
+<pre class="highlight"><code class="language-rust">while a != b {
     // update a or b
-}
-</code></pre>
+}</code></pre>
 <p>The <code>gcd</code> function continues until the two values are equal. At that point, the
 common value is the greatest common divisor and the function returns it.</p>
 <p>The parameters are written as <code>mut</code> because the algorithm updates local copies
 of <code>a</code> and <code>b</code>:</p>
-<pre><code class="language-rust">fn gcd(mut a: i32, mut b: i32) -&gt; i32
-</code></pre>
+<pre class="highlight"><code class="language-rust">fn gcd(mut a: i32, mut b: i32) -&gt; i32</code></pre>
 <p>The <code>mut</code> applies to the local bindings inside the function. It does not mean
 that the caller's variables are changed.</p>
 <h2 id="loops-with-for-and-ranges">Loops With <code>for</code> And Ranges<a class="headerlink" href="#loops-with-for-and-ranges" title="Permanent link">&para;</a></h2>
 <p>Rust's <code>for</code> loop iterates over values produced by an iterator. A common early
 example is a half-open integer range:</p>
-<pre><code class="language-rust">for i in 0..n {
-    println!(&quot;{i}&quot;);
-}
-</code></pre>
+<pre class="highlight"><code class="language-rust">for i in 0..n {
+    println!("{i}");
+}</code></pre>
 <p>The range <code>0..n</code> includes <code>0</code> and stops before <code>n</code>. This is the most common
 form when looping over indices or repeating something <code>n</code> times.</p>
 <p>Rust also has inclusive ranges. The <code>control-flow</code> example uses <code>..=</code> so that
 both endpoints are included:</p>
-<pre><code class="language-rust">for a in 1..=a_max {
+<pre class="highlight"><code class="language-rust">for a in 1..=a_max {
     for b in 1..=b_max {
-        println!(&quot;gcd({a}, {b}) = {}&quot;, gcd(a, b));
+        println!("gcd({a}, {b}) = {}", gcd(a, b));
     }
-}
-</code></pre>
+}</code></pre>
 <p>The range <code>1..=a_max</code> includes both <code>1</code> and <code>a_max</code>. By contrast, <code>1..a_max</code>
 would stop before <code>a_max</code>.</p>
 <p>Nested loops are useful for small tables or grid-like computations. Here they
@@ -236,74 +234,63 @@ compute <code>gcd(a, b)</code> for every pair of values in a small square domain
 <h2 id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h2>
 <p>The <code>numerical-function</code> example shows a function with several floating-point
 parameters and a floating-point return value:</p>
-<pre><code class="language-bash">cd source-code/numerical-function
-cargo run -- --help
-</code></pre>
+<pre class="highlight"><code class="language-bash">cd source-code/numerical-function
+cargo run -- --help</code></pre>
 <p>The polynomial function is:</p>
-<pre><code class="language-rust">fn polynomial(x: f64, a: f64, b: f64, c: f64) -&gt; f64 {
+<pre class="highlight"><code class="language-rust">fn polynomial(x: f64, a: f64, b: f64, c: f64) -&gt; f64 {
     a * x.powi(2) + b * x + c
-}
-</code></pre>
+}</code></pre>
 <p>The parameter types are written explicitly. The return type appears after
 <code>-&gt;</code>.</p>
 <p>The final expression in the function body is returned because it has no
 semicolon:</p>
-<pre><code class="language-rust">a * x.powi(2) + b * x + c
-</code></pre>
+<pre class="highlight"><code class="language-rust">a * x.powi(2) + b * x + c</code></pre>
 <p>Adding a semicolon would turn the expression into a statement, and the function
 would no longer return the computed value.</p>
 <h2 id="blocks-and-expressions">Blocks And Expressions<a class="headerlink" href="#blocks-and-expressions" title="Permanent link">&para;</a></h2>
 <p>Rust uses blocks delimited by braces:</p>
-<pre><code class="language-rust">{
+<pre class="highlight"><code class="language-rust">{
     let x = 2.0;
     x * x
-}
-</code></pre>
+}</code></pre>
 <p>Many Rust constructs are expressions, including blocks and <code>if</code> expressions.
 That means they can produce values. For example:</p>
-<pre><code class="language-rust">let weight = if i % 2 == 0 { 2.0 } else { 4.0 };
-</code></pre>
+<pre class="highlight"><code class="language-rust">let weight = if i % 2 == 0 { 2.0 } else { 4.0 };</code></pre>
 <p>This pattern appears in the Simpson quadrature implementation used by the
 <code>enum-match</code> example. Both branches must produce compatible types, because the
 whole <code>if</code> expression has one resulting type.</p>
 <h2 id="tuples">Tuples<a class="headerlink" href="#tuples" title="Permanent link">&para;</a></h2>
 <p>A tuple groups a fixed number of values together without defining a named
 struct type. Tuple types are written with parentheses:</p>
-<pre><code class="language-rust">let point: (f64, f64) = (1.0, 2.0);
-</code></pre>
+<pre class="highlight"><code class="language-rust">let point: (f64, f64) = (1.0, 2.0);</code></pre>
 <p>This is a 2-tuple containing two <code>f64</code> values. Rust does not have a separate
 standard <code>pair</code> type like C++ has <code>std::pair</code>; a pair of values is normally
 represented as a 2-tuple.</p>
 <p>Tuple fields can be accessed by position:</p>
-<pre><code class="language-rust">let x = point.0;
-let y = point.1;
-</code></pre>
+<pre class="highlight"><code class="language-rust">let x = point.0;
+let y = point.1;</code></pre>
 <p>Tuples can also be destructured into separate bindings:</p>
-<pre><code class="language-rust">let (x, y) = point;
-</code></pre>
+<pre class="highlight"><code class="language-rust">let (x, y) = point;</code></pre>
 <p>Destructuring is useful when a function, iterator, or pattern produces a tuple
 and the code wants to name the individual components.</p>
 <p>For example, a matrix index can be represented as a 2-tuple:</p>
-<pre><code class="language-rust">let index: (usize, usize) = (2, 3);
-let (row, col) = index;
-</code></pre>
+<pre class="highlight"><code class="language-rust">let index: (usize, usize) = (2, 3);
+let (row, col) = index;</code></pre>
 <p>Tuples are best for small, local groupings where the meaning of each position
 is obvious from context. If the grouped values represent a concept that appears
 throughout a program, a <code>struct</code> with named fields is usually clearer.</p>
 <h2 id="enums-as-a-set-of-choices">Enums As A Set Of Choices<a class="headerlink" href="#enums-as-a-set-of-choices" title="Permanent link">&para;</a></h2>
 <p>The <code>enum-match</code> example computes a numerical integral using one of two
 quadrature methods:</p>
-<pre><code class="language-bash">cd source-code/enum-match
+<pre class="highlight"><code class="language-bash">cd source-code/enum-match
 cargo run
-cargo run -- --method gauss
-</code></pre>
+cargo run -- --method gauss</code></pre>
 <p>The available methods are represented by an enum:</p>
-<pre><code class="language-rust">#[derive(Clone, ValueEnum)]
+<pre class="highlight"><code class="language-rust">#[derive(Clone, Debug, ValueEnum)]
 enum QuadratureMethod {
     Simpson,
     Gauss,
-}
-</code></pre>
+}</code></pre>
 <p>An enum is a type whose value is one of a fixed set of variants. Here, a
 <code>QuadratureMethod</code> is either <code>QuadratureMethod::Simpson</code> or
 <code>QuadratureMethod::Gauss</code>.</p>
@@ -312,11 +299,10 @@ line parsing has succeeded, the rest of the program works with a real Rust
 type.</p>
 <h2 id="selecting-behavior-with-match">Selecting Behavior With <code>match</code><a class="headerlink" href="#selecting-behavior-with-match" title="Permanent link">&para;</a></h2>
 <p>The selected quadrature method is handled with <code>match</code>:</p>
-<pre><code class="language-rust">let result = match args.method {
+<pre class="highlight"><code class="language-rust">let result = match args.method {
     QuadratureMethod::Simpson =&gt; simpson::quad(f, a, b, 1000),
     QuadratureMethod::Gauss =&gt; gauss::quad(f, a, b),
-};
-</code></pre>
+};</code></pre>
 <p>Each arm handles one enum variant. This has two useful properties:</p>
 <ul>
 <li>The code says explicitly what happens for each method.</li>
@@ -327,7 +313,7 @@ As with <code>if</code>, the arms must produce compatible types.</p>
 <p>Later examples use <code>match</code> for more than enum dispatch. In
 <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/strings"><code>source-code/strings</code></a>, the parser matches on <code>Result</code> values, and the
 aggregator matches on a tuple of optional timestamps:</p>
-<pre><code class="language-rust">match (self.first_time, self.last_time) {
+<pre class="highlight"><code class="language-rust">match (self.first_time, self.last_time) {
     (None, None) =&gt; {
         self.first_time = Some(record.time);
         self.last_time = Some(record.time);
@@ -335,25 +321,22 @@ aggregator matches on a tuple of optional timestamps:</p>
     (Some(first), Some(last)) =&gt; {
         // update the time range
     }
-    _ =&gt; unreachable!(&quot;first_time and last_time should be updated together&quot;),
-}
-</code></pre>
+    _ =&gt; unreachable!("first_time and last_time should be updated together"),
+}</code></pre>
 <p>This is a structural match: the pattern describes the shape of the value, not
 only a single enum variant. It appears later because the full example also uses
 strings, text files, dates, and <code>Result</code>.</p>
 <h2 id="passing-functions-and-closures">Passing Functions And Closures<a class="headerlink" href="#passing-functions-and-closures" title="Permanent link">&para;</a></h2>
 <p>The <code>enum-match</code> example defines the function to integrate as a closure:</p>
-<pre><code class="language-rust">let f = |x: f64| x.sin();
-</code></pre>
+<pre class="highlight"><code class="language-rust">let f = |x: f64| x.sin();</code></pre>
 <p>The quadrature functions accept any callable value with the type <code>Fn(f64) -&gt;
 f64</code>:</p>
-<pre><code class="language-rust">pub fn quad&lt;F&gt;(f: F, a: f64, b: f64, n: usize) -&gt; f64
+<pre class="highlight"><code class="language-rust">pub fn quad&lt;F&gt;(f: F, a: f64, b: f64, n: usize) -&gt; f64
 where
     F: Fn(f64) -&gt; f64,
 {
     // implementation
-}
-</code></pre>
+}</code></pre>
 <p>This allows the quadrature code to work with different mathematical functions
 without rewriting the integration algorithm.</p>
 <p>At this stage, the important idea is that functions can receive behavior as an
@@ -361,21 +344,18 @@ argument. The generic syntax and trait bound can be treated as a preview of the
 later modules on generics and traits.</p>
 <h2 id="splitting-code-into-modules">Splitting Code Into Modules<a class="headerlink" href="#splitting-code-into-modules" title="Permanent link">&para;</a></h2>
 <p>The <code>enum-match</code> example is split across several files:</p>
-<pre><code class="language-text">src/
+<pre class="highlight"><code class="language-text">src/
 ├── main.rs
 ├── simpson.rs
-└── gauss.rs
-</code></pre>
+└── gauss.rs</code></pre>
 <p>The modules are declared at the top of <code>main.rs</code>:</p>
-<pre><code class="language-rust">mod simpson;
-mod gauss;
-</code></pre>
+<pre class="highlight"><code class="language-rust">mod simpson;
+mod gauss;</code></pre>
 <p>This tells Rust to compile <code>src/simpson.rs</code> and <code>src/gauss.rs</code> as modules of
 the current crate. Public functions from those modules can then be called with
 qualified names:</p>
-<pre><code class="language-rust">simpson::quad(f, a, b, 1000)
-gauss::quad(f, a, b)
-</code></pre>
+<pre class="highlight"><code class="language-rust">simpson::quad(f, a, b, 1000)
+gauss::quad(f, a, b)</code></pre>
 <p>Splitting source files this way keeps <code>main.rs</code> focused on program setup and
 dispatch, while the numerical algorithms live in separate files.</p>
 <h2 id="suggested-hands-on-work">Suggested Hands-On Work<a class="headerlink" href="#suggested-hands-on-work" title="Permanent link">&para;</a></h2>
@@ -399,23 +379,17 @@ dispatch, while the numerical algorithms live in separate files.</p>
 </li>
 <li>
 <p>Run <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/numerical-function"><code>source-code/numerical-function</code></a> with different coefficients:</p>
+<pre class="highlight"><code class="language-bash">cargo run -- --a 1.0 --b 2.0 --c -3.0</code></pre>
 </li>
-</ol>
-<p><code>bash
-   cargo run -- --a 1.0 --b 2.0 --c -3.0</code></p>
-<ol>
 <li>
 <p>Add a second function to <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/numerical-function"><code>source-code/numerical-function</code></a>, such as a cubic
    polynomial, and call it from <code>main</code>.</p>
 </li>
 <li>
 <p>Run <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/enum-match"><code>source-code/enum-match</code></a> with both quadrature methods:</p>
+<pre class="highlight"><code class="language-bash">cargo run
+cargo run -- --method gauss</code></pre>
 </li>
-</ol>
-<p><code>bash
-   cargo run
-   cargo run -- --method gauss</code></p>
-<ol>
 <li>
 <p>Change the function being integrated in <a href="https://github.com/gjbex/Rust-good-bad-ugly/blob/main/source-code/enum-match/src/main.rs"><code>source-code/enum-match/src/main.rs</code></a>
    from <code>sin(x)</code> to <code>cos(x)</code> and run both quadrature methods again.</p>

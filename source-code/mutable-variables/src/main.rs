@@ -9,15 +9,15 @@ use clap::Parser;
 
 struct Args {
     /// Coefficient a (for x^2)
-    #[arg(short, long, default_value_t = 1.0)]
+    #[arg(short, long, default_value_t = 1.0, allow_negative_numbers = true)]
     a: f64,
 
     /// Coefficient b (for x)
-    #[arg(short, long, default_value_t = 0.0)]
+    #[arg(short, long, default_value_t = 0.0, allow_negative_numbers = true)]
     b: f64,
 
     /// Coefficient c (constant term)
-    #[arg(short, long, default_value_t = 0.0)]
+    #[arg(short, long, default_value_t = 0.0, allow_negative_numbers = true)]
     c: f64,
 }
 

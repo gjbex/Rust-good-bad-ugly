@@ -273,16 +273,16 @@ Use this sequence as a practical lab.
 
 1. Run the example with the default settings:
 
-   ```bash
-   cd source-code/random-numbers
-   cargo run
-   ```
+    ```bash
+    cd source-code/random-numbers
+    cargo run
+    ```
 
 2. Generate five uniform samples with an explicit seed:
 
-   ```bash
-   cargo run -- --count 5 --seed 42 --distribution uniform
-   ```
+    ```bash
+    cargo run -- --count 5 --seed 42 --distribution uniform
+    ```
 
 3. Run the same command again and verify that the output is identical.
 
@@ -290,9 +290,9 @@ Use this sequence as a practical lab.
 
 5. Generate normally distributed samples:
 
-   ```bash
-   cargo run -- --count 5 --seed 42 --distribution normal
-   ```
+    ```bash
+    cargo run -- --count 5 --seed 42 --distribution normal
+    ```
 
 6. Run `cargo run -- --help` and inspect the accepted distribution values.
 
@@ -305,9 +305,9 @@ Use this sequence as a practical lab.
 
 9. Generate a larger sample and visualize it:
 
-   ```bash
-   cargo run -- --count 1000 --seed 42 --distribution normal | ./show-distribution.py
-   ```
+    ```bash
+    cargo run -- --count 1000 --seed 42 --distribution normal | ./show-distribution.py
+    ```
 
 10. Record the command used to generate a plot and rerun it to confirm that the
     same seed reproduces the same data.

@@ -291,10 +291,10 @@ Use this sequence as a practical lab.
 
 1. Run the matrix error-handling example:
 
-   ```bash
-   cd source-code/error-handling
-   cargo run -- --rows 3 --cols 4
-   ```
+    ```bash
+    cd source-code/error-handling
+    cargo run -- --rows 3 --cols 4
+    ```
 
 2. Open `source-code/error-handling/src/matrix.rs` and identify the methods
    that return `Option` and `Result`.
