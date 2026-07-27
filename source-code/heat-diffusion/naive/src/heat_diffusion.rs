@@ -203,6 +203,38 @@ mod tests {
     }
 
     #[test]
+    fn preserves_symmetry_after_one_step() {
+        let grid_size = 11;
+        let mut system = System::new(grid_size, 0.1).unwrap();
+        system.initialize_grid(100.0, 2, 20.0).unwrap();
+
+        system.step(0.5);
+
+        let grid = system.get_grid();
+        for row in 0..grid_size {
+            for col in 0..grid_size {
+                let value = grid[[row, col]];
+                let horizontal_reflection = grid[[grid_size - 1 - row, col]];
+                let vertical_reflection = grid[[row, grid_size - 1 - col]];
+                let diagonal_reflection = grid[[col, row]];
+
+                assert!(
+                    (value - horizontal_reflection).abs() < EPSILON,
+                    "horizontal symmetry differs at ({row}, {col})"
+                );
+                assert!(
+                    (value - vertical_reflection).abs() < EPSILON,
+                    "vertical symmetry differs at ({row}, {col})"
+                );
+                assert!(
+                    (value - diagonal_reflection).abs() < EPSILON,
+                    "diagonal symmetry differs at ({row}, {col})"
+                );
+            }
+        }
+    }
+
+    #[test]
     fn reports_convergence_or_the_maximum_step_count() {
         let mut converging_system = System::new(5, 0.1).unwrap();
         converging_system.initialize_grid(100.0, 0, 20.0).unwrap();

@@ -1,8 +1,8 @@
 # Heat-Diffusion TODO
 
 Status verified on 2026-07-27. Both implementations compile; the naive
-implementation passes seven unit tests and the `ndarray-features`
-implementation passes eight. They produce identical output for matching
+implementation passes eight unit tests and the `ndarray-features`
+implementation passes nine. They produce identical output for matching
 inputs.
 
 ## P1: Keep The Implementations Scientifically Consistent
@@ -51,14 +51,13 @@ inputs.
 
 ## P3: Tests And CLI Polish
 
-- [ ] Complete the focused tests for both implementations.
-  - Existing tests cover fixed boundaries, initial-region geometry, a
-    hand-calculated step, invalid radii, convergence, and the maximum step
-    count.
-  - Add a test that a symmetric initial condition remains symmetric after one
-    step.
-  - Compare the `naive` and `ndarray-features` results for identical inputs
-    after the packages have been restructured for cross-package testing.
+- [x] Add focused unit tests for both implementations.
+  - Tests cover fixed boundaries, initial-region geometry, a hand-calculated
+    step, one-step symmetry, invalid parameters, convergence, and the maximum
+    step count.
+
+- [ ] Compare the `naive` and `ndarray-features` results for identical inputs
+  after the packages have been restructured for cross-package testing.
 
 - [ ] Modernize the Clap derive attributes.
   - Prefer `#[arg(...)]` to `#[clap(...)]`.
@@ -85,7 +84,7 @@ Verified on 2026-07-27 in both Cargo projects:
 
 - [x] `cargo fmt --check`
 - [x] `cargo check`
-- [x] `cargo test` with seven passing naive tests and eight passing
+- [x] `cargo test` with eight passing naive tests and nine passing
   `ndarray-features` tests
 - [x] `cargo clippy --all-targets -- -D warnings`
 - [x] Matching 21-by-21 initial states with radius 5 and identical
