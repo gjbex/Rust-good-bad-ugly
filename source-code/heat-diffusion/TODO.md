@@ -56,8 +56,10 @@ inputs.
     step, one-step symmetry, invalid parameters, convergence, and the maximum
     step count.
 
-- [ ] Compare the `naive` and `ndarray-features` results for identical inputs
-  after the packages have been restructured for cross-package testing.
+- [x] Compare the `naive` and `ndarray-features` results with a black-box test.
+  - `test_consistency.sh` compares complete CLI output for initial-state,
+    one-step, multi-step, and convergence scenarios.
+  - A unified diff is shown when the implementations disagree.
 
 - [ ] Modernize the Clap derive attributes.
   - Prefer `#[arg(...)]` to `#[clap(...)]`.
@@ -90,6 +92,7 @@ Verified on 2026-07-27 in both Cargo projects:
 - [x] Matching 21-by-21 initial states with radius 5 and identical
   temperatures
 - [x] Matching 21-by-21 states after 25 simulation steps
+- [x] `./test_consistency.sh`
 
 Rerun the following commands in both Cargo projects after each remaining
 change:
@@ -101,5 +104,4 @@ cargo test
 cargo clippy --all-targets -- -D warnings
 ```
 
-Run matching simulations in the `naive` and `ndarray-features` directories and
-compare their output after any change to their numerical behavior.
+Run `./test_consistency.sh` after any change to numerical behavior.
