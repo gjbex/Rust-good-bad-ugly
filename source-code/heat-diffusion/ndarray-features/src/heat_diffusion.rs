@@ -1,9 +1,10 @@
-use ndarray::{Array2, Zip, s};
+use ndarray::{Array2, ArrayView2, Zip, s};
 
 const MAX_DIFFUSION_FACTOR: f64 = 0.25;
 
 pub struct System {
     grid: Array2<f64>,
+    next_grid: Array2<f64>,
     alpha: f64, // thermal diffusivity
 }
 
@@ -17,7 +18,12 @@ impl System {
         }
 
         let grid = Array2::<f64>::zeros((grid_size, grid_size));
-        Ok(System { grid, alpha })
+        let next_grid = Array2::<f64>::zeros((grid_size, grid_size));
+        Ok(System {
+            grid,
+            next_grid,
+            alpha,
+        })
     }
 
     pub fn initialize_grid(
@@ -39,6 +45,8 @@ impl System {
         {
             return Err("Spot radius must fit inside the grid boundary.");
         }
+        self.grid.fill(0.0);
+
         // initialize the central splot
         let mut spot = self.grid.slice_mut(s![
             center_row - spot_radius..center_row + spot_radius + 1,
@@ -61,32 +69,31 @@ impl System {
         self.grid
             .slice_mut(s![.., cols - 1])
             .fill(boundary_temperature);
+        self.next_grid.assign(&self.grid);
         Ok(())
     }
 
     fn step(&mut self, dt: f64) -> f64 {
         let (rows, cols) = self.grid.dim();
+        let diffusion_factor = self.alpha * dt;
         let center = self.grid.slice(s![1..rows - 1, 1..cols - 1]);
         let up = self.grid.slice(s![0..rows - 2, 1..cols - 1]);
         let down = self.grid.slice(s![2..rows, 1..cols - 1]);
         let left = self.grid.slice(s![1..rows - 1, 0..cols - 2]);
         let right = self.grid.slice(s![1..rows - 1, 2..cols]);
-        let mut new_grid = self.grid.clone();
-        Zip::from(new_grid.slice_mut(s![1..rows - 1, 1..cols - 1]))
+        let mut max_change = 0.0_f64;
+        Zip::from(self.next_grid.slice_mut(s![1..rows - 1, 1..cols - 1]))
             .and(center)
             .and(up)
             .and(down)
             .and(left)
             .and(right)
             .for_each(|new, &c, &u, &d, &l, &r| {
-                *new = c + self.alpha * dt * (u + d + l + r - 4.0 * c);
+                let new_value = c + diffusion_factor * (u + d + l + r - 4.0 * c);
+                max_change = max_change.max((new_value - c).abs());
+                *new = new_value;
             });
-        let max_change = new_grid
-            .iter()
-            .zip(self.grid.iter())
-            .map(|(new, old)| (new - old).abs())
-            .fold(0.0_f64, |a, b| a.max(b));
-        self.grid = new_grid;
+        std::mem::swap(&mut self.grid, &mut self.next_grid);
         max_change
     }
 
@@ -116,11 +123,15 @@ impl System {
         }
         Ok(max_steps)
     }
+
+    pub fn get_grid(&self) -> ArrayView2<'_, f64> {
+        self.grid.view()
+    }
 }
 
 impl std::fmt::Display for System {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for row in self.grid.rows() {
+        for row in self.get_grid().rows() {
             for &value in row {
                 write!(f, "{:.2} ", value)?;
             }
@@ -149,7 +160,7 @@ mod tests {
             .unwrap();
 
         let center = grid_size / 2;
-        for ((row, col), &temperature) in system.grid.indexed_iter() {
+        for ((row, col), &temperature) in system.get_grid().indexed_iter() {
             let on_boundary = row == 0 || col == 0 || row == grid_size - 1 || col == grid_size - 1;
             let row_distance = row.abs_diff(center);
             let col_distance = col.abs_diff(center);
@@ -262,5 +273,23 @@ mod tests {
             system.initialize_grid(100.0, 0, f64::INFINITY),
             Err("Temperatures must be finite.")
         );
+    }
+
+    #[test]
+    fn reuses_both_grid_allocations_between_steps() {
+        let mut system = System::new(5, 0.1).unwrap();
+        system.initialize_grid(100.0, 0, 20.0).unwrap();
+        assert_eq!(system.grid, system.next_grid);
+
+        let first_allocation = system.grid.as_ptr();
+        let second_allocation = system.next_grid.as_ptr();
+
+        system.step(0.5);
+        assert_eq!(system.grid.as_ptr(), second_allocation);
+        assert_eq!(system.next_grid.as_ptr(), first_allocation);
+
+        system.step(0.5);
+        assert_eq!(system.grid.as_ptr(), first_allocation);
+        assert_eq!(system.next_grid.as_ptr(), second_allocation);
     }
 }

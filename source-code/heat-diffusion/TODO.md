@@ -1,7 +1,9 @@
 # Heat-Diffusion TODO
 
-Status verified on 2026-07-27. Both implementations compile, pass their seven
-unit tests, and produce identical initial-state output for matching inputs.
+Status verified on 2026-07-27. Both implementations compile; the naive
+implementation passes seven unit tests and the `ndarray-features`
+implementation passes eight. They produce identical output for matching
+inputs.
 
 ## P1: Keep The Implementations Scientifically Consistent
 
@@ -22,14 +24,14 @@ unit tests, and produce identical initial-state output for matching inputs.
 
 ## P2: Improve The `ndarray` Implementation
 
-- [ ] Replace the per-step grid clone with double buffering.
+- [x] Replace the per-step grid clone with double buffering.
   - Store current and next grids in `System`.
   - Initialize their boundaries consistently.
   - Write the new interior into the next grid and use `std::mem::swap` after
     each step.
   - Avoid allocating a new array during every simulation step.
 
-- [ ] Calculate the maximum change during the stencil update.
+- [x] Calculate the maximum change during the stencil update.
   - Accumulate `max_change` inside the `Zip::for_each` closure.
   - Remove the additional full-grid traversal that compares the two arrays.
 
@@ -40,11 +42,12 @@ unit tests, and produce identical initial-state output for matching inputs.
     `s![1..rows - 1, 1..cols - 1]`.
   - Confirm that `cargo clippy --all-targets -- -D warnings` passes.
 
-- [ ] Expose the computed grid as a read-only view.
-  - Replace or complement the naive implementation's `get_grid` accessor with
-    accessors returning `ndarray::ArrayView2<'_, f64>` from both variants.
+- [x] Expose the computed grid as a read-only view in `ndarray-features`.
+  - Add a `get_grid` accessor returning `ndarray::ArrayView2<'_, f64>`.
   - Use the view in tests or output code so array views and their lifetimes have
     a concrete teaching purpose.
+  - Leave the naive implementation's `&Array2<f64>` accessor unchanged so the
+    two return types can be discussed during the refactoring exercise.
 
 ## P3: Tests And CLI Polish
 
@@ -82,10 +85,12 @@ Verified on 2026-07-27 in both Cargo projects:
 
 - [x] `cargo fmt --check`
 - [x] `cargo check`
-- [x] `cargo test` with seven passing tests per implementation
+- [x] `cargo test` with seven passing naive tests and eight passing
+  `ndarray-features` tests
 - [x] `cargo clippy --all-targets -- -D warnings`
 - [x] Matching 21-by-21 initial states with radius 5 and identical
   temperatures
+- [x] Matching 21-by-21 states after 25 simulation steps
 
 Rerun the following commands in both Cargo projects after each remaining
 change:
