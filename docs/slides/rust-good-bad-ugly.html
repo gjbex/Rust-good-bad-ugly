@@ -392,16 +392,17 @@ Geert Jan Bex
           display:block!important;
       }</style></aside>
 </section>
-<section id="modules-10-13-scientific-workflows" class="slide level2">
-<h2>Modules 10-13: Scientific Workflows</h2>
+<section id="modules-10-14-scientific-workflows" class="slide level2">
+<h2>Modules 10-14: Scientific Workflows</h2>
 <ol start="10" type="1">
 <li>Randomness And Reproducible Runs</li>
 <li>Data Parallelism With Rayon</li>
 <li>Integrated Numerical Example: Julia Set</li>
 <li>Integrated Numerical Example: N-Body Simulation</li>
+<li>Multidimensional Arrays And Stencil Computation</li>
 </ol>
 <aside class="notes">
-<p>These modules make the scientific-computing context explicit: reproducibility, parallelism, structured output, diagnostics, and visualization.</p>
+<p>These modules make the scientific-computing context explicit: reproducibility, parallelism, structured output, diagnostics, visualization, and multidimensional array workflows.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -445,7 +446,7 @@ Geert Jan Bex
 <li>Use Modules 1-4 for the Rust core</li>
 <li>Add Modules 7-8 for practical data and errors</li>
 <li>Use the Julia set as the main integrated example</li>
-<li>Leave N-body as follow-up reading or an optional lab</li>
+<li>Leave N-body and heat diffusion as follow-up or optional labs</li>
 </ul>
 <aside class="notes">
 <p>For a short delivery, do not try to cover every module equally. The numerical examples should receive more time than purely syntactic material for this audience.</p>
@@ -8945,6 +8946,611 @@ Geert Jan Bex
 </ul>
 <aside class="notes">
 <p>Use this to summarize the two integrated examples together.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="module-14-multidimensional-arrays-and-stencil-computation" class="title-slide slide level1 center">
+<h1>Module 14: Multidimensional Arrays And Stencil Computation</h1>
+<aside class="notes">
+<p>This module uses a tested numerical refactoring to introduce ndarray. Keep the mathematics simple and make the ownership of each view explicit.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="module-arc-13" class="slide level2">
+<h2>Module Arc</h2>
+<ul>
+<li>Establish a tested loop-based baseline</li>
+<li>Represent a field with <code>Array2</code></li>
+<li>Select array regions with borrowed views</li>
+<li>Express a stencil with <code>Zip</code></li>
+<li>Reuse storage with double buffering</li>
+<li>Verify that the refactoring preserves behavior</li>
+</ul>
+<aside class="notes">
+<p>The example belongs near the end of the course because it combines ownership, methods, errors, testing, and numerical constraints.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="two-implementations-one-contract" class="slide level2">
+<h2>Two Implementations, One Contract</h2>
+<pre class="text"><code>source-code/heat-diffusion/
+|-- naive/
+|-- ndarray-features/
+`-- test_consistency.sh</code></pre>
+<ul>
+<li>Same CLI</li>
+<li>Same initial condition</li>
+<li>Same numerical update</li>
+<li>Same convergence rule and output</li>
+</ul>
+<aside class="notes">
+<p>The naive implementation already stores its data in Array2. “Naive” refers to the explicit indexing and per-step clone, not to a different data structure.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="start-with-tests" class="slide level2">
+<h2>Start With Tests</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb269"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb269-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> source-code/heat-diffusion</span>
+<span id="cb269-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> test <span class="at">--manifest-path</span> naive/Cargo.toml</span>
+<span id="cb269-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> test <span class="at">--manifest-path</span> ndarray-features/Cargo.toml</span>
+<span id="cb269-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">./test_consistency.sh</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Run these before showing the refactoring. The test suite is the evidence that the baseline behavior is understood.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="the-five-point-stencil" class="slide level2">
+<h2>The Five-Point Stencil</h2>
+<pre class="text"><code>                 up
+                  |
+left ---- center ---- right
+                  |
+                down</code></pre>
+<pre class="text"><code>new = center + alpha * dt
+      * (up + down + left + right - 4 * center)</code></pre>
+<aside class="notes">
+<p>The outer grid points are fixed boundary conditions, so only the interior is updated.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="stability-is-an-application-constraint" class="slide level2">
+<h2>Stability Is An Application Constraint</h2>
+<pre class="text"><code>alpha * dt &lt;= 0.25</code></pre>
+<ul>
+<li>Unit grid spacing</li>
+<li>Explicit two-dimensional scheme</li>
+<li>Checked before the simulation starts</li>
+</ul>
+<aside class="notes">
+<p>Rust prevents invalid memory access here, but it cannot infer numerical stability. This distinction matters in scientific software.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="owned-2d-storage" class="slide level2">
+<h2>Owned 2D Storage</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb273"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb273-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> grid <span class="op">=</span> <span class="pp">Array2::</span><span class="op">&lt;</span><span class="dt">f64</span><span class="op">&gt;</span><span class="pp">::</span>zeros((grid_size<span class="op">,</span> grid_size))<span class="op">;</span></span>
+<span id="cb273-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> (rows<span class="op">,</span> cols) <span class="op">=</span> grid<span class="op">.</span>dim()<span class="op">;</span></span>
+<span id="cb273-3"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb273-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> center <span class="op">=</span> grid[[rows <span class="op">/</span> <span class="dv">2</span><span class="op">,</span> cols <span class="op">/</span> <span class="dv">2</span>]]<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Shape belongs to the array</li>
+<li>Storage is rectangular</li>
+<li>Default layout is row-major</li>
+</ul>
+<aside class="notes">
+<p>Contrast this briefly with <code>Vec&lt;Vec&lt;f64&gt;&gt;</code>, where rows are separate allocations and can have different lengths.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="baseline-explicit-indices" class="slide level2">
+<h2>Baseline: Explicit Indices</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb274"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb274-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> row <span class="kw">in</span> <span class="dv">1</span><span class="op">..</span>rows <span class="op">-</span> <span class="dv">1</span> <span class="op">{</span></span>
+<span id="cb274-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> col <span class="kw">in</span> <span class="dv">1</span><span class="op">..</span>cols <span class="op">-</span> <span class="dv">1</span> <span class="op">{</span></span>
+<span id="cb274-3"><a href="" aria-hidden="true" tabindex="-1"></a>        new_grid[[row<span class="op">,</span> col]] <span class="op">=</span> <span class="kw">self</span><span class="op">.</span>grid[[row<span class="op">,</span> col]]</span>
+<span id="cb274-4"><a href="" aria-hidden="true" tabindex="-1"></a>            <span class="op">+</span> <span class="kw">self</span><span class="op">.</span>alpha <span class="op">*</span> dt</span>
+<span id="cb274-5"><a href="" aria-hidden="true" tabindex="-1"></a>                <span class="op">*</span> (<span class="kw">self</span><span class="op">.</span>grid[[row <span class="op">+</span> <span class="dv">1</span><span class="op">,</span> col]]</span>
+<span id="cb274-6"><a href="" aria-hidden="true" tabindex="-1"></a>                    <span class="op">+</span> <span class="kw">self</span><span class="op">.</span>grid[[row <span class="op">-</span> <span class="dv">1</span><span class="op">,</span> col]]</span>
+<span id="cb274-7"><a href="" aria-hidden="true" tabindex="-1"></a>                    <span class="op">+</span> <span class="kw">self</span><span class="op">.</span>grid[[row<span class="op">,</span> col <span class="op">+</span> <span class="dv">1</span>]]</span>
+<span id="cb274-8"><a href="" aria-hidden="true" tabindex="-1"></a>                    <span class="op">+</span> <span class="kw">self</span><span class="op">.</span>grid[[row<span class="op">,</span> col <span class="op">-</span> <span class="dv">1</span>]]</span>
+<span id="cb274-9"><a href="" aria-hidden="true" tabindex="-1"></a>                    <span class="op">-</span> <span class="dv">4.0</span> <span class="op">*</span> <span class="kw">self</span><span class="op">.</span>grid[[row<span class="op">,</span> col]])<span class="op">;</span></span>
+<span id="cb274-10"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb274-11"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>source-code/heat-diffusion/naive/src/heat_diffusion.rs</code></p>
+<aside class="notes">
+<p>Open the real implementation in the editor. The loop is direct and beginner-readable, which makes it a good reference implementation.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="s-describes-a-region" class="slide level2">
+<h2><code>s!</code> Describes A Region</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb275"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb275-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> interior <span class="op">=</span></span>
+<span id="cb275-2"><a href="" aria-hidden="true" tabindex="-1"></a>    grid<span class="op">.</span>slice(<span class="pp">s!</span>[<span class="dv">1</span><span class="op">..</span>rows <span class="op">-</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">1</span><span class="op">..</span>cols <span class="op">-</span> <span class="dv">1</span>])<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>all rows:       ..
+one row:        0
+interior rows:  1..rows - 1</code></pre>
+<aside class="notes">
+<p>The macro builds slice information; slice then creates a view that borrows the array. No element data is copied.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="mutable-boundary-views" class="slide level2">
+<h2>Mutable Boundary Views</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb277"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb277-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">self</span><span class="op">.</span>grid</span>
+<span id="cb277-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>slice_mut(<span class="pp">s!</span>[<span class="dv">0</span><span class="op">,</span> <span class="op">..</span>])</span>
+<span id="cb277-3"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>fill(boundary_temperature)<span class="op">;</span></span>
+<span id="cb277-4"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb277-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">self</span><span class="op">.</span>grid</span>
+<span id="cb277-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>slice_mut(<span class="pp">s!</span>[<span class="op">..,</span> <span class="dv">0</span>])</span>
+<span id="cb277-7"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>fill(boundary_temperature)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Select one boundary</li>
+<li>Borrow it mutably</li>
+<li>Apply one operation to the region</li>
+</ul>
+<aside class="notes">
+<p>Show the corresponding loops in the naive version. The slice formulation states which region may be mutated.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="circular-hot-spot" class="slide level2">
+<h2>Circular Hot Spot</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb278"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb278-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ((row<span class="op">,</span> col)<span class="op">,</span> temperature) <span class="kw">in</span> spot<span class="op">.</span>indexed_iter_mut() <span class="op">{</span></span>
+<span id="cb278-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> dr <span class="op">=</span> row<span class="op">.</span>abs_diff(spot_radius)<span class="op">;</span></span>
+<span id="cb278-3"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> dc <span class="op">=</span> col<span class="op">.</span>abs_diff(spot_radius)<span class="op">;</span></span>
+<span id="cb278-4"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb278-5"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> dr<span class="op">.</span>pow(<span class="dv">2</span>) <span class="op">+</span> dc<span class="op">.</span>pow(<span class="dv">2</span>) <span class="op">&lt;=</span> spot_radius<span class="op">.</span>pow(<span class="dv">2</span>) <span class="op">{</span></span>
+<span id="cb278-6"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="op">*</span>temperature <span class="op">=</span> spot_temperature<span class="op">;</span></span>
+<span id="cb278-7"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb278-8"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>The mutable view covers the smallest square containing the circle. Its indices are local to that view, so the radius is also the local center coordinate.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="five-aligned-views" class="slide level2">
+<h2>Five Aligned Views</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb279"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb279-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> center <span class="op">=</span> grid<span class="op">.</span>slice(<span class="pp">s!</span>[<span class="dv">1</span><span class="op">..</span>rows <span class="op">-</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">1</span><span class="op">..</span>cols <span class="op">-</span> <span class="dv">1</span>])<span class="op">;</span></span>
+<span id="cb279-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> up     <span class="op">=</span> grid<span class="op">.</span>slice(<span class="pp">s!</span>[<span class="dv">0</span><span class="op">..</span>rows <span class="op">-</span> <span class="dv">2</span><span class="op">,</span> <span class="dv">1</span><span class="op">..</span>cols <span class="op">-</span> <span class="dv">1</span>])<span class="op">;</span></span>
+<span id="cb279-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> down   <span class="op">=</span> grid<span class="op">.</span>slice(<span class="pp">s!</span>[<span class="dv">2</span><span class="op">..</span>rows<span class="op">,</span>     <span class="dv">1</span><span class="op">..</span>cols <span class="op">-</span> <span class="dv">1</span>])<span class="op">;</span></span>
+<span id="cb279-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> left   <span class="op">=</span> grid<span class="op">.</span>slice(<span class="pp">s!</span>[<span class="dv">1</span><span class="op">..</span>rows <span class="op">-</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">0</span><span class="op">..</span>cols <span class="op">-</span> <span class="dv">2</span>])<span class="op">;</span></span>
+<span id="cb279-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> right  <span class="op">=</span> grid<span class="op">.</span>slice(<span class="pp">s!</span>[<span class="dv">1</span><span class="op">..</span>rows <span class="op">-</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">2</span><span class="op">..</span>cols])<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>All five views have shape (rows - 2, cols - 2). At any shared view index, they refer to one point and its four neighbors.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="zip-walks-them-together" class="slide level2">
+<h2><code>Zip</code> Walks Them Together</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb280"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb280-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="pp">Zip::</span>from(<span class="kw">self</span><span class="op">.</span>next_grid<span class="op">.</span>slice_mut(</span>
+<span id="cb280-2"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="pp">s!</span>[<span class="dv">1</span><span class="op">..</span>rows <span class="op">-</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">1</span><span class="op">..</span>cols <span class="op">-</span> <span class="dv">1</span>]<span class="op">,</span></span>
+<span id="cb280-3"><a href="" aria-hidden="true" tabindex="-1"></a>    ))</span>
+<span id="cb280-4"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>and(center)</span>
+<span id="cb280-5"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>and(up)</span>
+<span id="cb280-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>and(down)</span>
+<span id="cb280-7"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>and(left)</span>
+<span id="cb280-8"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>and(right)</span>
+<span id="cb280-9"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>for_each(<span class="op">|</span>new<span class="op">,</span> <span class="op">&amp;</span>c<span class="op">,</span> <span class="op">&amp;</span>u<span class="op">,</span> <span class="op">&amp;</span>d<span class="op">,</span> <span class="op">&amp;</span>l<span class="op">,</span> <span class="op">&amp;</span>r<span class="op">|</span> <span class="op">{</span></span>
+<span id="cb280-10"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="op">*</span>new <span class="op">=</span> c <span class="op">+</span> factor <span class="op">*</span> (u <span class="op">+</span> d <span class="op">+</span> l <span class="op">+</span> r <span class="op">-</span> <span class="dv">4.0</span> <span class="op">*</span> c)<span class="op">;</span></span>
+<span id="cb280-11"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span>)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Use the real source for the complete closure. Zip handles aligned traversal; the code still states the numerical formula explicitly.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="borrowing-shapes-the-design" class="slide level2">
+<h2>Borrowing Shapes The Design</h2>
+<ul>
+<li>Input views borrow <code>grid</code> immutably</li>
+<li>The output view borrows <code>next_grid</code> mutably</li>
+<li>Distinct fields can be borrowed at the same time</li>
+<li>An in-place stencil would change later inputs</li>
+</ul>
+<aside class="notes">
+<p>This is the ownership lesson. The algorithm naturally needs an old state and a new state, and Rust makes those roles visible.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="double-buffering" class="slide level2">
+<h2>Double Buffering</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb281"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb281-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">struct</span> System <span class="op">{</span></span>
+<span id="cb281-2"><a href="" aria-hidden="true" tabindex="-1"></a>    grid<span class="op">:</span> Array2<span class="op">&lt;</span><span class="dt">f64</span><span class="op">&gt;,</span></span>
+<span id="cb281-3"><a href="" aria-hidden="true" tabindex="-1"></a>    next_grid<span class="op">:</span> Array2<span class="op">&lt;</span><span class="dt">f64</span><span class="op">&gt;,</span></span>
+<span id="cb281-4"><a href="" aria-hidden="true" tabindex="-1"></a>    alpha<span class="op">:</span> <span class="dt">f64</span><span class="op">,</span></span>
+<span id="cb281-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb282"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb282-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="pp">std::mem::</span>swap(<span class="op">&amp;</span><span class="kw">mut</span> <span class="kw">self</span><span class="op">.</span>grid<span class="op">,</span> <span class="op">&amp;</span><span class="kw">mut</span> <span class="kw">self</span><span class="op">.</span>next_grid)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Two allocations, reused for every step</li>
+<li>Current state and next state stay separate</li>
+</ul>
+<aside class="notes">
+<p>The fixed boundaries are initialized in both arrays. Only the interior is overwritten during each step.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="fuse-the-convergence-reduction" class="slide level2">
+<h2>Fuse The Convergence Reduction</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb283"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb283-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> new_value <span class="op">=</span> c <span class="op">+</span> factor <span class="op">*</span> (u <span class="op">+</span> d <span class="op">+</span> l <span class="op">+</span> r <span class="op">-</span> <span class="dv">4.0</span> <span class="op">*</span> c)<span class="op">;</span></span>
+<span id="cb283-2"><a href="" aria-hidden="true" tabindex="-1"></a>max_change <span class="op">=</span> max_change<span class="op">.</span>max((new_value <span class="op">-</span> c)<span class="op">.</span>abs())<span class="op">;</span></span>
+<span id="cb283-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">*</span>new <span class="op">=</span> new_value<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Compute the update</li>
+<li>Measure its change</li>
+<li>Store it in one traversal</li>
+</ul>
+<aside class="notes">
+<p>This removes the extra pass that compared old and new grids. It is still straightforward because max_change is a scalar local to the sequential Zip.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="return-a-borrowed-array-view" class="slide level2">
+<h2>Return A Borrowed Array View</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb284"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb284-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">fn</span> get_grid(<span class="op">&amp;</span><span class="kw">self</span>) <span class="op">-&gt;</span> ArrayView2<span class="op">&lt;</span><span class="ot">'_</span><span class="op">,</span> <span class="dt">f64</span><span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb284-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="kw">self</span><span class="op">.</span>grid<span class="op">.</span>view()</span>
+<span id="cb284-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Read-only access</li>
+<li>Shape and stride metadata</li>
+<li>Cannot outlive <code>self</code></li>
+<li>No element copy</li>
+</ul>
+<aside class="notes">
+<p>Callers that only index or iterate barely change. The return type makes the borrowed array interface explicit and does not transfer ownership.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="scientific-unit-tests" class="slide level2">
+<h2>Scientific Unit Tests</h2>
+<ul>
+<li>Circular initial condition</li>
+<li>Fixed boundaries</li>
+<li>One hand-calculated step</li>
+<li>Symmetry after one step</li>
+<li>Stability and input validation</li>
+<li>Convergence or maximum steps</li>
+</ul>
+<aside class="notes">
+<p>These tests check properties of the model and method, not implementation details. Point out the 5-by-5 hand calculation and the reflection checks.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="one-step-reference-case" class="slide level2">
+<h2>One-Step Reference Case</h2>
+<pre class="text"><code>grid:       5 x 5
+center:     100
+boundary:   20
+alpha:      0.1
+dt:         0.5
+
+new center: 80
+max change: 20</code></pre>
+<aside class="notes">
+<p>Ask participants to calculate the result before opening the test. A small known case is easier to trust than a large output file.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="black-box-consistency" class="slide level2">
+<h2>Black-Box Consistency</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb286"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb286-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> source-code/heat-diffusion</span>
+<span id="cb286-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">./test_consistency.sh</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Build each Cargo project independently</li>
+<li>Run matching argument sets</li>
+<li>Compare complete CLI output with <code>diff</code></li>
+</ul>
+<aside class="notes">
+<p>Unit tests localize failures inside each project. The shell test separately checks the behavior-preserving refactoring contract.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="terminal-compare-a-visible-state" class="slide level2">
+<h2>Terminal: Compare A Visible State</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb287"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb287-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run <span class="at">--manifest-path</span> naive/Cargo.toml <span class="at">--</span> <span class="dt">\</span></span>
+<span id="cb287-2"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--grid-size</span> 21 <span class="at">--spot-radius</span> 5 <span class="at">--steps</span> 25 <span class="at">--show</span></span>
+<span id="cb287-3"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb287-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run <span class="at">--manifest-path</span> ndarray-features/Cargo.toml <span class="at">--</span> <span class="dt">\</span></span>
+<span id="cb287-5"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--grid-size</span> 21 <span class="at">--spot-radius</span> 5 <span class="at">--steps</span> 25 <span class="at">--show</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Run from source-code/heat-diffusion. Reduce the grid size if the terminal is narrow.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="layout-and-performance" class="slide level2">
+<h2>Layout And Performance</h2>
+<ul>
+<li>Row-major is the default for owned <code>Array2</code></li>
+<li>Views may be strided and non-contiguous</li>
+<li>Syntax alone does not establish performance</li>
+<li>Benchmark representative release builds</li>
+</ul>
+<aside class="notes">
+<p>Do not claim that Zip is automatically faster. The refactor first improves the array-level expression and removes repeated allocation; measurement remains necessary.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="which-crate" class="slide level2">
+<h2>Which Crate?</h2>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Need</th>
+<th>Starting point</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>NumPy-like arrays, slices, views</td>
+<td><code>ndarray</code></td>
+</tr>
+<tr class="even">
+<td>Vectors, matrices, transformations</td>
+<td><code>nalgebra</code></td>
+</tr>
+<tr class="odd">
+<td>Dense linear algebra performance</td>
+<td><code>faer</code></td>
+</tr>
+<tr class="even">
+<td>Existing native linear algebra stack</td>
+<td>BLAS/LAPACK-backed crate</td>
+</tr>
+</tbody>
+</table>
+<aside class="notes">
+<p>This is orientation, not an exhaustive ecosystem comparison. Dependency and deployment constraints may decide the practical choice.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="refactoring-exercise" class="slide level2">
+<h2>Refactoring Exercise</h2>
+<ol type="1">
+<li>Add or identify a protecting unit test</li>
+<li>Replace one loop with an array operation</li>
+<li>Run that project’s unit tests</li>
+<li>Run <code>./test_consistency.sh</code></li>
+<li>Inspect any diff before continuing</li>
+</ol>
+<aside class="notes">
+<p>Make one conceptual change at a time. The second implementation can also serve as the reference solution after participants attempt individual steps.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="module-takeaways" class="slide level2">
+<h2>Module Takeaways</h2>
+<ul>
+<li>Arrays own data; views borrow regions</li>
+<li>Mutable views make write regions explicit</li>
+<li><code>Zip</code> aligns several same-shaped views</li>
+<li>Double buffering fits stencil semantics</li>
+<li>Tests protect both scientific properties and CLI behavior</li>
+</ul>
+<aside class="notes">
+<p>Close by connecting this example back to ownership: the borrowing rules are not incidental here; they express the lifetime and mutation constraints of the numerical algorithm.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;

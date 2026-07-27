@@ -5,23 +5,23 @@ use heat_diffusion::System;
 
 #[derive(Parser, Debug)]
 struct Args {
-    #[clap(short, long, default_value = "100")]
+    #[arg(short, long, default_value_t = 100)]
     grid_size: usize,
-    #[clap(short, long, default_value = "0.1")]
+    #[arg(short, long, default_value_t = 0.1)]
     alpha: f64,
-    #[clap(short = 'T', long, default_value = "100.0")]
+    #[arg(short = 'T', long, default_value_t = 100.0)]
     spot_temperature: f64,
-    #[clap(short = 'r', long, default_value = "5")]
+    #[arg(short = 'r', long, default_value_t = 5)]
     spot_radius: usize,
-    #[clap(short, long, default_value = "20.0")]
+    #[arg(short, long, default_value_t = 20.0)]
     boundary_temperature: f64,
-    #[clap(short, long, default_value = "0.01")]
+    #[arg(short, long, default_value_t = 0.01)]
     dt: f64,
-    #[clap(short, long, default_value = "1000")]
+    #[arg(short, long, default_value_t = 1000)]
     steps: usize,
-    #[clap(short, long, default_value = "0.001")]
+    #[arg(short, long, default_value_t = 0.001)]
     tolerance: f64,
-    #[clap(long)]
+    #[arg(long)]
     show: bool,
 }
 

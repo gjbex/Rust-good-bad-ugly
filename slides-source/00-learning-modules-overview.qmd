@@ -83,16 +83,18 @@ shape: domain types, shared behavior, data processing, recoverable failure, and
 tests.
 :::
 
-## Modules 10-13: Scientific Workflows
+## Modules 10-14: Scientific Workflows
 
 10. Randomness And Reproducible Runs
 11. Data Parallelism With Rayon
 12. Integrated Numerical Example: Julia Set
 13. Integrated Numerical Example: N-Body Simulation
+14. Multidimensional Arrays And Stencil Computation
 
 ::: notes
 These modules make the scientific-computing context explicit: reproducibility,
-parallelism, structured output, diagnostics, and visualization.
+parallelism, structured output, diagnostics, visualization, and
+multidimensional array workflows.
 :::
 
 ## Example Workflow
@@ -118,7 +120,7 @@ throughout the course.
 - Use Modules 1-4 for the Rust core
 - Add Modules 7-8 for practical data and errors
 - Use the Julia set as the main integrated example
-- Leave N-body as follow-up reading or an optional lab
+- Leave N-body and heat diffusion as follow-up or optional labs
 
 ::: notes
 For a short delivery, do not try to cover every module equally. The numerical

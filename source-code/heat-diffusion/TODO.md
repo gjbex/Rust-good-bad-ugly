@@ -3,7 +3,7 @@
 Status verified on 2026-07-27. Both implementations compile; the naive
 implementation passes eight unit tests and the `ndarray-features`
 implementation passes nine. They produce identical output for matching
-inputs.
+inputs, and the example is integrated into Module 14 and its slide section.
 
 ## P1: Keep The Implementations Scientifically Consistent
 
@@ -61,23 +61,23 @@ inputs.
     one-step, multi-step, and convergence scenarios.
   - A unified diff is shown when the implementations disagree.
 
-- [ ] Modernize the Clap derive attributes.
+- [x] Modernize the Clap derive attributes.
   - Prefer `#[arg(...)]` to `#[clap(...)]`.
   - Prefer typed defaults such as `default_value_t = 100`.
   - Keep all short option names unique.
 
 ## P4: Integrate The Example Into The Training Repository
 
-- [ ] Add `source-code/heat-diffusion/README.md`.
+- [x] Add `source-code/heat-diffusion/README.md`.
   - Explain the purpose of the two implementations and their teaching order.
   - Document matching commands for running and testing both variants.
   - State which behavior should remain equivalent during refactoring.
 
-- [ ] Add the example to `source-code/README.md` and `FEATURE_MAP.md`.
+- [x] Add the example to `source-code/README.md` and `FEATURE_MAP.md`.
   - Map `Array2`, slicing, mutable views, `Zip`, stencil computation, unit
     tests, and behavior-preserving refactoring.
 
-- [ ] Add the example to the appropriate learning module and matching slide
+- [x] Add the example to the appropriate learning module and matching slide
   source when the multidimensional-array curriculum item is implemented.
 
 ## Validation
@@ -93,9 +93,9 @@ Verified on 2026-07-27 in both Cargo projects:
   temperatures
 - [x] Matching 21-by-21 states after 25 simulation steps
 - [x] `./test_consistency.sh`
+- [x] `scripts/build_training_site.sh`
 
-Rerun the following commands in both Cargo projects after each remaining
-change:
+Rerun the following commands in both Cargo projects after future changes:
 
 ```bash
 cargo fmt --check
