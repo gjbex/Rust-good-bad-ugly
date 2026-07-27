@@ -69,6 +69,10 @@ prevent or make explicit in safe code.
 1. `structural-matching`: variant of `strings` that illustrates structural
    matching by pattern matching on `split_once` results when parsing
    `key: value` record fields.
+1. `heat-diffusion`: a two-dimensional stencil example with matching naive and
+   `ndarray`-oriented implementations. It illustrates `Array2`, slicing,
+   mutable views, `Zip`, double buffering, numerical unit tests, and
+   behavior-preserving refactoring.
 
 `julia-set`: Julia set  implementations illustrating diverse aspects of Rust
 programming.

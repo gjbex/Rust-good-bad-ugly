@@ -76,6 +76,8 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#module-13-integrated-numerical-example-n-body-simulation">Module 13: Integrated Numerical Example: N-Body Simulation</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#module-14-multidimensional-arrays-and-stencil-computation">Module 14: Multidimensional Arrays And Stencil Computation</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#optional-module-rust-by-contrast-with-c">Optional Module: Rust By Contrast With C++</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#suggested-teaching-order">Suggested Teaching Order</a>
@@ -114,6 +116,8 @@
                   <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-julia-set/">12. Integrated Numerical Example: Julia Set</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-n-body-simulation/">13. Integrated Numerical Example: N-Body Simulation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../multidimensional-arrays-and-stencil-computation/">14. Multidimensional Arrays And Stencil Computation</a>
                   </li>
               </ul>
       </div>
@@ -468,6 +472,35 @@ many of the earlier concepts in one place.</p>
 <p>This module should be treated as an integrated numerical example, similar in
 role to the Julia set module, rather than as part of the initial feature-by-feature
 sequence.</p>
+<h2 id="module-14-multidimensional-arrays-and-stencil-computation">Module 14: Multidimensional Arrays And Stencil Computation<a class="headerlink" href="#module-14-multidimensional-arrays-and-stencil-computation" title="Permanent link">&para;</a></h2>
+<p>Primary example group:</p>
+<ul>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/heat-diffusion"><code>source-code/heat-diffusion</code></a></li>
+</ul>
+<p>Topics:</p>
+<ul>
+<li>Owned two-dimensional arrays with <code>ndarray::Array2</code>.</li>
+<li>Shapes, indexing, slices, and borrowed array views.</li>
+<li>Mutable views and conditional initialization.</li>
+<li>Aligned traversal with <code>ndarray::Zip</code>.</li>
+<li>Five-point stencil computation.</li>
+<li>Double buffering and allocation reuse.</li>
+<li>Read-only APIs with <code>ArrayView2</code>.</li>
+<li>Scientific unit tests and cross-implementation black-box tests.</li>
+<li>Behavior-preserving refactoring.</li>
+</ul>
+<p>Goal:</p>
+<p>Participants should be able to express a small multidimensional numerical
+algorithm with <code>ndarray</code> while reasoning about ownership, views, mutation, and
+the tests that protect a refactoring.</p>
+<p>Related module text:</p>
+<ul>
+<li><code>learning-modules/multidimensional-arrays-and-stencil-computation.md</code></li>
+</ul>
+<p>Suggested placement:</p>
+<p>This module belongs near the end of the course. It revisits ownership,
+project-level testing, and numerical validation through a practical
+multidimensional-array workflow.</p>
 <h2 id="optional-module-rust-by-contrast-with-c">Optional Module: Rust By Contrast With C++<a class="headerlink" href="#optional-module-rust-by-contrast-with-c" title="Permanent link">&para;</a></h2>
 <p>Primary example:</p>
 <ul>
@@ -502,13 +535,14 @@ reflective comparison after ownership and borrowing have been introduced.</p>
 <li>Data Parallelism With Rayon.</li>
 <li>Integrated Numerical Example: Julia Set.</li>
 <li>Integrated Numerical Example: N-Body Simulation.</li>
+<li>Multidimensional Arrays And Stencil Computation.</li>
 </ol>
 <p>For a shorter course, the Julia set example can be used as the main integrated
-example and the N-body simulation can be left as an additional integrated
-example.</p>
-<p>For a course aimed at scientific programmers, the numerical, randomness, Julia
-set, and N-body modules should receive more time than the purely syntactic
-examples.</p>
+example, while the N-body simulation and heat-diffusion refactoring can be
+left as additional integrated examples.</p>
+<p>For a course aimed at scientific programmers, the numerical, randomness,
+Julia-set, N-body, and multidimensional-array modules should receive more time
+than the purely syntactic examples.</p>
               
             </div>
           </div><footer>

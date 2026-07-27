@@ -374,6 +374,40 @@ This module should be treated as an integrated numerical example, similar in
 role to the Julia set module, rather than as part of the initial feature-by-feature
 sequence.
 
+## Module 14: Multidimensional Arrays And Stencil Computation
+
+Primary example group:
+
+- `source-code/heat-diffusion`
+
+Topics:
+
+- Owned two-dimensional arrays with `ndarray::Array2`.
+- Shapes, indexing, slices, and borrowed array views.
+- Mutable views and conditional initialization.
+- Aligned traversal with `ndarray::Zip`.
+- Five-point stencil computation.
+- Double buffering and allocation reuse.
+- Read-only APIs with `ArrayView2`.
+- Scientific unit tests and cross-implementation black-box tests.
+- Behavior-preserving refactoring.
+
+Goal:
+
+Participants should be able to express a small multidimensional numerical
+algorithm with `ndarray` while reasoning about ownership, views, mutation, and
+the tests that protect a refactoring.
+
+Related module text:
+
+- `learning-modules/multidimensional-arrays-and-stencil-computation.md`
+
+Suggested placement:
+
+This module belongs near the end of the course. It revisits ownership,
+project-level testing, and numerical validation through a practical
+multidimensional-array workflow.
+
 ## Optional Module: Rust By Contrast With C++
 
 Primary example:
@@ -413,11 +447,12 @@ A compact course can use this order:
 11. Data Parallelism With Rayon.
 12. Integrated Numerical Example: Julia Set.
 13. Integrated Numerical Example: N-Body Simulation.
+14. Multidimensional Arrays And Stencil Computation.
 
 For a shorter course, the Julia set example can be used as the main integrated
-example and the N-body simulation can be left as an additional integrated
-example.
+example, while the N-body simulation and heat-diffusion refactoring can be
+left as additional integrated examples.
 
-For a course aimed at scientific programmers, the numerical, randomness, Julia
-set, and N-body modules should receive more time than the purely syntactic
-examples.
+For a course aimed at scientific programmers, the numerical, randomness,
+Julia-set, N-body, and multidimensional-array modules should receive more time
+than the purely syntactic examples.

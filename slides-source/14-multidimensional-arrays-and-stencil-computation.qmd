@@ -1,0 +1,408 @@
+# Module 14: Multidimensional Arrays And Stencil Computation
+
+::: notes
+This module uses a tested numerical refactoring to introduce ndarray. Keep the
+mathematics simple and make the ownership of each view explicit.
+:::
+
+## Module Arc
+
+- Establish a tested loop-based baseline
+- Represent a field with `Array2`
+- Select array regions with borrowed views
+- Express a stencil with `Zip`
+- Reuse storage with double buffering
+- Verify that the refactoring preserves behavior
+
+::: notes
+The example belongs near the end of the course because it combines ownership,
+methods, errors, testing, and numerical constraints.
+:::
+
+## Two Implementations, One Contract
+
+```text
+source-code/heat-diffusion/
+|-- naive/
+|-- ndarray-features/
+`-- test_consistency.sh
+```
+
+- Same CLI
+- Same initial condition
+- Same numerical update
+- Same convergence rule and output
+
+::: notes
+The naive implementation already stores its data in Array2. "Naive" refers to
+the explicit indexing and per-step clone, not to a different data structure.
+:::
+
+## Start With Tests
+
+```{.bash}
+cd source-code/heat-diffusion
+cargo test --manifest-path naive/Cargo.toml
+cargo test --manifest-path ndarray-features/Cargo.toml
+./test_consistency.sh
+```
+
+::: notes
+Run these before showing the refactoring. The test suite is the evidence that
+the baseline behavior is understood.
+:::
+
+## The Five-Point Stencil
+
+```text
+                 up
+                  |
+left ---- center ---- right
+                  |
+                down
+```
+
+```text
+new = center + alpha * dt
+      * (up + down + left + right - 4 * center)
+```
+
+::: notes
+The outer grid points are fixed boundary conditions, so only the interior is
+updated.
+:::
+
+## Stability Is An Application Constraint
+
+```text
+alpha * dt <= 0.25
+```
+
+- Unit grid spacing
+- Explicit two-dimensional scheme
+- Checked before the simulation starts
+
+::: notes
+Rust prevents invalid memory access here, but it cannot infer numerical
+stability. This distinction matters in scientific software.
+:::
+
+## Owned 2D Storage
+
+```rust
+let grid = Array2::<f64>::zeros((grid_size, grid_size));
+let (rows, cols) = grid.dim();
+
+let center = grid[[rows / 2, cols / 2]];
+```
+
+- Shape belongs to the array
+- Storage is rectangular
+- Default layout is row-major
+
+::: notes
+Contrast this briefly with `Vec<Vec<f64>>`, where rows are separate allocations
+and can have different lengths.
+:::
+
+## Baseline: Explicit Indices
+
+```rust
+for row in 1..rows - 1 {
+    for col in 1..cols - 1 {
+        new_grid[[row, col]] = self.grid[[row, col]]
+            + self.alpha * dt
+                * (self.grid[[row + 1, col]]
+                    + self.grid[[row - 1, col]]
+                    + self.grid[[row, col + 1]]
+                    + self.grid[[row, col - 1]]
+                    - 4.0 * self.grid[[row, col]]);
+    }
+}
+```
+
+`source-code/heat-diffusion/naive/src/heat_diffusion.rs`
+
+::: notes
+Open the real implementation in the editor. The loop is direct and
+beginner-readable, which makes it a good reference implementation.
+:::
+
+## `s!` Describes A Region
+
+```rust
+let interior =
+    grid.slice(s![1..rows - 1, 1..cols - 1]);
+```
+
+```text
+all rows:       ..
+one row:        0
+interior rows:  1..rows - 1
+```
+
+::: notes
+The macro builds slice information; slice then creates a view that borrows the
+array. No element data is copied.
+:::
+
+## Mutable Boundary Views
+
+```rust
+self.grid
+    .slice_mut(s![0, ..])
+    .fill(boundary_temperature);
+
+self.grid
+    .slice_mut(s![.., 0])
+    .fill(boundary_temperature);
+```
+
+- Select one boundary
+- Borrow it mutably
+- Apply one operation to the region
+
+::: notes
+Show the corresponding loops in the naive version. The slice formulation
+states which region may be mutated.
+:::
+
+## Circular Hot Spot
+
+```rust
+for ((row, col), temperature) in spot.indexed_iter_mut() {
+    let dr = row.abs_diff(spot_radius);
+    let dc = col.abs_diff(spot_radius);
+
+    if dr.pow(2) + dc.pow(2) <= spot_radius.pow(2) {
+        *temperature = spot_temperature;
+    }
+}
+```
+
+::: notes
+The mutable view covers the smallest square containing the circle. Its indices
+are local to that view, so the radius is also the local center coordinate.
+:::
+
+## Five Aligned Views
+
+```rust
+let center = grid.slice(s![1..rows - 1, 1..cols - 1]);
+let up     = grid.slice(s![0..rows - 2, 1..cols - 1]);
+let down   = grid.slice(s![2..rows,     1..cols - 1]);
+let left   = grid.slice(s![1..rows - 1, 0..cols - 2]);
+let right  = grid.slice(s![1..rows - 1, 2..cols]);
+```
+
+::: notes
+All five views have shape (rows - 2, cols - 2). At any shared view index, they
+refer to one point and its four neighbors.
+:::
+
+## `Zip` Walks Them Together
+
+```rust
+Zip::from(self.next_grid.slice_mut(
+        s![1..rows - 1, 1..cols - 1],
+    ))
+    .and(center)
+    .and(up)
+    .and(down)
+    .and(left)
+    .and(right)
+    .for_each(|new, &c, &u, &d, &l, &r| {
+        *new = c + factor * (u + d + l + r - 4.0 * c);
+    });
+```
+
+::: notes
+Use the real source for the complete closure. Zip handles aligned traversal;
+the code still states the numerical formula explicitly.
+:::
+
+## Borrowing Shapes The Design
+
+- Input views borrow `grid` immutably
+- The output view borrows `next_grid` mutably
+- Distinct fields can be borrowed at the same time
+- An in-place stencil would change later inputs
+
+::: notes
+This is the ownership lesson. The algorithm naturally needs an old state and a
+new state, and Rust makes those roles visible.
+:::
+
+## Double Buffering
+
+```rust
+pub struct System {
+    grid: Array2<f64>,
+    next_grid: Array2<f64>,
+    alpha: f64,
+}
+```
+
+```rust
+std::mem::swap(&mut self.grid, &mut self.next_grid);
+```
+
+- Two allocations, reused for every step
+- Current state and next state stay separate
+
+::: notes
+The fixed boundaries are initialized in both arrays. Only the interior is
+overwritten during each step.
+:::
+
+## Fuse The Convergence Reduction
+
+```rust
+let new_value = c + factor * (u + d + l + r - 4.0 * c);
+max_change = max_change.max((new_value - c).abs());
+*new = new_value;
+```
+
+- Compute the update
+- Measure its change
+- Store it in one traversal
+
+::: notes
+This removes the extra pass that compared old and new grids. It is still
+straightforward because max_change is a scalar local to the sequential Zip.
+:::
+
+## Return A Borrowed Array View
+
+```rust
+pub fn get_grid(&self) -> ArrayView2<'_, f64> {
+    self.grid.view()
+}
+```
+
+- Read-only access
+- Shape and stride metadata
+- Cannot outlive `self`
+- No element copy
+
+::: notes
+Callers that only index or iterate barely change. The return type makes the
+borrowed array interface explicit and does not transfer ownership.
+:::
+
+## Scientific Unit Tests
+
+- Circular initial condition
+- Fixed boundaries
+- One hand-calculated step
+- Symmetry after one step
+- Stability and input validation
+- Convergence or maximum steps
+
+::: notes
+These tests check properties of the model and method, not implementation
+details. Point out the 5-by-5 hand calculation and the reflection checks.
+:::
+
+## One-Step Reference Case
+
+```text
+grid:       5 x 5
+center:     100
+boundary:   20
+alpha:      0.1
+dt:         0.5
+
+new center: 80
+max change: 20
+```
+
+::: notes
+Ask participants to calculate the result before opening the test. A small
+known case is easier to trust than a large output file.
+:::
+
+## Black-Box Consistency
+
+```{.bash}
+cd source-code/heat-diffusion
+./test_consistency.sh
+```
+
+- Build each Cargo project independently
+- Run matching argument sets
+- Compare complete CLI output with `diff`
+
+::: notes
+Unit tests localize failures inside each project. The shell test separately
+checks the behavior-preserving refactoring contract.
+:::
+
+## Terminal: Compare A Visible State
+
+```{.bash}
+cargo run --manifest-path naive/Cargo.toml -- \
+  --grid-size 21 --spot-radius 5 --steps 25 --show
+
+cargo run --manifest-path ndarray-features/Cargo.toml -- \
+  --grid-size 21 --spot-radius 5 --steps 25 --show
+```
+
+::: notes
+Run from source-code/heat-diffusion. Reduce the grid size if the terminal is
+narrow.
+:::
+
+## Layout And Performance
+
+- Row-major is the default for owned `Array2`
+- Views may be strided and non-contiguous
+- Syntax alone does not establish performance
+- Benchmark representative release builds
+
+::: notes
+Do not claim that Zip is automatically faster. The refactor first improves the
+array-level expression and removes repeated allocation; measurement remains
+necessary.
+:::
+
+## Which Crate?
+
+| Need | Starting point |
+|---|---|
+| NumPy-like arrays, slices, views | `ndarray` |
+| Vectors, matrices, transformations | `nalgebra` |
+| Dense linear algebra performance | `faer` |
+| Existing native linear algebra stack | BLAS/LAPACK-backed crate |
+
+::: notes
+This is orientation, not an exhaustive ecosystem comparison. Dependency and
+deployment constraints may decide the practical choice.
+:::
+
+## Refactoring Exercise
+
+1. Add or identify a protecting unit test
+2. Replace one loop with an array operation
+3. Run that project's unit tests
+4. Run `./test_consistency.sh`
+5. Inspect any diff before continuing
+
+::: notes
+Make one conceptual change at a time. The second implementation can also serve
+as the reference solution after participants attempt individual steps.
+:::
+
+## Module Takeaways
+
+- Arrays own data; views borrow regions
+- Mutable views make write regions explicit
+- `Zip` aligns several same-shaped views
+- Double buffering fits stencil semantics
+- Tests protect both scientific properties and CLI behavior
+
+::: notes
+Close by connecting this example back to ownership: the borrowing rules are
+not incidental here; they express the lifetime and mutation constraints of the
+numerical algorithm.
+:::

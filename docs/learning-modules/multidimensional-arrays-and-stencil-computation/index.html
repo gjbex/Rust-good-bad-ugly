@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>14. Multidimensional Arrays And Stencil Computation - Rust, the good, the bad, and the ugly</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "14. Multidimensional Arrays And Stencil Computation";
+        var mkdocs_page_input_path = "multidimensional-arrays-and-stencil-computation.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/rust.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/bash.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/toml.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Rust, the good, the bad, and the ugly
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../learning-module-structure/">Module Structure</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../rust-false-friends-by-language/">False Friends By Programming Background</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Learning Modules</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../getting-started-with-rust-projects/">1. Getting Started With Rust Projects</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scalar-computation-and-numeric-basics/">2. Scalar Computation And Numeric Basics</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../control-flow-and-program-structure/">3. Control Flow And Program Structure</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ownership-borrowing-and-mutation/">4. Ownership, Borrowing, And Mutation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-modeling-with-structs-and-methods/">5. Data Modeling With Structs And Methods</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reusable-abstractions-with-traits/">6. Reusable Abstractions With Traits</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../collections-iterators-and-text-data/">7. Collections, Iterators, And Text Data</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error-handling/">8. Error Handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../project-organization-libraries-and-tests/">9. Project Organization, Libraries, And Tests</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../randomness-and-reproducible-runs/">10. Randomness And Reproducible Runs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-parallelism-with-rayon/">11. Data Parallelism With Rayon</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-julia-set/">12. Integrated Numerical Example: Julia Set</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-n-body-simulation/">13. Integrated Numerical Example: N-Body Simulation</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">14. Multidimensional Arrays And Stencil Computation</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#learning-objectives">Learning Objectives</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#the-example-family">The Example Family</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#the-numerical-model">The Numerical Model</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#creating-a-two-dimensional-array">Creating A Two-Dimensional Array</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#start-with-explicit-loops">Start With Explicit Loops</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#selecting-regions-with-slices">Selecting Regions With Slices</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#a-circular-initial-condition">A Circular Initial Condition</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#shifted-views-describe-the-stencil">Shifted Views Describe The Stencil</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#combining-views-with-zip">Combining Views With Zip</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#double-buffering">Double Buffering</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#returning-a-read-only-view">Returning A Read-Only View</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#unit-tests-as-refactoring-guardrails">Unit Tests As Refactoring Guardrails</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#cross-implementation-testing">Cross-Implementation Testing</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#run-a-visible-example">Run A Visible Example</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#memory-layout-and-access-order">Memory Layout And Access Order</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#choosing-a-scientific-array-crate">Choosing A Scientific Array Crate</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#hands-on-refactoring">Hands-On Refactoring</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#summary">Summary</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Rust, the good, the bad, and the ugly</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Learning Modules</li>
+      <li class="breadcrumb-item active">14. Multidimensional Arrays And Stencil Computation</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="multidimensional-arrays-and-stencil-computation">Multidimensional Arrays And Stencil Computation<a class="headerlink" href="#multidimensional-arrays-and-stencil-computation" title="Permanent link">&para;</a></h1>
+<p>Scientific programs often represent fields, images, and simulation states as
+multidimensional arrays. This module introduces the <code>ndarray</code> crate through a
+two-dimensional heat-diffusion example and then uses tests to guide a
+behavior-preserving refactoring.</p>
+<p>The complete example is in <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/heat-diffusion"><code>source-code/heat-diffusion</code></a>.</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>By the end of this module, you should be able to:</p>
+<ul>
+<li>create a two-dimensional <code>Array2</code> and inspect its dimensions;</li>
+<li>index individual elements and iterate with their indices;</li>
+<li>select borrowed array regions with <code>slice</code> and <code>slice_mut</code>;</li>
+<li>combine equally shaped views with <code>Zip</code>;</li>
+<li>update a stencil computation without allocating a new array each step;</li>
+<li>expose array data through a read-only <code>ArrayView2</code>;</li>
+<li>use unit and black-box tests to protect a numerical refactoring.</li>
+</ul>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<p>This module builds on:</p>
+<ul>
+<li>structs and methods from Module 5;</li>
+<li>borrowing and mutation from Module 4;</li>
+<li>error handling from Module 8;</li>
+<li>unit tests from Module 9.</li>
+</ul>
+<p>It belongs near the end of the course because the array operations make Rust's
+ownership and borrowing rules concrete in a realistic numerical program.</p>
+<h2 id="the-example-family">The Example Family<a class="headerlink" href="#the-example-family" title="Permanent link">&para;</a></h2>
+<p>The directory contains two separate Cargo projects:</p>
+<ul>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/heat-diffusion/naive"><code>source-code/heat-diffusion/naive</code></a> expresses the stencil with explicit
+  nested loops and element indexing;</li>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/heat-diffusion/ndarray-features"><code>source-code/heat-diffusion/ndarray-features</code></a> preserves the command-line
+  behavior while using more of the <code>ndarray</code> API.</li>
+</ul>
+<p>Both variants deliberately have the same inputs, validation, initial
+condition, update equation, convergence rule, and output. This lets tests
+distinguish a change in implementation from a change in behavior.</p>
+<p>Start by running the tests:</p>
+<pre class="highlight"><code class="language-bash">cd source-code/heat-diffusion
+cargo test --manifest-path naive/Cargo.toml
+cargo test --manifest-path ndarray-features/Cargo.toml
+./test_consistency.sh</code></pre>
+<h2 id="the-numerical-model">The Numerical Model<a class="headerlink" href="#the-numerical-model" title="Permanent link">&para;</a></h2>
+<p>The simulation stores temperature on a square grid. For each interior point,
+one explicit time step applies a five-point stencil:</p>
+<pre class="highlight"><code class="language-text">new = center + alpha * dt * (up + down + left + right - 4 * center)</code></pre>
+<p>Here <code>alpha</code> is the thermal diffusivity and <code>dt</code> is the time step. The grid
+spacing is one in both directions.</p>
+<p>The boundary temperatures remain fixed. The interior starts at zero except
+for a circular hot spot in the center.</p>
+<p>For this scheme, the stability check is:</p>
+<pre class="highlight"><code class="language-text">alpha * dt &lt;= 0.25</code></pre>
+<p>The code validates this condition before running. Rust's memory safety does not
+make an unstable numerical method stable; scientific constraints still need
+to be represented and checked.</p>
+<h2 id="creating-a-two-dimensional-array">Creating A Two-Dimensional Array<a class="headerlink" href="#creating-a-two-dimensional-array" title="Permanent link">&para;</a></h2>
+<p>Both implementations store the grid in an <code>Array2&lt;f64&gt;</code>:</p>
+<pre class="highlight"><code class="language-rust">let grid = Array2::&lt;f64&gt;::zeros((grid_size, grid_size));</code></pre>
+<p><code>Array2&lt;T&gt;</code> is a two-dimensional specialization of <code>ndarray::Array</code>. The shape
+is a tuple, and <code>zeros</code> allocates owned, contiguous storage initialized with
+zero values.</p>
+<p>The dimensions are available without storing them separately:</p>
+<pre class="highlight"><code class="language-rust">let (rows, cols) = self.grid.dim();</code></pre>
+<p>An individual element is indexed with an array-shaped index:</p>
+<pre class="highlight"><code class="language-rust">let temperature = self.grid[[row, col]];
+self.grid[[row, col]] = 100.0;</code></pre>
+<p>Unlike a nested <code>Vec&lt;Vec&lt;f64&gt;&gt;</code>, an <code>Array2</code> has one rectangular shape and a
+defined memory layout.</p>
+<h2 id="start-with-explicit-loops">Start With Explicit Loops<a class="headerlink" href="#start-with-explicit-loops" title="Permanent link">&para;</a></h2>
+<p>The naive version makes the stencil mechanics visible:</p>
+<pre class="highlight"><code class="language-rust">for row in 1..rows - 1 {
+    for col in 1..cols - 1 {
+        new_grid[[row, col]] = self.grid[[row, col]]
+            + self.alpha
+                * dt
+                * (self.grid[[row + 1, col]]
+                    + self.grid[[row - 1, col]]
+                    + self.grid[[row, col + 1]]
+                    + self.grid[[row, col - 1]]
+                    - 4.0 * self.grid[[row, col]]);
+    }
+}</code></pre>
+<p>This is a useful baseline: the loops describe the mathematical update
+directly, and a hand-calculated unit test establishes a small known result
+before refactoring.</p>
+<p>The implementation is in
+<a href="https://github.com/gjbex/Rust-good-bad-ugly/blob/main/source-code/heat-diffusion/naive/src/heat_diffusion.rs"><code>source-code/heat-diffusion/naive/src/heat_diffusion.rs</code></a>.</p>
+<h2 id="selecting-regions-with-slices">Selecting Regions With Slices<a class="headerlink" href="#selecting-regions-with-slices" title="Permanent link">&para;</a></h2>
+<p>The <code>s!</code> macro constructs an array slice description. A shared slice borrows
+data for reading:</p>
+<pre class="highlight"><code class="language-rust">let center = self.grid.slice(s![1..rows - 1, 1..cols - 1]);</code></pre>
+<p>A mutable slice borrows a region for writing:</p>
+<pre class="highlight"><code class="language-rust">self.grid
+    .slice_mut(s![0, ..])
+    .fill(boundary_temperature);</code></pre>
+<p>The first expression selects the interior. The second selects the complete top
+row and fills it. Similar calls set the other three boundaries.</p>
+<p>These operations create views; they do not copy the selected values. The
+borrow remains active for as long as the view is used.</p>
+<h2 id="a-circular-initial-condition">A Circular Initial Condition<a class="headerlink" href="#a-circular-initial-condition" title="Permanent link">&para;</a></h2>
+<p>The central square that can contain the hot spot is selected once:</p>
+<pre class="highlight"><code class="language-rust">let mut spot = self.grid.slice_mut(s![
+    center_row - spot_radius..center_row + spot_radius + 1,
+    center_col - spot_radius..center_col + spot_radius + 1
+]);</code></pre>
+<p>The local indices from <code>indexed_iter_mut</code> are then used to decide whether an
+element lies inside the circle:</p>
+<pre class="highlight"><code class="language-rust">for ((row, col), temperature) in spot.indexed_iter_mut() {
+    let row_distance = row.abs_diff(spot_radius);
+    let col_distance = col.abs_diff(spot_radius);
+
+    if row_distance.pow(2) + col_distance.pow(2) &lt;= spot_radius.pow(2) {
+        *temperature = spot_temperature;
+    }
+}</code></pre>
+<p>This combines three ideas:</p>
+<ul>
+<li>the slice limits the iteration to the relevant square;</li>
+<li><code>indexed_iter_mut</code> supplies local coordinates and mutable element
+  references;</li>
+<li>the condition fills only points inside the circular region.</li>
+</ul>
+<h2 id="shifted-views-describe-the-stencil">Shifted Views Describe The Stencil<a class="headerlink" href="#shifted-views-describe-the-stencil" title="Permanent link">&para;</a></h2>
+<p>The refactored step creates five equally shaped, read-only views:</p>
+<pre class="highlight"><code class="language-rust">let center = self.grid.slice(s![1..rows - 1, 1..cols - 1]);
+let up = self.grid.slice(s![0..rows - 2, 1..cols - 1]);
+let down = self.grid.slice(s![2..rows, 1..cols - 1]);
+let left = self.grid.slice(s![1..rows - 1, 0..cols - 2]);
+let right = self.grid.slice(s![1..rows - 1, 2..cols]);</code></pre>
+<p>Every position in these views refers to one center point and its four
+neighbors. Explicit dimension-based bounds also make the selected shapes easy
+to compare.</p>
+<h2 id="combining-views-with-zip">Combining Views With Zip<a class="headerlink" href="#combining-views-with-zip" title="Permanent link">&para;</a></h2>
+<p><code>ndarray::Zip</code> walks arrays or views with matching shapes in lockstep:</p>
+<pre class="highlight"><code class="language-rust">Zip::from(self.next_grid.slice_mut(s![1..rows - 1, 1..cols - 1]))
+    .and(center)
+    .and(up)
+    .and(down)
+    .and(left)
+    .and(right)
+    .for_each(|new, &amp;c, &amp;u, &amp;d, &amp;l, &amp;r| {
+        let new_value = c + diffusion_factor * (u + d + l + r - 4.0 * c);
+        max_change = max_change.max((new_value - c).abs());
+        *new = new_value;
+    });</code></pre>
+<p>The closure receives one mutable output and five input values. The maximum
+change is accumulated while each new value is computed, avoiding a second
+full-grid traversal.</p>
+<p>This formulation emphasizes aligned array regions rather than row and column
+bookkeeping. The explicit-loop version remains valuable when the mapping
+between views would be less clear than the indices.</p>
+<p>The complete refactored implementation is in
+<a href="https://github.com/gjbex/Rust-good-bad-ugly/blob/main/source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs"><code>source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs</code></a>.</p>
+<h2 id="double-buffering">Double Buffering<a class="headerlink" href="#double-buffering" title="Permanent link">&para;</a></h2>
+<p>A stencil update must read the complete old state while writing the new state.
+Updating one grid in place would let later points observe already updated
+neighbors.</p>
+<p>The refactored <code>System</code> therefore owns two arrays:</p>
+<pre class="highlight"><code class="language-rust">pub struct System {
+    grid: Array2&lt;f64&gt;,
+    next_grid: Array2&lt;f64&gt;,
+    alpha: f64,
+}</code></pre>
+<p>The new interior is written into <code>next_grid</code>. The fixed boundaries were
+initialized in both buffers. At the end of the step, ownership of the two
+arrays is exchanged:</p>
+<pre class="highlight"><code class="language-rust">std::mem::swap(&amp;mut self.grid, &amp;mut self.next_grid);</code></pre>
+<p>This reuses both allocations for every time step.</p>
+<h2 id="returning-a-read-only-view">Returning A Read-Only View<a class="headerlink" href="#returning-a-read-only-view" title="Permanent link">&para;</a></h2>
+<p>The <code>ndarray-features</code> getter returns a borrowed view:</p>
+<pre class="highlight"><code class="language-rust">pub fn get_grid(&amp;self) -&gt; ArrayView2&lt;'_, f64&gt; {
+    self.grid.view()
+}</code></pre>
+<p><code>ArrayView2</code> contains shape and stride information while borrowing the
+elements. The <code>'_</code> lifetime says that the returned view cannot outlive the
+borrow of <code>self</code>.</p>
+<p>Callers can index and iterate over the result, but cannot mutate it. The naive
+implementation returns <code>&amp;Array2&lt;f64&gt;</code> instead; existing callers can use both
+forms similarly for read-only indexing and iteration.</p>
+<h2 id="unit-tests-as-refactoring-guardrails">Unit Tests As Refactoring Guardrails<a class="headerlink" href="#unit-tests-as-refactoring-guardrails" title="Permanent link">&para;</a></h2>
+<p>Both implementations test numerical properties rather than only checking that
+the program runs:</p>
+<ul>
+<li>the hot spot is circular and the boundaries are fixed;</li>
+<li>one small update matches a hand calculation;</li>
+<li>a symmetric initial state remains symmetric after a step;</li>
+<li>convergence and maximum-step behavior are correct;</li>
+<li>invalid physical and numerical parameters are rejected.</li>
+</ul>
+<p>The hand-calculated test is deliberately small. With a 5-by-5 grid, a central
+temperature of 100, <code>alpha = 0.1</code>, and <code>dt = 0.5</code>, the center becomes 80 after
+one step and the maximum change is 20.</p>
+<p>Run each project's tests independently:</p>
+<pre class="highlight"><code class="language-bash">cargo test --manifest-path source-code/heat-diffusion/naive/Cargo.toml
+cargo test --manifest-path source-code/heat-diffusion/ndarray-features/Cargo.toml</code></pre>
+<h2 id="cross-implementation-testing">Cross-Implementation Testing<a class="headerlink" href="#cross-implementation-testing" title="Permanent link">&para;</a></h2>
+<p>Unit tests protect each implementation, but the refactoring also has a
+cross-project behavioral contract. The shell script runs both binaries with
+matching arguments and compares their complete output:</p>
+<pre class="highlight"><code class="language-bash">cd source-code/heat-diffusion
+./test_consistency.sh</code></pre>
+<p>It covers the initial state, one step, multiple steps, and convergence. When
+the outputs differ, <code>diff</code> shows the mismatch.</p>
+<p>This black-box check is complementary to unit tests:</p>
+<ul>
+<li>unit tests localize errors and check scientific invariants;</li>
+<li>the shell test verifies that the two independently built command-line
+  programs remain interchangeable for the chosen cases.</li>
+</ul>
+<h2 id="run-a-visible-example">Run A Visible Example<a class="headerlink" href="#run-a-visible-example" title="Permanent link">&para;</a></h2>
+<p>From the repository root:</p>
+<pre class="highlight"><code class="language-bash">cargo run --manifest-path source-code/heat-diffusion/naive/Cargo.toml -- \
+    --grid-size 21 --spot-radius 5 --steps 25 --show
+
+cargo run --manifest-path source-code/heat-diffusion/ndarray-features/Cargo.toml -- \
+    --grid-size 21 --spot-radius 5 --steps 25 --show</code></pre>
+<p>Try changing <code>--steps</code>, <code>--alpha</code>, and <code>--dt</code>. An unstable combination such as
+<code>--alpha 1.0 --dt 0.3</code> should be rejected before the simulation starts.</p>
+<h2 id="memory-layout-and-access-order">Memory Layout And Access Order<a class="headerlink" href="#memory-layout-and-access-order" title="Permanent link">&para;</a></h2>
+<p>An <code>Array2</code> uses row-major layout by default, so elements in the same row are
+normally adjacent in memory. Traversing rows and then columns follows that
+layout:</p>
+<pre class="highlight"><code class="language-rust">for row in grid.rows() {
+    for &amp;value in row {
+        // use value
+    }
+}</code></pre>
+<p>Views can have different strides and are not necessarily contiguous. Code that
+needs a contiguous slice must check rather than assume that every view exposes
+one.</p>
+<p>The heat-diffusion example uses views to express rectangular regions. It does
+not benchmark the loop and <code>Zip</code> versions, so do not infer a performance result
+from their syntax alone. Measure representative release builds when
+performance matters.</p>
+<h2 id="choosing-a-scientific-array-crate">Choosing A Scientific Array Crate<a class="headerlink" href="#choosing-a-scientific-array-crate" title="Permanent link">&para;</a></h2>
+<p>The Rust ecosystem has several relevant choices:</p>
+<ul>
+<li>use <code>ndarray</code> for NumPy-like multidimensional arrays, slicing, views,
+  element-wise operations, and scientific data pipelines;</li>
+<li>use <code>nalgebra</code> for vectors, matrices, transformations, and
+  dimension-aware linear algebra;</li>
+<li>consider <code>faer</code> for dense linear algebra with a strong focus on performance;</li>
+<li>use BLAS/LAPACK-backed crates when established native libraries and their
+  deployment requirements fit the project.</li>
+</ul>
+<p>This example focuses on array shapes, indexing, slicing, views, and stencils.
+Broadcasting and matrix factorizations are separate topics and should be
+introduced with examples where those operations are central.</p>
+<h2 id="hands-on-refactoring">Hands-On Refactoring<a class="headerlink" href="#hands-on-refactoring" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Add a unit test to one implementation before changing it.</li>
+<li>Replace one explicit boundary loop with a mutable slice and <code>fill</code>.</li>
+<li>Compare the circular initialization in both implementations.</li>
+<li>Draw the five shifted stencil regions for a 5-by-5 grid.</li>
+<li>Change the convergence tolerance and predict the reported step count.</li>
+<li>Run <code>./test_consistency.sh</code> after every behavior-preserving change.</li>
+</ol>
+<h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Array2</code> provides owned rectangular two-dimensional storage.</li>
+<li>Slices and views borrow array regions without copying them.</li>
+<li>Mutable views constrain where an operation may write.</li>
+<li><code>Zip</code> applies one closure to aligned elements from several views.</li>
+<li>Double buffering preserves stencil semantics while reusing allocations.</li>
+<li>Read-only <code>ArrayView2</code> values expose borrowed array data.</li>
+<li>Unit tests and cross-project output comparison support numerical
+  refactoring.</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../integrated-numerical-example-n-body-simulation/" class="btn btn-neutral float-left" title="13. Integrated Numerical Example: N-Body Simulation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../integrated-numerical-example-n-body-simulation/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
