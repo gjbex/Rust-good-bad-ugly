@@ -11,10 +11,10 @@ several places when they combine multiple ideas.
 | Minimal Rust binary | `source-code/hello-world/src/main.rs` |
 | Cargo project layout | `source-code/hello-world/` |
 | Building and running with Cargo | `source-code/hello-world/README.md` |
-| External crates in `Cargo.toml` | `source-code/hello-clap/Cargo.toml`, `source-code/complex-numbers/Cargo.toml`, `source-code/units/Cargo.toml`, `source-code/random-numbers/Cargo.toml`, `source-code/smart-pointers/Cargo.toml`, `source-code/strings/Cargo.toml`, `source-code/structural-matching/Cargo.toml`, `source-code/heat-diffusion/naive/Cargo.toml`, `source-code/heat-diffusion/ndarray-features/Cargo.toml`, `source-code/heat-diffusion/configurable/Cargo.toml`, `source-code/svd/Cargo.toml`, `source-code/julia-set/julia-set-toml-config/Cargo.toml`, `source-code/n-body-simulation/rust/Cargo.toml` |
+| External crates in `Cargo.toml` | `source-code/hello-clap/Cargo.toml`, `source-code/complex-numbers/Cargo.toml`, `source-code/units/Cargo.toml`, `source-code/random-numbers/Cargo.toml`, `source-code/smart-pointers/Cargo.toml`, `source-code/strings/Cargo.toml`, `source-code/structural-matching/Cargo.toml`, `source-code/heat-diffusion/naive/Cargo.toml`, `source-code/heat-diffusion/ndarray-features/Cargo.toml`, `source-code/heat-diffusion/configurable/Cargo.toml`, `source-code/svd/Cargo.toml`, `source-code/fftw-ffi/Cargo.toml`, `source-code/julia-set/julia-set-toml-config/Cargo.toml`, `source-code/n-body-simulation/rust/Cargo.toml` |
 | Reproducible dependency lockfiles | `source-code/*/Cargo.lock`, `source-code/heat-diffusion/*/Cargo.lock`, `source-code/julia-set/*/Cargo.lock`, `source-code/n-body-simulation/rust/Cargo.lock` |
 | Multiple binaries in one package | `source-code/hashmap-hashset/src/generate-data.rs`, `source-code/hashmap-hashset/src/count-nucleotides.rs`, `source-code/hashmap-hashset/src/read-errors.rs` |
-| Shared package code in `lib.rs` | `source-code/smart-pointers/src/lib.rs`, `source-code/hashmap-hashset/src/lib.rs` |
+| Shared package code in `lib.rs` | `source-code/smart-pointers/src/lib.rs`, `source-code/hashmap-hashset/src/lib.rs`, `source-code/fftw-ffi/src/lib.rs` |
 | Release builds and benchmarking context | `source-code/julia-set/benchmark.sh` |
 | Unit tests protecting a numerical refactoring | `source-code/heat-diffusion/naive/src/heat_diffusion.rs`, `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs`, `source-code/heat-diffusion/configurable/src/heat_diffusion.rs` |
 | Tolerance-based numerical reconstruction test | `source-code/svd/src/main.rs` |
@@ -86,7 +86,7 @@ several places when they combine multiple ideas.
 | Ownership transfer through return values | `source-code/copy-vs-move/src/main.rs` |
 | Explicit cloning of vector data | `source-code/copy-vs-move/src/main.rs` |
 | Borrowing a vector with `&Vec<T>` | `source-code/copy-vs-move/src/main.rs` |
-| Borrowed slices `&[T]` | `source-code/copy-vs-move/src/main.rs`, `source-code/borrowing-vectors/src/main.rs` |
+| Borrowed slices `&[T]` | `source-code/copy-vs-move/src/main.rs`, `source-code/borrowing-vectors/src/main.rs`, `source-code/fftw-ffi/src/real_fft.rs` |
 | Mutable references with `&mut` | `source-code/mutable-borrowing/src/main.rs` |
 | Writing through a mutable reference | `source-code/mutable-borrowing/src/main.rs` |
 | Mutable slices `&mut [T]` | `source-code/copy-vs-move/src/main.rs`, `source-code/borrowing-vectors/src/main.rs` |
@@ -193,12 +193,29 @@ several places when they combine multiple ideas.
 | Feature | Where to look |
 |---|---|
 | `Option` for possibly absent values | `source-code/error-handling/src/matrix.rs`, `source-code/generic-structs/src/matrix.rs` |
-| `Result` for fallible operations | `source-code/error-handling/src/matrix.rs`, `source-code/iterators/src/main.rs`, `source-code/svd/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
+| `Result` for fallible operations | `source-code/error-handling/src/matrix.rs`, `source-code/iterators/src/main.rs`, `source-code/svd/src/main.rs`, `source-code/fftw-ffi/src/real_fft.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
 | Converting `Option` to `Result` with `ok_or_else` | `source-code/error-handling/src/matrix.rs` |
-| Propagating errors with `?` | `source-code/error-handling/src/matrix.rs`, `source-code/iterators/src/main.rs`, `source-code/svd/src/main.rs` |
+| Propagating errors with `?` | `source-code/error-handling/src/matrix.rs`, `source-code/iterators/src/main.rs`, `source-code/svd/src/main.rs`, `source-code/fftw-ffi/src/main.rs` |
 | Handling errors at the call site | `source-code/error-handling/src/main.rs` |
-| Returning boxed dynamic errors from `main` | `source-code/iterators/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
+| Returning boxed dynamic errors from `main` | `source-code/iterators/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/fftw-ffi/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
 | Validating numerical parameters with `Result` | `source-code/heat-diffusion/naive/src/heat_diffusion.rs`, `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs`, `source-code/heat-diffusion/configurable/src/config.rs` |
+| Custom error enum implementing `Display` and `Error` | `source-code/fftw-ffi/src/real_fft.rs` |
+
+## Native Library Interoperability And Unsafe
+
+| Feature | Where to look |
+|---|---|
+| Raw C bindings through a `-sys` crate | `source-code/fftw-ffi/Cargo.toml`, `source-code/fftw-ffi/src/real_fft.rs` |
+| System native-library feature selection | `source-code/fftw-ffi/Cargo.toml` |
+| Checked conversion from `usize` to C `int` | `source-code/fftw-ffi/src/real_fft.rs` |
+| Raw pointers isolated behind a safe API | `source-code/fftw-ffi/src/real_fft.rs` |
+| Documented `unsafe` blocks | `source-code/fftw-ffi/src/real_fft.rs` |
+| Native aligned allocation with `NonNull` | `source-code/fftw-ffi/src/real_fft.rs` |
+| Native resource cleanup with `Drop` | `source-code/fftw-ffi/src/real_fft.rs` |
+| Field order as a native lifetime invariant | `source-code/fftw-ffi/src/real_fft.rs` |
+| Serializing native planner operations with `Mutex` | `source-code/fftw-ffi/src/real_fft.rs` |
+| Safe slice-based forward and inverse transforms | `source-code/fftw-ffi/src/real_fft.rs` |
+| FFI boundary length validation | `source-code/fftw-ffi/src/real_fft.rs` |
 
 ## Data I/O And Serialization
 
@@ -259,6 +276,8 @@ several places when they combine multiple ideas.
 | Symmetry and hand-calculated stencil tests | `source-code/heat-diffusion/naive/src/heat_diffusion.rs`, `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs`, `source-code/heat-diffusion/configurable/src/heat_diffusion.rs` |
 | Configuration-driven heat-diffusion runs | `source-code/heat-diffusion/configurable/` |
 | Alternative uniform and Gaussian initial conditions | `source-code/heat-diffusion/configurable/src/config.rs`, `source-code/heat-diffusion/configurable/src/heat_diffusion.rs` |
+| FFTW real-to-complex transform through FFI | `source-code/fftw-ffi/` |
+| Spectral-peak and normalized round-trip tests | `source-code/fftw-ffi/src/main.rs` |
 
 ## Python Visualization Helpers
 
@@ -277,9 +296,9 @@ These features are not yet covered, or are only lightly touched:
 
 - deeper pattern matching: `while let` and struct destructuring;
 - explicit lifetime parameters;
-- custom error enums and richer error context;
+- richer error context beyond compact custom enums;
 - integration tests;
 - additional standard trait implementations such as `From`, `Default`,
   `Debug`, and `PartialEq`;
 - broader serialization workflows beyond compact JSON examples;
-- FFI, `unsafe`, and async Rust.
+- async Rust.

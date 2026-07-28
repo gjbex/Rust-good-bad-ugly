@@ -7,6 +7,7 @@ and are comfortable running shell commands.
 The setup has two parts:
 
 - Rust tooling, installed with `rustup`.
+- Native OpenBLAS and FFTW libraries for the linear-algebra and FFI examples.
 - Python packages for visualization, installed in a `mamba` environment from
   `environment.yml`.
 - MkDocs for building the learning-module website.
@@ -59,6 +60,26 @@ Linux distribution's standard build tools. For example, on Debian or Ubuntu:
 sudo apt update
 sudo apt install build-essential curl
 ```
+
+## Native Scientific Libraries
+
+The SVD and FFTW FFI examples deliberately use system-provided native
+libraries. On Debian or Ubuntu, install their development packages with:
+
+```bash
+sudo apt install libopenblas-dev libfftw3-dev pkg-config
+```
+
+Verify that the build environment can discover both libraries:
+
+```bash
+pkg-config --modversion openblas
+pkg-config --modversion fftw3
+```
+
+On an HPC system, use the site's compiler and library modules instead. Ensure
+that `pkg-config`, the compiler, and the dynamic linker resolve a mutually
+compatible installation.
 
 ## Checking A Rust Example
 

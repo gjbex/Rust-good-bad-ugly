@@ -77,6 +77,9 @@ prevent or make explicit in safe code.
 1. `svd`: uses `ndarray` and OpenBLAS-backed `ndarray-linalg` to compute a
    singular value decomposition, reconstruct a rectangular matrix with matrix
    multiplication, and measure the floating-point reconstruction error.
+1. `fftw-ffi`: wraps FFTW's raw C API in a safe slice-based Rust interface,
+   detects known frequencies in a synthetic signal, and validates the
+   normalized inverse transform.
 
 `julia-set`: Julia set  implementations illustrating diverse aspects of Rust
 programming.

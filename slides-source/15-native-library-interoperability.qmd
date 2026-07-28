@@ -1,0 +1,322 @@
+# Module 15: Native Library Interoperability
+
+::: notes
+This module shows how to reuse a mature HPC library without exposing its raw
+pointer API to the rest of the application. Keep the focus on boundary
+invariants, not on Fourier-transform theory.
+:::
+
+## Module Arc
+
+- Start with a signal whose spectrum is predictable
+- Identify what the C API cannot express to Rust
+- Own native buffers and plans with Rust types
+- Concentrate `unsafe` behind slice-based methods
+- Validate both boundary failures and scientific behavior
+
+::: notes
+Connect this to the OpenBLAS-backed SVD example: there learners consumed a safe
+wrapper. Here they build one around FFTW's raw bindings.
+:::
+
+## A Testable Signal
+
+```text
+x[j] =
+    sin(2 pi 3 j / n)
+    + 0.5 cos(2 pi 7 j / n)
+```
+
+- 64 real samples
+- Expected dominant bins: 3 and 7
+- Forward transform, inverse transform, error check
+
+::: notes
+Ask for the expected bins before showing any Rust. This makes the later test a
+scientific property rather than a check that the FFI call did not crash.
+:::
+
+## Four Layers
+
+```text
+main.rs
+  safe vectors and Result
+          |
+RealFft
+  safe slice-based wrapper
+          |
+fftw-sys
+  raw pointers and unsafe calls
+          |
+libfftw3.so
+```
+
+::: notes
+The sys crate supplies declarations close to C. RealFft is the abstraction
+boundary owned by this project.
+:::
+
+## Terminal: Native Dependency
+
+```{.bash}
+sudo apt install libfftw3-dev
+
+cd source-code/fftw-ffi
+cargo run
+```
+
+```toml
+fftw-sys = {
+    version = "0.8.0",
+    default-features = false,
+    features = ["system"]
+}
+```
+
+::: notes
+On an HPC system, replace the package-manager command with the site's FFTW
+module and compiler environment. Point out that the system choice is explicit.
+:::
+
+## What Rust Cannot Check
+
+- Does the pointer reference enough elements?
+- Is the allocation aligned as FFTW requires?
+- Is the complex buffer exactly `n / 2 + 1` elements?
+- Does the plan outlive its buffers?
+- Which planner operations require serialization?
+- Which native function releases each resource?
+
+::: notes
+Unsafe does not disable these requirements. It tells the compiler that this
+block is relying on facts established elsewhere.
+:::
+
+## Validate Before FFI
+
+```rust
+if length == 0 {
+    return Err(FftError::EmptyInput);
+}
+
+let ffi_length = i32::try_from(length)
+    .map_err(|_| FftError::LengthTooLarge(length))?;
+```
+
+- Rust API: `usize`
+- C API: `int`
+- Conversion failure becomes a normal error
+
+::: notes
+Also show the slice-length checks in real_fft.rs. The native call should never
+be responsible for discovering an undersized Rust slice.
+:::
+
+## Own Aligned Memory
+
+```rust
+struct FftwBuffer<T> {
+    pointer: NonNull<T>,
+    length: usize,
+}
+```
+
+- FFTW performs the allocation
+- `NonNull` records successful construction
+- Length travels with the pointer
+- Memory is initialized before creating Rust slices
+
+::: notes
+Open source-code/fftw-ffi/src/real_fft.rs for the allocation calls and their
+safety comments. Do not place the full implementation on the slide.
+:::
+
+## Release With `Drop`
+
+```rust
+impl<T> Drop for FftwBuffer<T> {
+    fn drop(&mut self) {
+        unsafe {
+            fftw_free(self.pointer.as_ptr().cast());
+        }
+    }
+}
+```
+
+- FFTW allocation pairs with FFTW deallocation
+- Early `?` returns still clean up constructed values
+- Native ownership becomes Rust RAII
+
+::: notes
+Plans have a matching Drop implementation using fftw_destroy_plan. Contrast
+this with manually repeating cleanup at every return site.
+:::
+
+## Drop Order Is An Invariant
+
+```rust
+pub struct RealFft {
+    length: usize,
+    spectrum_length: usize,
+    forward_plan: FftwPlan,
+    inverse_plan: FftwPlan,
+    real_buffer: FftwBuffer<f64>,
+    complex_buffer: FftwBuffer<Complex64>,
+}
+```
+
+- Plans retain buffer addresses
+- Fields drop in declaration order
+- Plans are destroyed before buffers
+
+::: notes
+Moving RealFft is still valid because its FFTW allocations remain at stable
+heap addresses.
+:::
+
+## Preserve Native Concurrency Rules
+
+```rust
+static FFTW_PLANNER_LOCK: Mutex<()> = Mutex::new(());
+
+fn lock_planner() -> MutexGuard<'static, ()> {
+    FFTW_PLANNER_LOCK
+        .lock()
+        .unwrap_or_else(PoisonError::into_inner)
+}
+```
+
+- Plan creation and destruction are serialized
+- Independent plan execution remains unlocked
+
+::: notes
+A wrapper that works only when constructed on one thread is not yet a sound
+general-purpose safe API. Encode the library's actual concurrency rule.
+:::
+
+## Real Transform Shape
+
+```text
+real input:      n
+complex output:  floor(n / 2) + 1
+
+n = 64  ->  33 complex values
+```
+
+```rust
+let spectrum_length = length / 2 + 1;
+```
+
+- Real input has a conjugate-symmetric spectrum
+- FFTW returns only the non-redundant half
+
+::: notes
+This is both a numerical fact and a buffer-allocation invariant at the FFI
+boundary.
+:::
+
+## Normalize The Inverse
+
+```rust
+let normalization = self.length as f64;
+
+let reconstructed = self
+    .real_buffer
+    .as_slice()
+    .iter()
+    .map(|value| value / normalization)
+    .collect();
+```
+
+- FFTW's inverse is unnormalized
+- The inverse may overwrite its complex input
+- Copy into owned native storage before execution
+
+::: notes
+Remove the division during a live edit and ask participants to predict the
+scale of the reconstructed signal.
+:::
+
+## The Public API Is Safe
+
+```rust
+let mut transform = RealFft::new(signal.len())?;
+
+let spectrum = transform.forward(&signal)?;
+let reconstructed = transform.inverse(&spectrum)?;
+```
+
+- No public raw pointers
+- No returned borrow into reusable FFTW storage
+- Length failures use `FftError`
+- Native failures propagate through `Result`
+
+::: notes
+Returning owned vectors is a deliberate teaching choice. A borrowed zero-copy
+result would need a more restrictive API because the next transform overwrites
+the internal buffer.
+:::
+
+## Test Both Contracts
+
+- Reject zero-length transforms
+- Reject incorrect signal and spectrum lengths
+- Check `64 / 2 + 1 == 33`
+- Detect bins 3 and 7
+- Check forward/inverse errors against `1.0e-12`
+
+```{.bash}
+cd source-code/fftw-ffi
+cargo test
+```
+
+::: notes
+Boundary tests protect memory assumptions. The peak and round-trip tests
+protect the scientific meaning of the wrapper.
+:::
+
+## Terminal: Inspect The Link
+
+```{.bash}
+cd source-code/fftw-ffi
+cargo run
+ldd target/debug/fftw-ffi | grep fftw
+```
+
+```text
+Dominant frequency bins: [3, 7]
+Maximum round-trip error: 4.441e-16
+RMS round-trip error: 1.640e-16
+```
+
+::: notes
+The exact error digits can differ across builds. The bins and tolerance are
+the stable checks. Use the final command on Linux to confirm system linking.
+:::
+
+## Exercises
+
+1. Change one frequency and predict the detected bins
+2. Remove inverse normalization and explain the scale
+3. Trigger a `LengthMismatch` before the native call
+4. Trace cleanup after partial construction
+5. Add a safe `len` method without exposing buffers
+
+::: notes
+For a short session, choose either the normalization edit or the boundary
+error. The cleanup trace is the deeper ownership exercise.
+:::
+
+## Module Takeaways
+
+- FFI transfers obligations that types must recover
+- Validate dimensions and conversions before native calls
+- Own native memory and handles with RAII types
+- Keep `unsafe` small and state its invariants
+- Preserve lifetime and concurrency rules in the wrapper
+- Test boundary failures and scientific behavior
+
+::: notes
+Close with the integration message: Rust can be introduced as a safe component
+around established HPC libraries rather than as a demand to replace them.
+:::

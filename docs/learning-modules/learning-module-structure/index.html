@@ -78,6 +78,8 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#module-14-multidimensional-arrays-and-stencil-computation">Module 14: Multidimensional Arrays And Stencil Computation</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#module-15-native-library-interoperability">Module 15: Native Library Interoperability</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#optional-module-rust-by-contrast-with-c">Optional Module: Rust By Contrast With C++</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#suggested-teaching-order">Suggested Teaching Order</a>
@@ -118,6 +120,8 @@
                   <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-n-body-simulation/">13. Integrated Numerical Example: N-Body Simulation</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../multidimensional-arrays-and-stencil-computation/">14. Multidimensional Arrays And Stencil Computation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../native-library-interoperability/">15. Native Library Interoperability</a>
                   </li>
               </ul>
       </div>
@@ -511,6 +515,36 @@ difference from the original.</p>
 <p>This module belongs near the end of the course. It revisits ownership,
 project-level testing, and numerical validation through a practical
 multidimensional-array workflow.</p>
+<h2 id="module-15-native-library-interoperability">Module 15: Native Library Interoperability<a class="headerlink" href="#module-15-native-library-interoperability" title="Permanent link">&para;</a></h2>
+<p>Primary example:</p>
+<ul>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/fftw-ffi"><code>source-code/fftw-ffi</code></a></li>
+</ul>
+<p>Topics:</p>
+<ul>
+<li>Raw C bindings through a <code>-sys</code> crate.</li>
+<li>Checked conversion between Rust and C integer types.</li>
+<li>Raw pointers, <code>NonNull</code>, and native aligned allocation.</li>
+<li>Safe slice-based APIs around a small <code>unsafe</code> implementation.</li>
+<li>RAII cleanup of native allocations and opaque handles with <code>Drop</code>.</li>
+<li>Resource drop order and stable native heap addresses.</li>
+<li>FFTW planner serialization and concurrent plan execution.</li>
+<li>Real-to-complex spectrum shape and inverse normalization.</li>
+<li>Boundary-condition tests and numerical round-trip validation.</li>
+<li>Linking against a system-provided HPC library.</li>
+</ul>
+<p>Goal:</p>
+<p>Participants should be able to identify the obligations transferred by a C
+API, encode them in an owning Rust wrapper, keep <code>unsafe</code> local, and test both
+the boundary contract and the scientific result.</p>
+<p>Related module text:</p>
+<ul>
+<li><code>learning-modules/native-library-interoperability.md</code></li>
+</ul>
+<p>Suggested placement:</p>
+<p>This is the final core module. It relies on ownership, errors, library
+organization, tests, arrays, and numerical tolerances, then demonstrates how
+Rust can be introduced around an established HPC library.</p>
 <h2 id="optional-module-rust-by-contrast-with-c">Optional Module: Rust By Contrast With C++<a class="headerlink" href="#optional-module-rust-by-contrast-with-c" title="Permanent link">&para;</a></h2>
 <p>Primary example:</p>
 <ul>
@@ -546,13 +580,14 @@ reflective comparison after ownership and borrowing have been introduced.</p>
 <li>Integrated Numerical Example: Julia Set.</li>
 <li>Integrated Numerical Example: N-Body Simulation.</li>
 <li>Multidimensional Arrays And Stencil Computation.</li>
+<li>Native Library Interoperability.</li>
 </ol>
 <p>For a shorter course, the Julia set example can be used as the main integrated
-example, while the N-body simulation and heat-diffusion refactoring can be
-left as additional integrated examples.</p>
+example, while the N-body simulation, heat-diffusion refactoring, and native
+interoperability module can be left as additional integrated examples.</p>
 <p>For a course aimed at scientific programmers, the numerical, randomness,
-Julia-set, N-body, and multidimensional-array modules should receive more time
-than the purely syntactic examples.</p>
+Julia-set, N-body, multidimensional-array, and native-interoperability modules
+should receive more time than the purely syntactic examples.</p>
               
             </div>
           </div><footer>

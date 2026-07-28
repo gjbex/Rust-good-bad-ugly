@@ -418,6 +418,41 @@ This module belongs near the end of the course. It revisits ownership,
 project-level testing, and numerical validation through a practical
 multidimensional-array workflow.
 
+## Module 15: Native Library Interoperability
+
+Primary example:
+
+- `source-code/fftw-ffi`
+
+Topics:
+
+- Raw C bindings through a `-sys` crate.
+- Checked conversion between Rust and C integer types.
+- Raw pointers, `NonNull`, and native aligned allocation.
+- Safe slice-based APIs around a small `unsafe` implementation.
+- RAII cleanup of native allocations and opaque handles with `Drop`.
+- Resource drop order and stable native heap addresses.
+- FFTW planner serialization and concurrent plan execution.
+- Real-to-complex spectrum shape and inverse normalization.
+- Boundary-condition tests and numerical round-trip validation.
+- Linking against a system-provided HPC library.
+
+Goal:
+
+Participants should be able to identify the obligations transferred by a C
+API, encode them in an owning Rust wrapper, keep `unsafe` local, and test both
+the boundary contract and the scientific result.
+
+Related module text:
+
+- `learning-modules/native-library-interoperability.md`
+
+Suggested placement:
+
+This is the final core module. It relies on ownership, errors, library
+organization, tests, arrays, and numerical tolerances, then demonstrates how
+Rust can be introduced around an established HPC library.
+
 ## Optional Module: Rust By Contrast With C++
 
 Primary example:
@@ -458,11 +493,12 @@ A compact course can use this order:
 12. Integrated Numerical Example: Julia Set.
 13. Integrated Numerical Example: N-Body Simulation.
 14. Multidimensional Arrays And Stencil Computation.
+15. Native Library Interoperability.
 
 For a shorter course, the Julia set example can be used as the main integrated
-example, while the N-body simulation and heat-diffusion refactoring can be
-left as additional integrated examples.
+example, while the N-body simulation, heat-diffusion refactoring, and native
+interoperability module can be left as additional integrated examples.
 
 For a course aimed at scientific programmers, the numerical, randomness,
-Julia-set, N-body, and multidimensional-array modules should receive more time
-than the purely syntactic examples.
+Julia-set, N-body, multidimensional-array, and native-interoperability modules
+should receive more time than the purely syntactic examples.

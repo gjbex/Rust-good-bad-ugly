@@ -392,17 +392,18 @@ Geert Jan Bex
           display:block!important;
       }</style></aside>
 </section>
-<section id="modules-10-14-scientific-workflows" class="slide level2">
-<h2>Modules 10-14: Scientific Workflows</h2>
+<section id="modules-10-15-scientific-workflows" class="slide level2">
+<h2>Modules 10-15: Scientific Workflows</h2>
 <ol start="10" type="1">
 <li>Randomness And Reproducible Runs</li>
 <li>Data Parallelism With Rayon</li>
 <li>Integrated Numerical Example: Julia Set</li>
 <li>Integrated Numerical Example: N-Body Simulation</li>
 <li>Multidimensional Arrays And Stencil Computation</li>
+<li>Native Library Interoperability</li>
 </ol>
 <aside class="notes">
-<p>These modules make the scientific-computing context explicit: reproducibility, parallelism, structured output, diagnostics, visualization, and multidimensional array workflows.</p>
+<p>These modules make the scientific-computing context explicit: reproducibility, parallelism, structured output, diagnostics, visualization, and multidimensional arrays. The final module connects Rust to an established HPC library.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -446,7 +447,7 @@ Geert Jan Bex
 <li>Use Modules 1-4 for the Rust core</li>
 <li>Add Modules 7-8 for practical data and errors</li>
 <li>Use the Julia set as the main integrated example</li>
-<li>Leave N-body and heat diffusion as follow-up or optional labs</li>
+<li>Leave N-body, heat diffusion, and FFI as follow-up or optional labs</li>
 </ul>
 <aside class="notes">
 <p>For a short delivery, do not try to cover every module equally. The numerical examples should receive more time than purely syntactic material for this audience.</p>
@@ -9837,6 +9838,456 @@ k = min(m, n)</code></pre>
 </ul>
 <aside class="notes">
 <p>Close by connecting this example back to ownership: the borrowing rules are not incidental here; they express the lifetime and mutation constraints of the numerical algorithm.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="module-15-native-library-interoperability" class="title-slide slide level1 center">
+<h1>Module 15: Native Library Interoperability</h1>
+<aside class="notes">
+<p>This module shows how to reuse a mature HPC library without exposing its raw pointer API to the rest of the application. Keep the focus on boundary invariants, not on Fourier-transform theory.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="module-arc-14" class="slide level2">
+<h2>Module Arc</h2>
+<ul>
+<li>Start with a signal whose spectrum is predictable</li>
+<li>Identify what the C API cannot express to Rust</li>
+<li>Own native buffers and plans with Rust types</li>
+<li>Concentrate <code>unsafe</code> behind slice-based methods</li>
+<li>Validate both boundary failures and scientific behavior</li>
+</ul>
+<aside class="notes">
+<p>Connect this to the OpenBLAS-backed SVD example: there learners consumed a safe wrapper. Here they build one around FFTW’s raw bindings.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="a-testable-signal" class="slide level2">
+<h2>A Testable Signal</h2>
+<pre class="text"><code>x[j] =
+    sin(2 pi 3 j / n)
+    + 0.5 cos(2 pi 7 j / n)</code></pre>
+<ul>
+<li>64 real samples</li>
+<li>Expected dominant bins: 3 and 7</li>
+<li>Forward transform, inverse transform, error check</li>
+</ul>
+<aside class="notes">
+<p>Ask for the expected bins before showing any Rust. This makes the later test a scientific property rather than a check that the FFI call did not crash.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="four-layers" class="slide level2">
+<h2>Four Layers</h2>
+<pre class="text"><code>main.rs
+  safe vectors and Result
+          |
+RealFft
+  safe slice-based wrapper
+          |
+fftw-sys
+  raw pointers and unsafe calls
+          |
+libfftw3.so</code></pre>
+<aside class="notes">
+<p>The sys crate supplies declarations close to C. RealFft is the abstraction boundary owned by this project.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="terminal-native-dependency" class="slide level2">
+<h2>Terminal: Native Dependency</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb302"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb302-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt install libfftw3-dev</span>
+<span id="cb302-2"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb302-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> source-code/fftw-ffi</span>
+<span id="cb302-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb303"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb303-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">fftw-sys</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb303-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">    </span><span class="dt">version</span><span class="op"> =</span> <span class="st">"0.8.0"</span><span class="op">,</span></span>
+<span id="cb303-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">    </span><span class="dt">default-features</span><span class="op"> =</span> <span class="cn">false</span><span class="op">,</span></span>
+<span id="cb303-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">    </span><span class="dt">features</span><span class="op"> =</span> <span class="op">[</span><span class="st">"system"</span><span class="op">]</span></span>
+<span id="cb303-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>On an HPC system, replace the package-manager command with the site’s FFTW module and compiler environment. Point out that the system choice is explicit.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="what-rust-cannot-check" class="slide level2">
+<h2>What Rust Cannot Check</h2>
+<ul>
+<li>Does the pointer reference enough elements?</li>
+<li>Is the allocation aligned as FFTW requires?</li>
+<li>Is the complex buffer exactly <code>n / 2 + 1</code> elements?</li>
+<li>Does the plan outlive its buffers?</li>
+<li>Which planner operations require serialization?</li>
+<li>Which native function releases each resource?</li>
+</ul>
+<aside class="notes">
+<p>Unsafe does not disable these requirements. It tells the compiler that this block is relying on facts established elsewhere.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="validate-before-ffi" class="slide level2">
+<h2>Validate Before FFI</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb304"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb304-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> length <span class="op">==</span> <span class="dv">0</span> <span class="op">{</span></span>
+<span id="cb304-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="cn">Err</span>(<span class="pp">FftError::</span>EmptyInput)<span class="op">;</span></span>
+<span id="cb304-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb304-4"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb304-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> ffi_length <span class="op">=</span> <span class="dt">i32</span><span class="pp">::</span>try_from(length)</span>
+<span id="cb304-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>map_err(<span class="op">|</span>_<span class="op">|</span> <span class="pp">FftError::</span>LengthTooLarge(length))<span class="op">?;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Rust API: <code>usize</code></li>
+<li>C API: <code>int</code></li>
+<li>Conversion failure becomes a normal error</li>
+</ul>
+<aside class="notes">
+<p>Also show the slice-length checks in real_fft.rs. The native call should never be responsible for discovering an undersized Rust slice.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="own-aligned-memory" class="slide level2">
+<h2>Own Aligned Memory</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb305"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb305-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> FftwBuffer<span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb305-2"><a href="" aria-hidden="true" tabindex="-1"></a>    pointer<span class="op">:</span> NonNull<span class="op">&lt;</span>T<span class="op">&gt;,</span></span>
+<span id="cb305-3"><a href="" aria-hidden="true" tabindex="-1"></a>    length<span class="op">:</span> <span class="dt">usize</span><span class="op">,</span></span>
+<span id="cb305-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>FFTW performs the allocation</li>
+<li><code>NonNull</code> records successful construction</li>
+<li>Length travels with the pointer</li>
+<li>Memory is initialized before creating Rust slices</li>
+</ul>
+<aside class="notes">
+<p>Open source-code/fftw-ffi/src/real_fft.rs for the allocation calls and their safety comments. Do not place the full implementation on the slide.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="release-with-drop" class="slide level2">
+<h2>Release With <code>Drop</code></h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb306"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb306-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">impl</span><span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="bu">Drop</span> <span class="cf">for</span> FftwBuffer<span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb306-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> drop(<span class="op">&amp;</span><span class="kw">mut</span> <span class="kw">self</span>) <span class="op">{</span></span>
+<span id="cb306-3"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="kw">unsafe</span> <span class="op">{</span></span>
+<span id="cb306-4"><a href="" aria-hidden="true" tabindex="-1"></a>            fftw_free(<span class="kw">self</span><span class="op">.</span>pointer<span class="op">.</span>as_ptr()<span class="op">.</span>cast())<span class="op">;</span></span>
+<span id="cb306-5"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb306-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb306-7"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>FFTW allocation pairs with FFTW deallocation</li>
+<li>Early <code>?</code> returns still clean up constructed values</li>
+<li>Native ownership becomes Rust RAII</li>
+</ul>
+<aside class="notes">
+<p>Plans have a matching Drop implementation using fftw_destroy_plan. Contrast this with manually repeating cleanup at every return site.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="drop-order-is-an-invariant" class="slide level2">
+<h2>Drop Order Is An Invariant</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb307"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb307-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">struct</span> RealFft <span class="op">{</span></span>
+<span id="cb307-2"><a href="" aria-hidden="true" tabindex="-1"></a>    length<span class="op">:</span> <span class="dt">usize</span><span class="op">,</span></span>
+<span id="cb307-3"><a href="" aria-hidden="true" tabindex="-1"></a>    spectrum_length<span class="op">:</span> <span class="dt">usize</span><span class="op">,</span></span>
+<span id="cb307-4"><a href="" aria-hidden="true" tabindex="-1"></a>    forward_plan<span class="op">:</span> FftwPlan<span class="op">,</span></span>
+<span id="cb307-5"><a href="" aria-hidden="true" tabindex="-1"></a>    inverse_plan<span class="op">:</span> FftwPlan<span class="op">,</span></span>
+<span id="cb307-6"><a href="" aria-hidden="true" tabindex="-1"></a>    real_buffer<span class="op">:</span> FftwBuffer<span class="op">&lt;</span><span class="dt">f64</span><span class="op">&gt;,</span></span>
+<span id="cb307-7"><a href="" aria-hidden="true" tabindex="-1"></a>    complex_buffer<span class="op">:</span> FftwBuffer<span class="op">&lt;</span>Complex64<span class="op">&gt;,</span></span>
+<span id="cb307-8"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Plans retain buffer addresses</li>
+<li>Fields drop in declaration order</li>
+<li>Plans are destroyed before buffers</li>
+</ul>
+<aside class="notes">
+<p>Moving RealFft is still valid because its FFTW allocations remain at stable heap addresses.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="preserve-native-concurrency-rules" class="slide level2">
+<h2>Preserve Native Concurrency Rules</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb308"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb308-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">static</span> FFTW_PLANNER_LOCK<span class="op">:</span> Mutex<span class="op">&lt;</span>()<span class="op">&gt;</span> <span class="op">=</span> <span class="pp">Mutex::</span>new(())<span class="op">;</span></span>
+<span id="cb308-2"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb308-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> lock_planner() <span class="op">-&gt;</span> MutexGuard<span class="op">&lt;</span><span class="ot">'static</span><span class="op">,</span> ()<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb308-4"><a href="" aria-hidden="true" tabindex="-1"></a>    FFTW_PLANNER_LOCK</span>
+<span id="cb308-5"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span>lock()</span>
+<span id="cb308-6"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span>unwrap_or_else(<span class="pp">PoisonError::</span>into_inner)</span>
+<span id="cb308-7"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Plan creation and destruction are serialized</li>
+<li>Independent plan execution remains unlocked</li>
+</ul>
+<aside class="notes">
+<p>A wrapper that works only when constructed on one thread is not yet a sound general-purpose safe API. Encode the library’s actual concurrency rule.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="real-transform-shape" class="slide level2">
+<h2>Real Transform Shape</h2>
+<pre class="text"><code>real input:      n
+complex output:  floor(n / 2) + 1
+
+n = 64  -&gt;  33 complex values</code></pre>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb310"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb310-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> spectrum_length <span class="op">=</span> length <span class="op">/</span> <span class="dv">2</span> <span class="op">+</span> <span class="dv">1</span><span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Real input has a conjugate-symmetric spectrum</li>
+<li>FFTW returns only the non-redundant half</li>
+</ul>
+<aside class="notes">
+<p>This is both a numerical fact and a buffer-allocation invariant at the FFI boundary.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="normalize-the-inverse" class="slide level2">
+<h2>Normalize The Inverse</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb311"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb311-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> normalization <span class="op">=</span> <span class="kw">self</span><span class="op">.</span>length <span class="kw">as</span> <span class="dt">f64</span><span class="op">;</span></span>
+<span id="cb311-2"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb311-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> reconstructed <span class="op">=</span> <span class="kw">self</span></span>
+<span id="cb311-4"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>real_buffer</span>
+<span id="cb311-5"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>as_slice()</span>
+<span id="cb311-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>iter()</span>
+<span id="cb311-7"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>map(<span class="op">|</span>value<span class="op">|</span> value <span class="op">/</span> normalization)</span>
+<span id="cb311-8"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>collect()<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>FFTW’s inverse is unnormalized</li>
+<li>The inverse may overwrite its complex input</li>
+<li>Copy into owned native storage before execution</li>
+</ul>
+<aside class="notes">
+<p>Remove the division during a live edit and ask participants to predict the scale of the reconstructed signal.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="the-public-api-is-safe" class="slide level2">
+<h2>The Public API Is Safe</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb312"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb312-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> <span class="kw">mut</span> transform <span class="op">=</span> <span class="pp">RealFft::</span>new(signal<span class="op">.</span>len())<span class="op">?;</span></span>
+<span id="cb312-2"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb312-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> spectrum <span class="op">=</span> transform<span class="op">.</span>forward(<span class="op">&amp;</span>signal)<span class="op">?;</span></span>
+<span id="cb312-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> reconstructed <span class="op">=</span> transform<span class="op">.</span>inverse(<span class="op">&amp;</span>spectrum)<span class="op">?;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>No public raw pointers</li>
+<li>No returned borrow into reusable FFTW storage</li>
+<li>Length failures use <code>FftError</code></li>
+<li>Native failures propagate through <code>Result</code></li>
+</ul>
+<aside class="notes">
+<p>Returning owned vectors is a deliberate teaching choice. A borrowed zero-copy result would need a more restrictive API because the next transform overwrites the internal buffer.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="test-both-contracts" class="slide level2">
+<h2>Test Both Contracts</h2>
+<ul>
+<li>Reject zero-length transforms</li>
+<li>Reject incorrect signal and spectrum lengths</li>
+<li>Check <code>64 / 2 + 1 == 33</code></li>
+<li>Detect bins 3 and 7</li>
+<li>Check forward/inverse errors against <code>1.0e-12</code></li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb313"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb313-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> source-code/fftw-ffi</span>
+<span id="cb313-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> test</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Boundary tests protect memory assumptions. The peak and round-trip tests protect the scientific meaning of the wrapper.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="terminal-inspect-the-link" class="slide level2">
+<h2>Terminal: Inspect The Link</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb314"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb314-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> source-code/fftw-ffi</span>
+<span id="cb314-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run</span>
+<span id="cb314-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">ldd</span> target/debug/fftw-ffi <span class="kw">|</span> <span class="fu">grep</span> fftw</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>Dominant frequency bins: [3, 7]
+Maximum round-trip error: 4.441e-16
+RMS round-trip error: 1.640e-16</code></pre>
+<aside class="notes">
+<p>The exact error digits can differ across builds. The bins and tolerance are the stable checks. Use the final command on Linux to confirm system linking.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="exercises" class="slide level2">
+<h2>Exercises</h2>
+<ol type="1">
+<li>Change one frequency and predict the detected bins</li>
+<li>Remove inverse normalization and explain the scale</li>
+<li>Trigger a <code>LengthMismatch</code> before the native call</li>
+<li>Trace cleanup after partial construction</li>
+<li>Add a safe <code>len</code> method without exposing buffers</li>
+</ol>
+<aside class="notes">
+<p>For a short session, choose either the normalization edit or the boundary error. The cleanup trace is the deeper ownership exercise.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="module-takeaways-1" class="slide level2">
+<h2>Module Takeaways</h2>
+<ul>
+<li>FFI transfers obligations that types must recover</li>
+<li>Validate dimensions and conversions before native calls</li>
+<li>Own native memory and handles with RAII types</li>
+<li>Keep <code>unsafe</code> small and state its invariants</li>
+<li>Preserve lifetime and concurrency rules in the wrapper</li>
+<li>Test boundary failures and scientific behavior</li>
+</ul>
+<aside class="notes">
+<p>Close with the integration message: Rust can be introduced as a safe component around established HPC libraries rather than as a demand to replace them.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
