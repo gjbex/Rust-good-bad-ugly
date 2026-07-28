@@ -486,13 +486,17 @@ sequence.</p>
 <li>Five-point stencil computation.</li>
 <li>Double buffering and allocation reuse.</li>
 <li>Read-only APIs with <code>ArrayView2</code>.</li>
+<li>Broadcasting one-dimensional coordinate arrays into a Gaussian field.</li>
+<li>TOML configuration with nested structs and a tagged enum.</li>
+<li>Separating reproducible scientific parameters from operational CLI flags.</li>
 <li>Scientific unit tests and cross-implementation black-box tests.</li>
 <li>Behavior-preserving refactoring.</li>
 </ul>
 <p>Goal:</p>
 <p>Participants should be able to express a small multidimensional numerical
-algorithm with <code>ndarray</code> while reasoning about ownership, views, mutation, and
-the tests that protect a refactoring.</p>
+algorithm with <code>ndarray</code>, configure reproducible runs, and reason about
+ownership, views, broadcasting, mutation, and the tests that protect a
+refactoring.</p>
 <p>Related module text:</p>
 <ul>
 <li><code>learning-modules/multidimensional-arrays-and-stencil-computation.md</code></li>

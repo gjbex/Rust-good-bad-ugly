@@ -8983,6 +8983,8 @@ Geert Jan Bex
 <li>Select array regions with borrowed views</li>
 <li>Express a stencil with <code>Zip</code></li>
 <li>Reuse storage with double buffering</li>
+<li>Broadcast coordinates into a Gaussian field</li>
+<li>Move scientific parameters into TOML</li>
 <li>Verify that the refactoring preserves behavior</li>
 </ul>
 <aside class="notes">
@@ -8999,20 +9001,20 @@ Geert Jan Bex
           display:block!important;
       }</style></aside>
 </section>
-<section id="two-implementations-one-contract" class="slide level2">
-<h2>Two Implementations, One Contract</h2>
+<section id="three-stages-one-numerical-core" class="slide level2">
+<h2>Three Stages, One Numerical Core</h2>
 <pre class="text"><code>source-code/heat-diffusion/
 |-- naive/
 |-- ndarray-features/
+|-- configurable/
 `-- test_consistency.sh</code></pre>
 <ul>
-<li>Same CLI</li>
-<li>Same initial condition</li>
-<li>Same numerical update</li>
-<li>Same convergence rule and output</li>
+<li>Explicit indices</li>
+<li>Array views and <code>Zip</code></li>
+<li>Structured runs and alternative initial conditions</li>
 </ul>
 <aside class="notes">
-<p>The naive implementation already stores its data in Array2. “Naive” refers to the explicit indexing and per-step clone, not to a different data structure.</p>
+<p>The naive implementation already stores its data in Array2. “Naive” refers to the explicit indexing and per-step clone, not to a different data structure. The uniform configuration preserves the earlier behavior; the Gaussian configuration adds a new option.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -9030,7 +9032,8 @@ Geert Jan Bex
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb269"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb269-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> source-code/heat-diffusion</span>
 <span id="cb269-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> test <span class="at">--manifest-path</span> naive/Cargo.toml</span>
 <span id="cb269-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> test <span class="at">--manifest-path</span> ndarray-features/Cargo.toml</span>
-<span id="cb269-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">./test_consistency.sh</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb269-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> test <span class="at">--manifest-path</span> configurable/Cargo.toml</span>
+<span id="cb269-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">./test_consistency.sh</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Run these before showing the refactoring. The test suite is the evidence that the baseline behavior is understood.</p>
 <style type="text/css">
@@ -9361,13 +9364,181 @@ interior rows:  1..rows - 1</code></pre>
           display:block!important;
       }</style></aside>
 </section>
+<section id="third-stage-structured-runs" class="slide level2">
+<h2>Third Stage: Structured Runs</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb285"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb285-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="at">#[</span>derive<span class="at">(</span><span class="bu">Debug</span><span class="op">,</span> Parser<span class="at">)]</span></span>
+<span id="cb285-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Args <span class="op">{</span></span>
+<span id="cb285-3"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="at">#[</span>arg<span class="at">(</span>short<span class="op">,</span> long<span class="op">,</span> value_name <span class="op">=</span> <span class="st">"FILE"</span><span class="at">)]</span></span>
+<span id="cb285-4"><a href="" aria-hidden="true" tabindex="-1"></a>    config<span class="op">:</span> <span class="dt">PathBuf</span><span class="op">,</span></span>
+<span id="cb285-5"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb285-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="at">#[</span>arg<span class="at">(</span>long<span class="at">)]</span></span>
+<span id="cb285-7"><a href="" aria-hidden="true" tabindex="-1"></a>    show<span class="op">:</span> <span class="dt">bool</span><span class="op">,</span></span>
+<span id="cb285-8"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Scientific parameters move to TOML</li>
+<li><code>--show</code> remains an operational choice</li>
+<li>A file gives the run a reviewable identity</li>
+</ul>
+<aside class="notes">
+<p>The motivation is not only argument count. Nested parameter groups, alternative model choices, and reproducibility make a configuration file more appropriate.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="configuration-mirrors-the-domain" class="slide level2">
+<h2>Configuration Mirrors The Domain</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb286"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb286-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">[grid]</span></span>
+<span id="cb286-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">size</span> <span class="op">=</span> <span class="dv">21</span></span>
+<span id="cb286-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">background_temperature</span> <span class="op">=</span> <span class="fl">0.0</span></span>
+<span id="cb286-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">boundary_temperature</span> <span class="op">=</span> <span class="fl">20.0</span></span>
+<span id="cb286-5"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb286-6"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">[material]</span></span>
+<span id="cb286-7"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">thermal_diffusivity</span> <span class="op">=</span> <span class="fl">0.1</span></span>
+<span id="cb286-8"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb286-9"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">[solver]</span></span>
+<span id="cb286-10"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">time_step</span> <span class="op">=</span> <span class="fl">0.01</span></span>
+<span id="cb286-11"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">max_steps</span> <span class="op">=</span> <span class="dv">25</span></span>
+<span id="cb286-12"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">tolerance</span> <span class="op">=</span> <span class="fl">1.0e-12</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Open one of the real files under configurable/configs. Contrast the grouped tables with the flat command line from the first two implementations.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="one-table-two-variants" class="slide level2">
+<h2>One Table, Two Variants</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb287"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb287-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="at">#[</span>serde<span class="at">(</span>tag <span class="op">=</span> <span class="st">"type"</span><span class="op">,</span> rename_all <span class="op">=</span> <span class="st">"kebab-case"</span><span class="at">)]</span></span>
+<span id="cb287-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> InitialCondition <span class="op">{</span></span>
+<span id="cb287-3"><a href="" aria-hidden="true" tabindex="-1"></a>    UniformDisk <span class="op">{</span></span>
+<span id="cb287-4"><a href="" aria-hidden="true" tabindex="-1"></a>        temperature<span class="op">:</span> <span class="dt">f64</span><span class="op">,</span></span>
+<span id="cb287-5"><a href="" aria-hidden="true" tabindex="-1"></a>        radius<span class="op">:</span> <span class="dt">usize</span><span class="op">,</span></span>
+<span id="cb287-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span></span>
+<span id="cb287-7"><a href="" aria-hidden="true" tabindex="-1"></a>    Gaussian <span class="op">{</span></span>
+<span id="cb287-8"><a href="" aria-hidden="true" tabindex="-1"></a>        peak_temperature<span class="op">:</span> <span class="dt">f64</span><span class="op">,</span></span>
+<span id="cb287-9"><a href="" aria-hidden="true" tabindex="-1"></a>        sigma<span class="op">:</span> <span class="dt">f64</span><span class="op">,</span></span>
+<span id="cb287-10"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span></span>
+<span id="cb287-11"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>The <code>type</code> field selects a variant</li>
+<li>Each variant requires only its own parameters</li>
+</ul>
+<aside class="notes">
+<p>This is a concrete tagged-enum use. Serde rejects fields that do not belong to the selected variant because the source also uses deny_unknown_fields.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="gaussian-coordinates" class="slide level2">
+<h2>Gaussian Coordinates</h2>
+<pre class="text"><code>row squared: (rows, 1)
+col squared: (1, cols)
+sum:         (rows, cols)</code></pre>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb289"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb289-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> radius_squared <span class="op">=</span> <span class="op">&amp;</span>row_squared <span class="op">+</span> <span class="op">&amp;</span>col_squared<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Singleton axes are broadcast</li>
+<li>The result covers the complete grid</li>
+<li>No nested coordinate loop</li>
+</ul>
+<aside class="notes">
+<p>Draw the shapes before showing the addition. This is a small example where broadcasting is clearer than manually repeating row and column coordinates.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="map-radius-to-temperature" class="slide level2">
+<h2>Map Radius To Temperature</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb290"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb290-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> amplitude <span class="op">=</span> peak_temperature <span class="op">-</span> background_temperature<span class="op">;</span></span>
+<span id="cb290-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> denominator <span class="op">=</span> <span class="dv">2.0</span> <span class="op">*</span> sigma<span class="op">.</span>powi(<span class="dv">2</span>)<span class="op">;</span></span>
+<span id="cb290-3"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb290-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">self</span><span class="op">.</span>grid<span class="op">.</span>assign(</span>
+<span id="cb290-5"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">&amp;</span>radius_squared<span class="op">.</span>mapv(<span class="op">|</span>r2<span class="op">|</span> <span class="op">{</span></span>
+<span id="cb290-6"><a href="" aria-hidden="true" tabindex="-1"></a>        background_temperature</span>
+<span id="cb290-7"><a href="" aria-hidden="true" tabindex="-1"></a>            <span class="op">+</span> amplitude <span class="op">*</span> (<span class="op">-</span>r2 <span class="op">/</span> denominator)<span class="op">.</span>exp()</span>
+<span id="cb290-8"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span>)<span class="op">,</span></span>
+<span id="cb290-9"><a href="" aria-hidden="true" tabindex="-1"></a>)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Peak at the center</li>
+<li>Symmetric radial decay</li>
+<li>Fixed boundaries applied afterward</li>
+</ul>
+<aside class="notes">
+<p>The Gaussian is evaluated over the complete field. The domain still enforces its configured outer boundary temperature.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="parse-then-validate" class="slide level2">
+<h2>Parse, Then Validate</h2>
+<ul>
+<li><code>Deserialize</code> checks TOML structure and types</li>
+<li><code>deny_unknown_fields</code> catches misspellings</li>
+<li>Validation checks finite values and ranges</li>
+<li>Stability remains an application constraint</li>
+</ul>
+<pre class="text"><code>TOML text -&gt; Config -&gt; validated Config -&gt; System</code></pre>
+<aside class="notes">
+<p>Separate structural parsing from scientific validation. A syntactically valid floating-point value can still be an invalid time step or Gaussian width.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
 <section id="scientific-unit-tests" class="slide level2">
 <h2>Scientific Unit Tests</h2>
 <ul>
 <li>Circular initial condition</li>
+<li>Gaussian peak, symmetry, and radial decay</li>
 <li>Fixed boundaries</li>
 <li>One hand-calculated step</li>
 <li>Symmetry after one step</li>
+<li>Configuration parsing and unknown fields</li>
 <li>Stability and input validation</li>
 <li>Convergence or maximum steps</li>
 </ul>
@@ -9411,15 +9582,16 @@ max change: 20</code></pre>
 </section>
 <section id="black-box-consistency" class="slide level2">
 <h2>Black-Box Consistency</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb286"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb286-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> source-code/heat-diffusion</span>
-<span id="cb286-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">./test_consistency.sh</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb293"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb293-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> source-code/heat-diffusion</span>
+<span id="cb293-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">./test_consistency.sh</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li>Build each Cargo project independently</li>
 <li>Run matching argument sets</li>
 <li>Compare complete CLI output with <code>diff</code></li>
+<li>Match the uniform TOML run to CLI parameters</li>
 </ul>
 <aside class="notes">
-<p>Unit tests localize failures inside each project. The shell test separately checks the behavior-preserving refactoring contract.</p>
+<p>Unit tests localize failures inside each project. The shell test separately checks the behavior-preserving refactoring contract. The Gaussian behavior is covered by properties because the earlier programs cannot select it.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -9434,13 +9606,38 @@ max change: 20</code></pre>
 </section>
 <section id="terminal-compare-a-visible-state" class="slide level2">
 <h2>Terminal: Compare A Visible State</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb287"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb287-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run <span class="at">--manifest-path</span> naive/Cargo.toml <span class="at">--</span> <span class="dt">\</span></span>
-<span id="cb287-2"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--grid-size</span> 21 <span class="at">--spot-radius</span> 5 <span class="at">--steps</span> 25 <span class="at">--show</span></span>
-<span id="cb287-3"><a href="" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb287-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run <span class="at">--manifest-path</span> ndarray-features/Cargo.toml <span class="at">--</span> <span class="dt">\</span></span>
-<span id="cb287-5"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--grid-size</span> 21 <span class="at">--spot-radius</span> 5 <span class="at">--steps</span> 25 <span class="at">--show</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb294"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb294-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run <span class="at">--manifest-path</span> naive/Cargo.toml <span class="at">--</span> <span class="dt">\</span></span>
+<span id="cb294-2"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--grid-size</span> 21 <span class="at">--spot-radius</span> 5 <span class="at">--steps</span> 25 <span class="at">--show</span></span>
+<span id="cb294-3"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb294-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run <span class="at">--manifest-path</span> ndarray-features/Cargo.toml <span class="at">--</span> <span class="dt">\</span></span>
+<span id="cb294-5"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--grid-size</span> 21 <span class="at">--spot-radius</span> 5 <span class="at">--steps</span> 25 <span class="at">--show</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Run from source-code/heat-diffusion. Reduce the grid size if the terminal is narrow.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="terminal-configured-runs" class="slide level2">
+<h2>Terminal: Configured Runs</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb295"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb295-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run <span class="at">--manifest-path</span> configurable/Cargo.toml <span class="at">--</span> <span class="dt">\</span></span>
+<span id="cb295-2"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--config</span> configurable/configs/uniform-spot.toml <span class="at">--show</span></span>
+<span id="cb295-3"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb295-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run <span class="at">--manifest-path</span> configurable/Cargo.toml <span class="at">--</span> <span class="dt">\</span></span>
+<span id="cb295-5"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--config</span> configurable/configs/gaussian-spot.toml <span class="at">--show</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Same solver, different initial-condition variant</li>
+<li>Configuration records the complete scientific run</li>
+</ul>
+<aside class="notes">
+<p>Run from source-code/heat-diffusion. Compare the shape of the two printed fields, then open the two TOML files side by side.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -9524,10 +9721,12 @@ max change: 20</code></pre>
 <li>Replace one loop with an array operation</li>
 <li>Run that project’s unit tests</li>
 <li>Run <code>./test_consistency.sh</code></li>
+<li>Move run parameters into TOML</li>
+<li>Add a tagged initial-condition variant</li>
 <li>Inspect any diff before continuing</li>
 </ol>
 <aside class="notes">
-<p>Make one conceptual change at a time. The second implementation can also serve as the reference solution after participants attempt individual steps.</p>
+<p>Make one conceptual change at a time. The later implementations can serve as reference solutions after participants attempt individual steps.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -9546,7 +9745,10 @@ max change: 20</code></pre>
 <li>Arrays own data; views borrow regions</li>
 <li>Mutable views make write regions explicit</li>
 <li><code>Zip</code> aligns several same-shaped views</li>
+<li>Broadcasting builds the Gaussian coordinate field</li>
 <li>Double buffering fits stencil semantics</li>
+<li>Tagged enums model alternative configurations</li>
+<li>TOML files make scientific runs reproducible</li>
 <li>Tests protect both scientific properties and CLI behavior</li>
 </ul>
 <aside class="notes">

@@ -12,6 +12,8 @@ mathematics simple and make the ownership of each view explicit.
 - Select array regions with borrowed views
 - Express a stencil with `Zip`
 - Reuse storage with double buffering
+- Broadcast coordinates into a Gaussian field
+- Move scientific parameters into TOML
 - Verify that the refactoring preserves behavior
 
 ::: notes
@@ -19,23 +21,25 @@ The example belongs near the end of the course because it combines ownership,
 methods, errors, testing, and numerical constraints.
 :::
 
-## Two Implementations, One Contract
+## Three Stages, One Numerical Core
 
 ```text
 source-code/heat-diffusion/
 |-- naive/
 |-- ndarray-features/
+|-- configurable/
 `-- test_consistency.sh
 ```
 
-- Same CLI
-- Same initial condition
-- Same numerical update
-- Same convergence rule and output
+- Explicit indices
+- Array views and `Zip`
+- Structured runs and alternative initial conditions
 
 ::: notes
 The naive implementation already stores its data in Array2. "Naive" refers to
 the explicit indexing and per-step clone, not to a different data structure.
+The uniform configuration preserves the earlier behavior; the Gaussian
+configuration adds a new option.
 :::
 
 ## Start With Tests
@@ -44,6 +48,7 @@ the explicit indexing and per-step clone, not to a different data structure.
 cd source-code/heat-diffusion
 cargo test --manifest-path naive/Cargo.toml
 cargo test --manifest-path ndarray-features/Cargo.toml
+cargo test --manifest-path configurable/Cargo.toml
 ./test_consistency.sh
 ```
 
@@ -290,12 +295,143 @@ Callers that only index or iterate barely change. The return type makes the
 borrowed array interface explicit and does not transfer ownership.
 :::
 
+## Third Stage: Structured Runs
+
+```rust
+#[derive(Debug, Parser)]
+struct Args {
+    #[arg(short, long, value_name = "FILE")]
+    config: PathBuf,
+
+    #[arg(long)]
+    show: bool,
+}
+```
+
+- Scientific parameters move to TOML
+- `--show` remains an operational choice
+- A file gives the run a reviewable identity
+
+::: notes
+The motivation is not only argument count. Nested parameter groups,
+alternative model choices, and reproducibility make a configuration file more
+appropriate.
+:::
+
+## Configuration Mirrors The Domain
+
+```toml
+[grid]
+size = 21
+background_temperature = 0.0
+boundary_temperature = 20.0
+
+[material]
+thermal_diffusivity = 0.1
+
+[solver]
+time_step = 0.01
+max_steps = 25
+tolerance = 1.0e-12
+```
+
+::: notes
+Open one of the real files under configurable/configs. Contrast the grouped
+tables with the flat command line from the first two implementations.
+:::
+
+## One Table, Two Variants
+
+```rust
+#[serde(tag = "type", rename_all = "kebab-case")]
+enum InitialCondition {
+    UniformDisk {
+        temperature: f64,
+        radius: usize,
+    },
+    Gaussian {
+        peak_temperature: f64,
+        sigma: f64,
+    },
+}
+```
+
+- The `type` field selects a variant
+- Each variant requires only its own parameters
+
+::: notes
+This is a concrete tagged-enum use. Serde rejects fields that do not belong to
+the selected variant because the source also uses deny_unknown_fields.
+:::
+
+## Gaussian Coordinates
+
+```text
+row squared: (rows, 1)
+col squared: (1, cols)
+sum:         (rows, cols)
+```
+
+```rust
+let radius_squared = &row_squared + &col_squared;
+```
+
+- Singleton axes are broadcast
+- The result covers the complete grid
+- No nested coordinate loop
+
+::: notes
+Draw the shapes before showing the addition. This is a small example where
+broadcasting is clearer than manually repeating row and column coordinates.
+:::
+
+## Map Radius To Temperature
+
+```rust
+let amplitude = peak_temperature - background_temperature;
+let denominator = 2.0 * sigma.powi(2);
+
+self.grid.assign(
+    &radius_squared.mapv(|r2| {
+        background_temperature
+            + amplitude * (-r2 / denominator).exp()
+    }),
+);
+```
+
+- Peak at the center
+- Symmetric radial decay
+- Fixed boundaries applied afterward
+
+::: notes
+The Gaussian is evaluated over the complete field. The domain still enforces
+its configured outer boundary temperature.
+:::
+
+## Parse, Then Validate
+
+- `Deserialize` checks TOML structure and types
+- `deny_unknown_fields` catches misspellings
+- Validation checks finite values and ranges
+- Stability remains an application constraint
+
+```text
+TOML text -> Config -> validated Config -> System
+```
+
+::: notes
+Separate structural parsing from scientific validation. A syntactically valid
+floating-point value can still be an invalid time step or Gaussian width.
+:::
+
 ## Scientific Unit Tests
 
 - Circular initial condition
+- Gaussian peak, symmetry, and radial decay
 - Fixed boundaries
 - One hand-calculated step
 - Symmetry after one step
+- Configuration parsing and unknown fields
 - Stability and input validation
 - Convergence or maximum steps
 
@@ -332,10 +468,12 @@ cd source-code/heat-diffusion
 - Build each Cargo project independently
 - Run matching argument sets
 - Compare complete CLI output with `diff`
+- Match the uniform TOML run to CLI parameters
 
 ::: notes
 Unit tests localize failures inside each project. The shell test separately
-checks the behavior-preserving refactoring contract.
+checks the behavior-preserving refactoring contract. The Gaussian behavior is
+covered by properties because the earlier programs cannot select it.
 :::
 
 ## Terminal: Compare A Visible State
@@ -351,6 +489,24 @@ cargo run --manifest-path ndarray-features/Cargo.toml -- \
 ::: notes
 Run from source-code/heat-diffusion. Reduce the grid size if the terminal is
 narrow.
+:::
+
+## Terminal: Configured Runs
+
+```{.bash}
+cargo run --manifest-path configurable/Cargo.toml -- \
+  --config configurable/configs/uniform-spot.toml --show
+
+cargo run --manifest-path configurable/Cargo.toml -- \
+  --config configurable/configs/gaussian-spot.toml --show
+```
+
+- Same solver, different initial-condition variant
+- Configuration records the complete scientific run
+
+::: notes
+Run from source-code/heat-diffusion. Compare the shape of the two printed
+fields, then open the two TOML files side by side.
 :::
 
 ## Layout And Performance
@@ -386,11 +542,13 @@ deployment constraints may decide the practical choice.
 2. Replace one loop with an array operation
 3. Run that project's unit tests
 4. Run `./test_consistency.sh`
-5. Inspect any diff before continuing
+5. Move run parameters into TOML
+6. Add a tagged initial-condition variant
+7. Inspect any diff before continuing
 
 ::: notes
-Make one conceptual change at a time. The second implementation can also serve
-as the reference solution after participants attempt individual steps.
+Make one conceptual change at a time. The later implementations can serve as
+reference solutions after participants attempt individual steps.
 :::
 
 ## Module Takeaways
@@ -398,7 +556,10 @@ as the reference solution after participants attempt individual steps.
 - Arrays own data; views borrow regions
 - Mutable views make write regions explicit
 - `Zip` aligns several same-shaped views
+- Broadcasting builds the Gaussian coordinate field
 - Double buffering fits stencil semantics
+- Tagged enums model alternative configurations
+- TOML files make scientific runs reproducible
 - Tests protect both scientific properties and CLI behavior
 
 ::: notes

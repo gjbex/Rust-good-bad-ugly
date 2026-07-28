@@ -109,6 +109,14 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#returning-a-read-only-view">Returning A Read-Only View</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#when-command-line-parameters-stop-scaling">When Command-Line Parameters Stop Scaling</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#structured-toml-configuration">Structured TOML Configuration</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#tagged-enums-for-alternative-inputs">Tagged Enums For Alternative Inputs</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gaussian-initialization-with-broadcasting">Gaussian Initialization With Broadcasting</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#unit-tests-as-refactoring-guardrails">Unit Tests As Refactoring Guardrails</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#cross-implementation-testing">Cross-Implementation Testing</a>
@@ -165,6 +173,8 @@ behavior-preserving refactoring.</p>
 <li>combine equally shaped views with <code>Zip</code>;</li>
 <li>update a stencil computation without allocating a new array each step;</li>
 <li>expose array data through a read-only <code>ArrayView2</code>;</li>
+<li>broadcast one-dimensional coordinate arrays into a two-dimensional field;</li>
+<li>deserialize and validate structured TOML run configuration;</li>
 <li>use unit and black-box tests to protect a numerical refactoring.</li>
 </ul>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
@@ -178,20 +188,25 @@ behavior-preserving refactoring.</p>
 <p>It belongs near the end of the course because the array operations make Rust's
 ownership and borrowing rules concrete in a realistic numerical program.</p>
 <h2 id="the-example-family">The Example Family<a class="headerlink" href="#the-example-family" title="Permanent link">&para;</a></h2>
-<p>The directory contains two separate Cargo projects:</p>
+<p>The directory contains three separate Cargo projects:</p>
 <ul>
 <li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/heat-diffusion/naive"><code>source-code/heat-diffusion/naive</code></a> expresses the stencil with explicit
   nested loops and element indexing;</li>
 <li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/heat-diffusion/ndarray-features"><code>source-code/heat-diffusion/ndarray-features</code></a> preserves the command-line
   behavior while using more of the <code>ndarray</code> API.</li>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/heat-diffusion/configurable"><code>source-code/heat-diffusion/configurable</code></a> builds on the ndarray version,
+  moves scientific parameters into TOML files, and adds a Gaussian initial
+  condition through broadcasting.</li>
 </ul>
-<p>Both variants deliberately have the same inputs, validation, initial
-condition, update equation, convergence rule, and output. This lets tests
-distinguish a change in implementation from a change in behavior.</p>
+<p>The first two variants deliberately have the same inputs, validation, initial
+condition, update equation, convergence rule, and output. The third can
+reproduce that uniform-disk behavior from a configuration file or select a
+new Gaussian profile.</p>
 <p>Start by running the tests:</p>
 <pre class="highlight"><code class="language-bash">cd source-code/heat-diffusion
 cargo test --manifest-path naive/Cargo.toml
 cargo test --manifest-path ndarray-features/Cargo.toml
+cargo test --manifest-path configurable/Cargo.toml
 ./test_consistency.sh</code></pre>
 <h2 id="the-numerical-model">The Numerical Model<a class="headerlink" href="#the-numerical-model" title="Permanent link">&para;</a></h2>
 <p>The simulation stores temperature on a square grid. For each interior point,
@@ -199,15 +214,17 @@ one explicit time step applies a five-point stencil:</p>
 <pre class="highlight"><code class="language-text">new = center + alpha * dt * (up + down + left + right - 4 * center)</code></pre>
 <p>Here <code>alpha</code> is the thermal diffusivity and <code>dt</code> is the time step. The grid
 spacing is one in both directions.</p>
-<p>The boundary temperatures remain fixed. The interior starts at zero except
-for a circular hot spot in the center.</p>
+<p>The boundary temperatures remain fixed. The first two implementations start
+the interior at zero except for a uniform circular hot spot in the center. The
+configurable version also supports a Gaussian hot spot over a configurable
+background.</p>
 <p>For this scheme, the stability check is:</p>
 <pre class="highlight"><code class="language-text">alpha * dt &lt;= 0.25</code></pre>
 <p>The code validates this condition before running. Rust's memory safety does not
 make an unstable numerical method stable; scientific constraints still need
 to be represented and checked.</p>
 <h2 id="creating-a-two-dimensional-array">Creating A Two-Dimensional Array<a class="headerlink" href="#creating-a-two-dimensional-array" title="Permanent link">&para;</a></h2>
-<p>Both implementations store the grid in an <code>Array2&lt;f64&gt;</code>:</p>
+<p>All three implementations store the grid in an <code>Array2&lt;f64&gt;</code>:</p>
 <pre class="highlight"><code class="language-rust">let grid = Array2::&lt;f64&gt;::zeros((grid_size, grid_size));</code></pre>
 <p><code>Array2&lt;T&gt;</code> is a two-dimensional specialization of <code>ndarray::Array</code>. The shape
 is a tuple, and <code>zeros</code> allocates owned, contiguous storage initialized with
@@ -330,14 +347,107 @@ borrow of <code>self</code>.</p>
 <p>Callers can index and iterate over the result, but cannot mutate it. The naive
 implementation returns <code>&amp;Array2&lt;f64&gt;</code> instead; existing callers can use both
 forms similarly for read-only indexing and iteration.</p>
+<h2 id="when-command-line-parameters-stop-scaling">When Command-Line Parameters Stop Scaling<a class="headerlink" href="#when-command-line-parameters-stop-scaling" title="Permanent link">&para;</a></h2>
+<p>The original command line exposes every numerical parameter separately. This
+is convenient for a small demonstration, but it becomes awkward when a run
+has related groups of parameters or mutually exclusive model choices.</p>
+<p>The configurable implementation reduces the operational command line to:</p>
+<pre class="highlight"><code class="language-rust">#[derive(Debug, Parser)]
+struct Args {
+    #[arg(short, long, value_name = "FILE")]
+    config: PathBuf,
+
+    #[arg(long)]
+    show: bool,
+}</code></pre>
+<p>Scientific parameters live in the configuration file. The <code>--show</code> flag stays
+on the command line because it controls presentation rather than the
+simulation definition.</p>
+<p>This distinction matters more than the raw number of arguments:</p>
+<ul>
+<li>a checked-in file gives a run a stable, reviewable identity;</li>
+<li>nested tables keep related values together;</li>
+<li>alternative model choices can require different fields;</li>
+<li>typographical errors can be rejected during deserialization.</li>
+</ul>
+<h2 id="structured-toml-configuration">Structured TOML Configuration<a class="headerlink" href="#structured-toml-configuration" title="Permanent link">&para;</a></h2>
+<p>The configuration mirrors the domain structure:</p>
+<pre class="highlight"><code class="language-toml">[grid]
+size = 21
+background_temperature = 0.0
+boundary_temperature = 20.0
+
+[material]
+thermal_diffusivity = 0.1
+
+[solver]
+time_step = 0.01
+max_steps = 25
+tolerance = 1.0e-12</code></pre>
+<p>The corresponding Rust types derive <code>serde::Deserialize</code>. Each configuration
+struct uses <code>#[serde(deny_unknown_fields)]</code>, so a misspelled field is an error
+instead of a silently ignored parameter.</p>
+<p>The complete configuration code is in
+<a href="https://github.com/gjbex/Rust-good-bad-ugly/blob/main/source-code/heat-diffusion/configurable/src/config.rs"><code>source-code/heat-diffusion/configurable/src/config.rs</code></a>.</p>
+<h2 id="tagged-enums-for-alternative-inputs">Tagged Enums For Alternative Inputs<a class="headerlink" href="#tagged-enums-for-alternative-inputs" title="Permanent link">&para;</a></h2>
+<p>The initial-condition table has a <code>type</code> field:</p>
+<pre class="highlight"><code class="language-toml">[initial_condition]
+type = "uniform-disk"
+temperature = 100.0
+radius = 5</code></pre>
+<p>Serde maps it to a tagged enum:</p>
+<pre class="highlight"><code class="language-rust">#[derive(Debug, Deserialize)]
+#[serde(tag = "type", rename_all = "kebab-case", deny_unknown_fields)]
+pub enum InitialCondition {
+    UniformDisk {
+        temperature: f64,
+        radius: usize,
+    },
+    Gaussian {
+        peak_temperature: f64,
+        sigma: f64,
+    },
+}</code></pre>
+<p>Each variant carries only the parameters it needs. A uniform disk cannot
+accidentally receive <code>sigma</code>, and a Gaussian cannot omit it.</p>
+<p>Deserialization establishes the structure. A separate validation pass checks
+scientific constraints such as finite temperatures, positive Gaussian width,
+spot fit, positive tolerance, and the stencil stability condition.</p>
+<h2 id="gaussian-initialization-with-broadcasting">Gaussian Initialization With Broadcasting<a class="headerlink" href="#gaussian-initialization-with-broadcasting" title="Permanent link">&para;</a></h2>
+<p>For a Gaussian centered at <code>(row_center, col_center)</code>, the initial field is:</p>
+<pre class="highlight"><code class="language-text">temperature = background
+    + (peak - background) * exp(-(row_distance^2 + col_distance^2)
+                                / (2 * sigma^2))</code></pre>
+<p>The implementation creates a column of squared row distances with shape
+<code>(rows, 1)</code> and a row of squared column distances with shape <code>(1, cols)</code>:</p>
+<pre class="highlight"><code class="language-rust">let row_squared = Array1::from_iter(
+    (0..rows).map(|row| (row as f64 - center_row as f64).powi(2)),
+)
+.insert_axis(Axis(1));
+
+let col_squared = Array1::from_iter(
+    (0..cols).map(|col| (col as f64 - center_col as f64).powi(2)),
+)
+.insert_axis(Axis(0));
+
+let radius_squared = &amp;row_squared + &amp;col_squared;</code></pre>
+<p>The addition broadcasts the singleton axes and produces a <code>(rows, cols)</code>
+array. This expresses the separable coordinate construction without nested
+indexing loops. The Gaussian formula is then applied with <code>mapv</code>, after which
+the fixed boundary values overwrite the outer rows and columns.</p>
+<p>The implementation is in
+<a href="https://github.com/gjbex/Rust-good-bad-ugly/blob/main/source-code/heat-diffusion/configurable/src/heat_diffusion.rs"><code>source-code/heat-diffusion/configurable/src/heat_diffusion.rs</code></a>.</p>
 <h2 id="unit-tests-as-refactoring-guardrails">Unit Tests As Refactoring Guardrails<a class="headerlink" href="#unit-tests-as-refactoring-guardrails" title="Permanent link">&para;</a></h2>
-<p>Both implementations test numerical properties rather than only checking that
+<p>The implementations test numerical properties rather than only checking that
 the program runs:</p>
 <ul>
 <li>the hot spot is circular and the boundaries are fixed;</li>
 <li>one small update matches a hand calculation;</li>
 <li>a symmetric initial state remains symmetric after a step;</li>
 <li>convergence and maximum-step behavior are correct;</li>
+<li>the Gaussian has the configured peak, symmetry, and radial decay;</li>
+<li>both checked-in TOML files deserialize and validate;</li>
+<li>unknown configuration fields are rejected;</li>
 <li>invalid physical and numerical parameters are rejected.</li>
 </ul>
 <p>The hand-calculated test is deliberately small. With a 5-by-5 grid, a central
@@ -345,14 +455,17 @@ temperature of 100, <code>alpha = 0.1</code>, and <code>dt = 0.5</code>, the cen
 one step and the maximum change is 20.</p>
 <p>Run each project's tests independently:</p>
 <pre class="highlight"><code class="language-bash">cargo test --manifest-path source-code/heat-diffusion/naive/Cargo.toml
-cargo test --manifest-path source-code/heat-diffusion/ndarray-features/Cargo.toml</code></pre>
+cargo test --manifest-path source-code/heat-diffusion/ndarray-features/Cargo.toml
+cargo test --manifest-path source-code/heat-diffusion/configurable/Cargo.toml</code></pre>
 <h2 id="cross-implementation-testing">Cross-Implementation Testing<a class="headerlink" href="#cross-implementation-testing" title="Permanent link">&para;</a></h2>
 <p>Unit tests protect each implementation, but the refactoring also has a
 cross-project behavioral contract. The shell script runs both binaries with
 matching arguments and compares their complete output:</p>
 <pre class="highlight"><code class="language-bash">cd source-code/heat-diffusion
 ./test_consistency.sh</code></pre>
-<p>It covers the initial state, one step, multiple steps, and convergence. When
+<p>It covers the initial state, one step, multiple steps, and convergence for the
+first two implementations. It also compares the uniform TOML configuration
+with equivalent command-line arguments for the ndarray implementation. When
 the outputs differ, <code>diff</code> shows the mismatch.</p>
 <p>This black-box check is complementary to unit tests:</p>
 <ul>
@@ -366,7 +479,11 @@ the outputs differ, <code>diff</code> shows the mismatch.</p>
     --grid-size 21 --spot-radius 5 --steps 25 --show
 
 cargo run --manifest-path source-code/heat-diffusion/ndarray-features/Cargo.toml -- \
-    --grid-size 21 --spot-radius 5 --steps 25 --show</code></pre>
+    --grid-size 21 --spot-radius 5 --steps 25 --show
+
+cargo run --manifest-path source-code/heat-diffusion/configurable/Cargo.toml -- \
+    --config source-code/heat-diffusion/configurable/configs/gaussian-spot.toml \
+    --show</code></pre>
 <p>Try changing <code>--steps</code>, <code>--alpha</code>, and <code>--dt</code>. An unstable combination such as
 <code>--alpha 1.0 --dt 0.3</code> should be rejected before the simulation starts.</p>
 <h2 id="memory-layout-and-access-order">Memory Layout And Access Order<a class="headerlink" href="#memory-layout-and-access-order" title="Permanent link">&para;</a></h2>
@@ -396,17 +513,20 @@ performance matters.</p>
 <li>use BLAS/LAPACK-backed crates when established native libraries and their
   deployment requirements fit the project.</li>
 </ul>
-<p>This example focuses on array shapes, indexing, slicing, views, and stencils.
-Broadcasting and matrix factorizations are separate topics and should be
-introduced with examples where those operations are central.</p>
+<p>This example focuses on array shapes, indexing, slicing, views, broadcasting,
+and stencils. Matrix factorizations remain a separate topic and should be
+introduced with an example where linear algebra is central.</p>
 <h2 id="hands-on-refactoring">Hands-On Refactoring<a class="headerlink" href="#hands-on-refactoring" title="Permanent link">&para;</a></h2>
 <ol>
 <li>Add a unit test to one implementation before changing it.</li>
 <li>Replace one explicit boundary loop with a mutable slice and <code>fill</code>.</li>
-<li>Compare the circular initialization in both implementations.</li>
+<li>Compare the circular initialization in the first two implementations.</li>
 <li>Draw the five shifted stencil regions for a 5-by-5 grid.</li>
 <li>Change the convergence tolerance and predict the reported step count.</li>
 <li>Run <code>./test_consistency.sh</code> after every behavior-preserving change.</li>
+<li>Add a configuration field, then misspell it and inspect the parse error.</li>
+<li>Compare the uniform-disk and Gaussian initial-condition tables.</li>
+<li>Change <code>sigma</code> and predict how much of the grid the Gaussian occupies.</li>
 </ol>
 <h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
 <ul>
@@ -414,8 +534,11 @@ introduced with examples where those operations are central.</p>
 <li>Slices and views borrow array regions without copying them.</li>
 <li>Mutable views constrain where an operation may write.</li>
 <li><code>Zip</code> applies one closure to aligned elements from several views.</li>
+<li>Broadcasting combines <code>(rows, 1)</code> and <code>(1, cols)</code> coordinate arrays.</li>
 <li>Double buffering preserves stencil semantics while reusing allocations.</li>
 <li>Read-only <code>ArrayView2</code> values expose borrowed array data.</li>
+<li>Tagged enums model configuration alternatives with different parameters.</li>
+<li>TOML files make scientific run definitions reviewable and reproducible.</li>
 <li>Unit tests and cross-project output comparison support numerical
   refactoring.</li>
 </ul>

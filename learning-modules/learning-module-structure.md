@@ -389,14 +389,18 @@ Topics:
 - Five-point stencil computation.
 - Double buffering and allocation reuse.
 - Read-only APIs with `ArrayView2`.
+- Broadcasting one-dimensional coordinate arrays into a Gaussian field.
+- TOML configuration with nested structs and a tagged enum.
+- Separating reproducible scientific parameters from operational CLI flags.
 - Scientific unit tests and cross-implementation black-box tests.
 - Behavior-preserving refactoring.
 
 Goal:
 
 Participants should be able to express a small multidimensional numerical
-algorithm with `ndarray` while reasoning about ownership, views, mutation, and
-the tests that protect a refactoring.
+algorithm with `ndarray`, configure reproducible runs, and reason about
+ownership, views, broadcasting, mutation, and the tests that protect a
+refactoring.
 
 Related module text:
 

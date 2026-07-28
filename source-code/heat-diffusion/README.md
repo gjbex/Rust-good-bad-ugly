@@ -1,17 +1,20 @@
 # Heat Diffusion
 
 This example solves a two-dimensional heat-diffusion problem with an explicit
-five-point stencil. It contains two Cargo projects that implement the same
-command-line program:
+five-point stencil. It contains three Cargo projects that form a teaching
+sequence:
 
 - `naive/` uses explicit nested loops and indexed array access. Start here to
   see the algorithm directly.
 - `ndarray-features/` preserves the behavior while introducing `ndarray`
   slices, mutable views, `Zip`, read-only views, and double buffering.
+- `configurable/` keeps the ndarray implementation and moves scientific
+  parameters into TOML files. It supports both a uniform disk and a Gaussian
+  initial condition, using broadcasting for the Gaussian field.
 
-The teaching sequence is a behavior-preserving refactoring exercise. Read and
-test the naive version first, then compare each part with the
-`ndarray-features` version.
+Read and test the naive version first, compare each part with
+`ndarray-features`, and then use `configurable` to discuss reproducible run
+configuration and alternative model inputs.
 
 ## Numerical Model
 
@@ -25,10 +28,10 @@ The examples use unit grid spacing. For this explicit two-dimensional scheme,
 the command-line parameters must satisfy `alpha * dt <= 0.25`. The outer
 boundary remains at the requested boundary temperature.
 
-The initial condition is a circular hot spot centered in the grid. The spot
-radius must keep the hot spot inside every boundary.
+The first two implementations use a uniform circular hot spot centered in the
+grid. The configurable version can use the same disk or a Gaussian profile.
 
-## Run Both Implementations
+## Run The Implementations
 
 From this directory, run matching simulations with:
 
@@ -40,18 +43,35 @@ cargo run --manifest-path ndarray-features/Cargo.toml -- \
     --grid-size 21 --spot-radius 5 --steps 25 --show
 ```
 
-Use `--help` on either command to see all parameters. Both programs use the
+Use `--help` on either command to see all parameters. These programs use the
 same option names, defaults, validation rules, convergence criterion, status
 line, and formatted grid output.
 
+The third implementation accepts a configuration file and an optional
+presentation flag:
+
+```bash
+cargo run --manifest-path configurable/Cargo.toml -- \
+    --config configurable/configs/uniform-spot.toml --show
+
+cargo run --manifest-path configurable/Cargo.toml -- \
+    --config configurable/configs/gaussian-spot.toml --show
+```
+
+The TOML files group grid, material, solver, and initial-condition parameters.
+The `--show` flag remains on the command line because it controls presentation
+rather than the scientific run.
+
 ## Test The Implementations
 
-Each Cargo project has unit tests for the initial condition, fixed boundaries,
-a hand-calculated update, symmetry, convergence, and invalid parameters:
+The Cargo projects test initial conditions, fixed boundaries, a
+hand-calculated update, symmetry, convergence, configuration parsing, and
+invalid parameters:
 
 ```bash
 cargo test --manifest-path naive/Cargo.toml
 cargo test --manifest-path ndarray-features/Cargo.toml
+cargo test --manifest-path configurable/Cargo.toml
 ```
 
 The shell test runs both binaries with identical inputs and compares their
@@ -62,11 +82,12 @@ complete output:
 ```
 
 Run this test after each refactoring step. It checks the initial state, one
-step, multiple steps, and a convergence case.
+step, multiple steps, convergence, and equivalence between the uniform TOML
+configuration and matching command-line arguments.
 
 ## Behavior That Must Remain Equivalent
 
-The two implementations should agree on:
+All three implementations should agree for the uniform-disk configuration on:
 
 - the circular initial hot spot and fixed boundary values;
 - parameter validation and stability checks;
@@ -74,7 +95,10 @@ The two implementations should agree on:
 - the number of completed steps and convergence behavior;
 - the grid printed by `--show`.
 
-Their internal APIs intentionally differ. In particular, the naive
+The Gaussian configuration deliberately adds new behavior and therefore has
+property-focused unit tests rather than a cross-implementation comparison.
+
+The internal APIs intentionally differ. In particular, the naive
 implementation returns `&Array2<f64>` from `get_grid`, while the refactored
 implementation returns an `ArrayView2<'_, f64>`. The latter exposes a
 read-only view without exposing the owned array type as the caller's value.
@@ -87,5 +111,10 @@ read-only view without exposing the owned array type as the caller's value.
 4. Follow the shifted array views through the `Zip` stencil update.
 5. Identify how `grid` and `next_grid` are swapped without allocating each
    time step.
-6. Change one implementation and use both levels of testing to check the
+6. Inspect how `configurable/src/config.rs` represents the TOML structure and
+   validates it.
+7. Compare the uniform-disk and Gaussian variants in the tagged enum.
+8. Follow how the Gaussian initializer broadcasts column and row coordinate
+   arrays into a grid.
+9. Change one implementation and use both levels of testing to check the
    result.

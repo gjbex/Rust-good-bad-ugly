@@ -11,23 +11,23 @@ several places when they combine multiple ideas.
 | Minimal Rust binary | `source-code/hello-world/src/main.rs` |
 | Cargo project layout | `source-code/hello-world/` |
 | Building and running with Cargo | `source-code/hello-world/README.md` |
-| External crates in `Cargo.toml` | `source-code/hello-clap/Cargo.toml`, `source-code/complex-numbers/Cargo.toml`, `source-code/units/Cargo.toml`, `source-code/random-numbers/Cargo.toml`, `source-code/smart-pointers/Cargo.toml`, `source-code/strings/Cargo.toml`, `source-code/structural-matching/Cargo.toml`, `source-code/heat-diffusion/naive/Cargo.toml`, `source-code/heat-diffusion/ndarray-features/Cargo.toml`, `source-code/julia-set/julia-set-toml-config/Cargo.toml`, `source-code/n-body-simulation/rust/Cargo.toml` |
+| External crates in `Cargo.toml` | `source-code/hello-clap/Cargo.toml`, `source-code/complex-numbers/Cargo.toml`, `source-code/units/Cargo.toml`, `source-code/random-numbers/Cargo.toml`, `source-code/smart-pointers/Cargo.toml`, `source-code/strings/Cargo.toml`, `source-code/structural-matching/Cargo.toml`, `source-code/heat-diffusion/naive/Cargo.toml`, `source-code/heat-diffusion/ndarray-features/Cargo.toml`, `source-code/heat-diffusion/configurable/Cargo.toml`, `source-code/julia-set/julia-set-toml-config/Cargo.toml`, `source-code/n-body-simulation/rust/Cargo.toml` |
 | Reproducible dependency lockfiles | `source-code/*/Cargo.lock`, `source-code/heat-diffusion/*/Cargo.lock`, `source-code/julia-set/*/Cargo.lock`, `source-code/n-body-simulation/rust/Cargo.lock` |
 | Multiple binaries in one package | `source-code/hashmap-hashset/src/generate-data.rs`, `source-code/hashmap-hashset/src/count-nucleotides.rs`, `source-code/hashmap-hashset/src/read-errors.rs` |
 | Shared package code in `lib.rs` | `source-code/smart-pointers/src/lib.rs`, `source-code/hashmap-hashset/src/lib.rs` |
 | Release builds and benchmarking context | `source-code/julia-set/benchmark.sh` |
-| Unit tests protecting a numerical refactoring | `source-code/heat-diffusion/naive/src/heat_diffusion.rs`, `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs` |
+| Unit tests protecting a numerical refactoring | `source-code/heat-diffusion/naive/src/heat_diffusion.rs`, `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs`, `source-code/heat-diffusion/configurable/src/heat_diffusion.rs` |
 | Black-box comparison of separate Cargo projects | `source-code/heat-diffusion/test_consistency.sh` |
 
 ## Command-Line Interfaces
 
 | Feature | Where to look |
 |---|---|
-| `clap::Parser` derive | `source-code/hello-clap/src/main.rs`, `source-code/units/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/heat-diffusion/naive/src/main.rs`, `source-code/heat-diffusion/ndarray-features/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
-| Typed command-line argument struct | `source-code/hello-clap/src/main.rs`, `source-code/units/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/heat-diffusion/naive/src/main.rs`, `source-code/heat-diffusion/ndarray-features/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
+| `clap::Parser` derive | `source-code/hello-clap/src/main.rs`, `source-code/units/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/heat-diffusion/naive/src/main.rs`, `source-code/heat-diffusion/ndarray-features/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
+| Typed command-line argument struct | `source-code/hello-clap/src/main.rs`, `source-code/units/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/heat-diffusion/naive/src/main.rs`, `source-code/heat-diffusion/ndarray-features/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
 | Argument defaults | `source-code/numerical-function/src/main.rs`, `source-code/enum-match/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
 | Restricted argument values with `ValueEnum` | `source-code/enum-match/src/main.rs`, `source-code/random-numbers/src/main.rs`, `source-code/user-defined-trait/src/main.rs` |
-| File path arguments | `source-code/iterators/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
+| File path arguments | `source-code/iterators/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
 | Numeric parameters for reproducible runs | `source-code/random-numbers/src/main.rs`, `source-code/julia-set/julia-set-baseline/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
 | Optional output file arguments | `source-code/n-body-simulation/rust/src/main.rs` |
 
@@ -66,7 +66,7 @@ several places when they combine multiple ideas.
 | Inclusive ranges with `..=` | `source-code/control-flow/src/main.rs` |
 | Nested `for` loops | `source-code/control-flow/src/main.rs` |
 | Defining an `enum` | `source-code/enum-match/src/main.rs` |
-| Matching on enum variants | `source-code/enum-match/src/main.rs`, `source-code/random-numbers/src/main.rs` |
+| Matching on enum variants | `source-code/enum-match/src/main.rs`, `source-code/random-numbers/src/main.rs`, `source-code/heat-diffusion/configurable/src/heat_diffusion.rs` |
 | Match guards | `source-code/enum-match/src/main.rs`, `source-code/hashmap-hashset/src/count-nucleotides.rs` |
 | Tuple destructuring in patterns | `source-code/iterators/src/main.rs`, `source-code/traits/src/matrix.rs`, `source-code/n-body-simulation/rust/src/system.rs` |
 | Structural `match` on tuple-shaped state | `source-code/strings/src/main.rs`, `source-code/structural-matching/src/main.rs` |
@@ -94,9 +94,9 @@ several places when they combine multiple ideas.
 | Collected references that keep the source collection borrowed | `source-code/copy-vs-move/src/main.rs` |
 | Recursive ownership with `Box<T>` | `source-code/smart-pointers/src/tree.rs` |
 | Moving non-`Copy` values into recursive structures | `source-code/smart-pointers/src/bst.rs` |
-| Borrowed read-only multidimensional array view | `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs` |
-| Simultaneous immutable input and mutable output views | `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs` |
-| Swapping owned buffers with `std::mem::swap` | `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs` |
+| Borrowed read-only multidimensional array view | `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs`, `source-code/heat-diffusion/configurable/src/heat_diffusion.rs` |
+| Simultaneous immutable input and mutable output views | `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs`, `source-code/heat-diffusion/configurable/src/heat_diffusion.rs` |
+| Swapping owned buffers with `std::mem::swap` | `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs`, `source-code/heat-diffusion/configurable/src/heat_diffusion.rs` |
 
 ## Data Modeling With Structs And Modules
 
@@ -112,7 +112,8 @@ several places when they combine multiple ideas.
 | Structure-of-arrays storage | `source-code/n-body-simulation/rust/src/system.rs` |
 | Crate-private API with `pub(crate)` | `source-code/smart-pointers/src/tree.rs` |
 | Separating data structures from algorithms | `source-code/smart-pointers/src/tree.rs`, `source-code/smart-pointers/src/bst.rs` |
-| Splitting code into modules with `mod` | `source-code/enum-match/src/main.rs`, `source-code/user-defined-trait/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
+| Splitting code into modules with `mod` | `source-code/enum-match/src/main.rs`, `source-code/user-defined-trait/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs` |
+| Nested structs for configuration groups | `source-code/heat-diffusion/configurable/src/config.rs` |
 
 ## Generics, Traits, And Polymorphism
 
@@ -165,17 +166,19 @@ several places when they combine multiple ideas.
 
 | Feature | Where to look |
 |---|---|
-| Owned two-dimensional arrays with `Array2` | `source-code/heat-diffusion/naive/src/heat_diffusion.rs`, `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs` |
-| Shape inspection with `dim` | `source-code/heat-diffusion/naive/src/heat_diffusion.rs`, `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs` |
+| Owned two-dimensional arrays with `Array2` | `source-code/heat-diffusion/naive/src/heat_diffusion.rs`, `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs`, `source-code/heat-diffusion/configurable/src/heat_diffusion.rs` |
+| Shape inspection with `dim` | `source-code/heat-diffusion/naive/src/heat_diffusion.rs`, `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs`, `source-code/heat-diffusion/configurable/src/heat_diffusion.rs` |
 | Two-dimensional element indexing | `source-code/heat-diffusion/naive/src/heat_diffusion.rs` |
-| Array slicing with the `s!` macro | `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs` |
-| Mutable array views and `fill` | `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs` |
-| Conditional fill with `indexed_iter_mut` | `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs` |
-| Read-only views with `ArrayView2` | `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs` |
-| Lockstep array traversal with `Zip` | `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs` |
-| Shifted views for a five-point stencil | `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs` |
-| Double buffering without per-step allocation | `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs` |
-| Reduction fused with an array update | `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs` |
+| Array slicing with the `s!` macro | `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs`, `source-code/heat-diffusion/configurable/src/heat_diffusion.rs` |
+| Mutable array views and `fill` | `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs`, `source-code/heat-diffusion/configurable/src/heat_diffusion.rs` |
+| Conditional fill with `indexed_iter_mut` | `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs`, `source-code/heat-diffusion/configurable/src/heat_diffusion.rs` |
+| Read-only views with `ArrayView2` | `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs`, `source-code/heat-diffusion/configurable/src/heat_diffusion.rs` |
+| Lockstep array traversal with `Zip` | `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs`, `source-code/heat-diffusion/configurable/src/heat_diffusion.rs` |
+| Shifted views for a five-point stencil | `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs`, `source-code/heat-diffusion/configurable/src/heat_diffusion.rs` |
+| Double buffering without per-step allocation | `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs`, `source-code/heat-diffusion/configurable/src/heat_diffusion.rs` |
+| Reduction fused with an array update | `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs`, `source-code/heat-diffusion/configurable/src/heat_diffusion.rs` |
+| Broadcasting row and column coordinate arrays | `source-code/heat-diffusion/configurable/src/heat_diffusion.rs` |
+| Gaussian field initialization | `source-code/heat-diffusion/configurable/src/heat_diffusion.rs` |
 | Behavior-preserving array refactoring | `source-code/heat-diffusion/README.md`, `source-code/heat-diffusion/test_consistency.sh` |
 
 ## Error Handling
@@ -187,8 +190,8 @@ several places when they combine multiple ideas.
 | Converting `Option` to `Result` with `ok_or_else` | `source-code/error-handling/src/matrix.rs` |
 | Propagating errors with `?` | `source-code/error-handling/src/matrix.rs`, `source-code/iterators/src/main.rs` |
 | Handling errors at the call site | `source-code/error-handling/src/main.rs` |
-| Returning boxed dynamic errors from `main` | `source-code/iterators/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
-| Validating numerical parameters with `Result` | `source-code/heat-diffusion/naive/src/heat_diffusion.rs`, `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs` |
+| Returning boxed dynamic errors from `main` | `source-code/iterators/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
+| Validating numerical parameters with `Result` | `source-code/heat-diffusion/naive/src/heat_diffusion.rs`, `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs`, `source-code/heat-diffusion/configurable/src/config.rs` |
 
 ## Data I/O And Serialization
 
@@ -199,15 +202,18 @@ several places when they combine multiple ideas.
 | Byte iterators over input streams | `source-code/hashmap-hashset/src/count-nucleotides.rs` |
 | Line iterators over buffered input | `source-code/strings/src/main.rs`, `source-code/structural-matching/src/main.rs` |
 | CSV input | `source-code/iterators/src/main.rs`, `source-code/iterators/data.txt` |
-| `serde::Deserialize` derive | `source-code/iterators/src/main.rs`, `source-code/smart-pointers/src/tree.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
+| `serde::Deserialize` derive | `source-code/iterators/src/main.rs`, `source-code/smart-pointers/src/tree.rs`, `source-code/heat-diffusion/configurable/src/config.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
 | Deserializing rows into a struct | `source-code/iterators/src/main.rs` |
 | `serde::Serialize` derive | `source-code/smart-pointers/src/tree.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
 | JSON serialization and deserialization | `source-code/smart-pointers/src/tree.rs` |
 | Serializing recursive data structures | `source-code/smart-pointers/src/tree.rs` |
 | Writing CSV records | `source-code/n-body-simulation/rust/src/main.rs` |
 | Serializing typed records to CSV | `source-code/n-body-simulation/rust/src/main.rs` |
-| TOML configuration file for run parameters | `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/julia-set/julia-set-toml-config/julia-set.toml` |
-| Deserializing a TOML file into a typed config struct | `source-code/julia-set/julia-set-toml-config/src/main.rs` |
+| TOML configuration file for run parameters | `source-code/heat-diffusion/configurable/configs/uniform-spot.toml`, `source-code/heat-diffusion/configurable/configs/gaussian-spot.toml`, `source-code/julia-set/julia-set-toml-config/julia-set.toml` |
+| Deserializing a TOML file into typed configuration | `source-code/heat-diffusion/configurable/src/config.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
+| Nested TOML tables for related parameter groups | `source-code/heat-diffusion/configurable/configs/uniform-spot.toml`, `source-code/heat-diffusion/configurable/configs/gaussian-spot.toml` |
+| Tagged enum for alternative configuration variants | `source-code/heat-diffusion/configurable/src/config.rs` |
+| Rejecting unknown configuration fields | `source-code/heat-diffusion/configurable/src/config.rs` |
 | RFC 3339 timestamp parsing with `chrono` | `source-code/strings/src/main.rs`, `source-code/structural-matching/src/main.rs` |
 | Computing elapsed calendar-style spans from parsed timestamps | `source-code/strings/src/main.rs`, `source-code/structural-matching/src/main.rs` |
 
@@ -242,8 +248,10 @@ several places when they combine multiple ideas.
 | N-body simulation with velocity Verlet integration | `source-code/n-body-simulation/rust/` |
 | Softened gravitational interactions | `source-code/n-body-simulation/rust/src/system.rs` |
 | Two-dimensional heat diffusion with a five-point stencil | `source-code/heat-diffusion/` |
-| Explicit finite-difference stability validation | `source-code/heat-diffusion/naive/src/heat_diffusion.rs`, `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs` |
-| Symmetry and hand-calculated stencil tests | `source-code/heat-diffusion/naive/src/heat_diffusion.rs`, `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs` |
+| Explicit finite-difference stability validation | `source-code/heat-diffusion/naive/src/heat_diffusion.rs`, `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs`, `source-code/heat-diffusion/configurable/src/config.rs` |
+| Symmetry and hand-calculated stencil tests | `source-code/heat-diffusion/naive/src/heat_diffusion.rs`, `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs`, `source-code/heat-diffusion/configurable/src/heat_diffusion.rs` |
+| Configuration-driven heat-diffusion runs | `source-code/heat-diffusion/configurable/` |
+| Alternative uniform and Gaussian initial conditions | `source-code/heat-diffusion/configurable/src/config.rs`, `source-code/heat-diffusion/configurable/src/heat_diffusion.rs` |
 
 ## Python Visualization Helpers
 

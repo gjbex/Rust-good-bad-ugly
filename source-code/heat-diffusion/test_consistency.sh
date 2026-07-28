@@ -29,6 +29,30 @@ run_case() {
     fi
 }
 
+run_config_case() {
+    local name=$1
+    local config_file=$2
+    shift 2
+
+    local ndarray_output="$tmp_dir/ndarray-$name.txt"
+    local configurable_output="$tmp_dir/configurable-$name.txt"
+
+    printf 'Checking %s...\n' "$name"
+
+    cargo run --quiet \
+        --manifest-path "$script_dir/ndarray-features/Cargo.toml" \
+        -- "$@" >"$ndarray_output"
+
+    cargo run --quiet \
+        --manifest-path "$script_dir/configurable/Cargo.toml" \
+        -- --config "$config_file" --show >"$configurable_output"
+
+    if ! diff -u "$ndarray_output" "$configurable_output"; then
+        printf 'Consistency check failed for %s.\n' "$name" >&2
+        return 1
+    fi
+}
+
 run_case initial-state \
     --grid-size 11 \
     --spot-radius 2 \
@@ -60,6 +84,18 @@ run_case convergence \
     --dt 0.5 \
     --steps 1000 \
     --tolerance 0.1 \
+    --show
+
+run_config_case uniform-configuration \
+    "$script_dir/configurable/configs/uniform-spot.toml" \
+    --grid-size 21 \
+    --spot-radius 5 \
+    --spot-temperature 100.0 \
+    --boundary-temperature 20.0 \
+    --alpha 0.1 \
+    --dt 0.01 \
+    --steps 25 \
+    --tolerance 1.0e-12 \
     --show
 
 printf 'All cross-implementation consistency checks passed.\n'
