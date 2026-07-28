@@ -3,9 +3,11 @@
 Scientific programs often represent fields, images, and simulation states as
 multidimensional arrays. This module introduces the `ndarray` crate through a
 two-dimensional heat-diffusion example and then uses tests to guide a
-behavior-preserving refactoring.
+behavior-preserving refactoring. A companion singular value decomposition
+example introduces an OpenBLAS-backed linear-algebra workflow.
 
-The complete example is in `source-code/heat-diffusion`.
+The complete examples are in `source-code/heat-diffusion` and
+`source-code/svd`.
 
 ## Learning Objectives
 
@@ -19,6 +21,8 @@ By the end of this module, you should be able to:
 - expose array data through a read-only `ArrayView2`;
 - broadcast one-dimensional coordinate arrays into a two-dimensional field;
 - deserialize and validate structured TOML run configuration;
+- reconstruct a matrix from its singular value decomposition using `dot`;
+- compare numerical arrays using maximum absolute and Frobenius errors;
 - use unit and black-box tests to protect a numerical refactoring.
 
 ## Prerequisites
@@ -514,8 +518,92 @@ The Rust ecosystem has several relevant choices:
   deployment requirements fit the project.
 
 This example focuses on array shapes, indexing, slicing, views, broadcasting,
-and stencils. Matrix factorizations remain a separate topic and should be
-introduced with an example where linear algebra is central.
+and stencils. The companion `source-code/svd` project uses `ndarray-linalg`
+because the matrix factorization, rather than a stencil, is its central
+operation.
+
+## Reconstructing A Matrix From Its SVD
+
+For an `m`-by-`n` matrix, a compact singular value decomposition is:
+
+```text
+A = U Sigma V^T
+```
+
+With `k = min(m, n)`, the shapes are:
+
+```text
+A:       (m, n)
+U:       (m, k)
+Sigma:   (k, k)
+V^T:     (k, n)
+```
+
+The `source-code/svd` example uses `ndarray-linalg` with a system OpenBLAS
+backend. On Debian or Ubuntu, install its development package before building:
+
+```bash
+sudo apt install libopenblas-dev
+```
+
+The backend choice is explicit in `source-code/svd/Cargo.toml`:
+
+```toml
+ndarray = "0.17.2"
+ndarray-linalg = { version = "0.18.1", features = ["openblas-system"] }
+```
+
+Importing `SVD` brings the factorization method into scope as an extension
+trait. The singular values form the diagonal of `Sigma`, and `dot` performs
+matrix multiplication:
+
+```rust
+use ndarray::{Array2, s};
+use ndarray_linalg::SVD;
+
+let (u, singular_values, vt) = matrix.svd(true, true)?;
+let u = u.expect("left singular vectors were requested");
+let vt = vt.expect("right singular vectors were requested");
+
+let k = singular_values.len();
+let sigma = Array2::from_diag(&singular_values);
+let reconstructed = u
+    .slice(s![.., ..k])
+    .dot(&sigma)
+    .dot(&vt.slice(s![..k, ..]));
+```
+
+The slices make the compact dimensions explicit even when a backend returns
+larger factor matrices.
+
+## Comparing The Reconstruction
+
+Floating-point factorizations should not be checked with exact equality. The
+example computes the element-wise difference and summarizes it in two ways:
+
+```rust
+let difference = &reconstructed - &original;
+let max_absolute_error = difference
+    .iter()
+    .fold(0.0_f64, |largest, &value| largest.max(value.abs()));
+let frobenius_error = difference.mapv(|value| value * value).sum().sqrt();
+```
+
+The maximum absolute error reports the largest element-wise discrepancy. The
+Frobenius error is the square root of the sum of squared discrepancies over the
+whole matrix.
+
+Run the example and its test:
+
+```bash
+cd source-code/svd
+cargo run
+cargo test
+```
+
+Both errors should be close to machine precision. Their exact final digits can
+depend on the linear-algebra backend, so the test checks a tolerance rather
+than a printed reference value.
 
 ## Hands-On Refactoring
 
@@ -528,6 +616,8 @@ introduced with an example where linear algebra is central.
 7. Add a configuration field, then misspell it and inspect the parse error.
 8. Compare the uniform-disk and Gaussian initial-condition tables.
 9. Change `sigma` and predict how much of the grid the Gaussian occupies.
+10. Draw the compact SVD shapes for the 4-by-3 matrix in `source-code/svd`.
+11. Change one matrix element, then rerun the SVD reconstruction test.
 
 ## Summary
 
@@ -540,5 +630,8 @@ introduced with an example where linear algebra is central.
 - Read-only `ArrayView2` values expose borrowed array data.
 - Tagged enums model configuration alternatives with different parameters.
 - TOML files make scientific run definitions reviewable and reproducible.
+- `ndarray-linalg` extends arrays with OpenBLAS-backed factorizations.
+- A compact SVD reconstructs an array with two matrix multiplications.
+- Numerical reconstruction checks require an explicit tolerance.
 - Unit tests and cross-project output comparison support numerical
   refactoring.

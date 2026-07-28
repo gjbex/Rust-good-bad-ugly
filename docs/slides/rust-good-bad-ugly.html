@@ -8985,6 +8985,7 @@ Geert Jan Bex
 <li>Reuse storage with double buffering</li>
 <li>Broadcast coordinates into a Gaussian field</li>
 <li>Move scientific parameters into TOML</li>
+<li>Reconstruct a matrix from an OpenBLAS-backed SVD</li>
 <li>Verify that the refactoring preserves behavior</li>
 </ul>
 <aside class="notes">
@@ -9696,12 +9697,93 @@ max change: 20</code></pre>
 </tr>
 <tr class="even">
 <td>Existing native linear algebra stack</td>
-<td>BLAS/LAPACK-backed crate</td>
+<td><code>ndarray-linalg</code></td>
 </tr>
 </tbody>
 </table>
 <aside class="notes">
 <p>This is orientation, not an exhaustive ecosystem comparison. Dependency and deployment constraints may decide the practical choice.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="compact-svd-shapes" class="slide level2">
+<h2>Compact SVD Shapes</h2>
+<pre class="text"><code>A = U Sigma V^T
+
+A:       (m, n)
+U:       (m, k)
+Sigma:   (k, k)
+V^T:     (k, n)
+
+k = min(m, n)</code></pre>
+<aside class="notes">
+<p>Use the 4-by-3 matrix in source-code/svd. Ask participants to predict all four shapes before opening the implementation. The example selects the OpenBLAS backend explicitly.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="reconstruct-with-dot" class="slide level2">
+<h2>Reconstruct With <code>dot</code></h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb297"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb297-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> (u<span class="op">,</span> singular_values<span class="op">,</span> vt) <span class="op">=</span> matrix<span class="op">.</span>svd(<span class="cn">true</span><span class="op">,</span> <span class="cn">true</span>)<span class="op">?;</span></span>
+<span id="cb297-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> u <span class="op">=</span> u<span class="op">.</span>expect(<span class="st">"U was requested"</span>)<span class="op">;</span></span>
+<span id="cb297-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> vt <span class="op">=</span> vt<span class="op">.</span>expect(<span class="st">"Vt was requested"</span>)<span class="op">;</span></span>
+<span id="cb297-4"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb297-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> k <span class="op">=</span> singular_values<span class="op">.</span>len()<span class="op">;</span></span>
+<span id="cb297-6"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> sigma <span class="op">=</span> <span class="pp">Array2::</span>from_diag(<span class="op">&amp;</span>singular_values)<span class="op">;</span></span>
+<span id="cb297-7"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> reconstructed <span class="op">=</span> u</span>
+<span id="cb297-8"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>slice(<span class="pp">s!</span>[<span class="op">..,</span> <span class="op">..</span>k])</span>
+<span id="cb297-9"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>dot(<span class="op">&amp;</span>sigma)</span>
+<span id="cb297-10"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>dot(<span class="op">&amp;</span>vt<span class="op">.</span>slice(<span class="pp">s!</span>[<span class="op">..</span>k<span class="op">,</span> <span class="op">..</span>]))<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li><code>from_diag</code>: vector to diagonal matrix</li>
+<li><code>dot</code>: matrix multiplication</li>
+</ul>
+<aside class="notes">
+<p>The named U and Vt bindings keep the borrowed views alive through both matrix multiplications. Connect the dimensions on the previous slide to each dot product.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="measure-reconstruction-error" class="slide level2">
+<h2>Measure Reconstruction Error</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb298"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb298-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> difference <span class="op">=</span> <span class="op">&amp;</span>reconstructed <span class="op">-</span> <span class="op">&amp;</span>original<span class="op">;</span></span>
+<span id="cb298-2"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb298-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> max_error <span class="op">=</span> difference</span>
+<span id="cb298-4"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>iter()</span>
+<span id="cb298-5"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>fold(<span class="dv">0.0_f64</span><span class="op">,</span> <span class="op">|</span>max<span class="op">,</span> <span class="op">&amp;</span>x<span class="op">|</span> max<span class="op">.</span>max(x<span class="op">.</span>abs()))<span class="op">;</span></span>
+<span id="cb298-6"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb298-7"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> frobenius_error <span class="op">=</span></span>
+<span id="cb298-8"><a href="" aria-hidden="true" tabindex="-1"></a>    difference<span class="op">.</span>mapv(<span class="op">|</span>x<span class="op">|</span> x <span class="op">*</span> x)<span class="op">.</span>sum()<span class="op">.</span>sqrt()<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb299"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb299-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> source-code/svd</span>
+<span id="cb299-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run</span>
+<span id="cb299-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> test</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Do not promise identical final digits across BLAS implementations. The unit test checks both errors against a tolerance of 1e-12.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -9749,6 +9831,8 @@ max change: 20</code></pre>
 <li>Double buffering fits stencil semantics</li>
 <li>Tagged enums model alternative configurations</li>
 <li>TOML files make scientific runs reproducible</li>
+<li>A compact SVD combines a factorization with matrix multiplication</li>
+<li>Numerical comparisons need a stated tolerance</li>
 <li>Tests protect both scientific properties and CLI behavior</li>
 </ul>
 <aside class="notes">

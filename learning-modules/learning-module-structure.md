@@ -379,6 +379,7 @@ sequence.
 Primary example group:
 
 - `source-code/heat-diffusion`
+- `source-code/svd`
 
 Topics:
 
@@ -392,6 +393,9 @@ Topics:
 - Broadcasting one-dimensional coordinate arrays into a Gaussian field.
 - TOML configuration with nested structs and a tagged enum.
 - Separating reproducible scientific parameters from operational CLI flags.
+- Singular value decomposition with an OpenBLAS-backed crate.
+- Matrix reconstruction with `dot` and a diagonal matrix.
+- Maximum absolute and Frobenius error measures.
 - Scientific unit tests and cross-implementation black-box tests.
 - Behavior-preserving refactoring.
 
@@ -400,7 +404,9 @@ Goal:
 Participants should be able to express a small multidimensional numerical
 algorithm with `ndarray`, configure reproducible runs, and reason about
 ownership, views, broadcasting, mutation, and the tests that protect a
-refactoring.
+refactoring. They should also be able to use an external linear-algebra
+routine, reconstruct a matrix from a compact SVD, and assess the numerical
+difference from the original.
 
 Related module text:
 

@@ -74,6 +74,9 @@ prevent or make explicit in safe code.
    `Array2`, slicing, mutable views, `Zip`, double buffering, broadcasting,
    tagged configuration variants, numerical unit tests, and
    behavior-preserving refactoring.
+1. `svd`: uses `ndarray` and OpenBLAS-backed `ndarray-linalg` to compute a
+   singular value decomposition, reconstruct a rectangular matrix with matrix
+   multiplication, and measure the floating-point reconstruction error.
 
 `julia-set`: Julia set  implementations illustrating diverse aspects of Rust
 programming.

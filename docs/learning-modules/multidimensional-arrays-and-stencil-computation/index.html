@@ -127,6 +127,10 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#choosing-a-scientific-array-crate">Choosing A Scientific Array Crate</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#reconstructing-a-matrix-from-its-svd">Reconstructing A Matrix From Its SVD</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#comparing-the-reconstruction">Comparing The Reconstruction</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#hands-on-refactoring">Hands-On Refactoring</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#summary">Summary</a>
@@ -162,8 +166,10 @@
 <p>Scientific programs often represent fields, images, and simulation states as
 multidimensional arrays. This module introduces the <code>ndarray</code> crate through a
 two-dimensional heat-diffusion example and then uses tests to guide a
-behavior-preserving refactoring.</p>
-<p>The complete example is in <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/heat-diffusion"><code>source-code/heat-diffusion</code></a>.</p>
+behavior-preserving refactoring. A companion singular value decomposition
+example introduces an OpenBLAS-backed linear-algebra workflow.</p>
+<p>The complete examples are in <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/heat-diffusion"><code>source-code/heat-diffusion</code></a> and
+<a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/svd"><code>source-code/svd</code></a>.</p>
 <h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
 <p>By the end of this module, you should be able to:</p>
 <ul>
@@ -175,6 +181,8 @@ behavior-preserving refactoring.</p>
 <li>expose array data through a read-only <code>ArrayView2</code>;</li>
 <li>broadcast one-dimensional coordinate arrays into a two-dimensional field;</li>
 <li>deserialize and validate structured TOML run configuration;</li>
+<li>reconstruct a matrix from its singular value decomposition using <code>dot</code>;</li>
+<li>compare numerical arrays using maximum absolute and Frobenius errors;</li>
 <li>use unit and black-box tests to protect a numerical refactoring.</li>
 </ul>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
@@ -514,8 +522,59 @@ performance matters.</p>
   deployment requirements fit the project.</li>
 </ul>
 <p>This example focuses on array shapes, indexing, slicing, views, broadcasting,
-and stencils. Matrix factorizations remain a separate topic and should be
-introduced with an example where linear algebra is central.</p>
+and stencils. The companion <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/svd"><code>source-code/svd</code></a> project uses <code>ndarray-linalg</code>
+because the matrix factorization, rather than a stencil, is its central
+operation.</p>
+<h2 id="reconstructing-a-matrix-from-its-svd">Reconstructing A Matrix From Its SVD<a class="headerlink" href="#reconstructing-a-matrix-from-its-svd" title="Permanent link">&para;</a></h2>
+<p>For an <code>m</code>-by-<code>n</code> matrix, a compact singular value decomposition is:</p>
+<pre class="highlight"><code class="language-text">A = U Sigma V^T</code></pre>
+<p>With <code>k = min(m, n)</code>, the shapes are:</p>
+<pre class="highlight"><code class="language-text">A:       (m, n)
+U:       (m, k)
+Sigma:   (k, k)
+V^T:     (k, n)</code></pre>
+<p>The <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/svd"><code>source-code/svd</code></a> example uses <code>ndarray-linalg</code> with a system OpenBLAS
+backend. On Debian or Ubuntu, install its development package before building:</p>
+<pre class="highlight"><code class="language-bash">sudo apt install libopenblas-dev</code></pre>
+<p>The backend choice is explicit in <a href="https://github.com/gjbex/Rust-good-bad-ugly/blob/main/source-code/svd/Cargo.toml"><code>source-code/svd/Cargo.toml</code></a>:</p>
+<pre class="highlight"><code class="language-toml">ndarray = "0.17.2"
+ndarray-linalg = { version = "0.18.1", features = ["openblas-system"] }</code></pre>
+<p>Importing <code>SVD</code> brings the factorization method into scope as an extension
+trait. The singular values form the diagonal of <code>Sigma</code>, and <code>dot</code> performs
+matrix multiplication:</p>
+<pre class="highlight"><code class="language-rust">use ndarray::{Array2, s};
+use ndarray_linalg::SVD;
+
+let (u, singular_values, vt) = matrix.svd(true, true)?;
+let u = u.expect("left singular vectors were requested");
+let vt = vt.expect("right singular vectors were requested");
+
+let k = singular_values.len();
+let sigma = Array2::from_diag(&amp;singular_values);
+let reconstructed = u
+    .slice(s![.., ..k])
+    .dot(&amp;sigma)
+    .dot(&amp;vt.slice(s![..k, ..]));</code></pre>
+<p>The slices make the compact dimensions explicit even when a backend returns
+larger factor matrices.</p>
+<h2 id="comparing-the-reconstruction">Comparing The Reconstruction<a class="headerlink" href="#comparing-the-reconstruction" title="Permanent link">&para;</a></h2>
+<p>Floating-point factorizations should not be checked with exact equality. The
+example computes the element-wise difference and summarizes it in two ways:</p>
+<pre class="highlight"><code class="language-rust">let difference = &amp;reconstructed - &amp;original;
+let max_absolute_error = difference
+    .iter()
+    .fold(0.0_f64, |largest, &amp;value| largest.max(value.abs()));
+let frobenius_error = difference.mapv(|value| value * value).sum().sqrt();</code></pre>
+<p>The maximum absolute error reports the largest element-wise discrepancy. The
+Frobenius error is the square root of the sum of squared discrepancies over the
+whole matrix.</p>
+<p>Run the example and its test:</p>
+<pre class="highlight"><code class="language-bash">cd source-code/svd
+cargo run
+cargo test</code></pre>
+<p>Both errors should be close to machine precision. Their exact final digits can
+depend on the linear-algebra backend, so the test checks a tolerance rather
+than a printed reference value.</p>
 <h2 id="hands-on-refactoring">Hands-On Refactoring<a class="headerlink" href="#hands-on-refactoring" title="Permanent link">&para;</a></h2>
 <ol>
 <li>Add a unit test to one implementation before changing it.</li>
@@ -527,6 +586,8 @@ introduced with an example where linear algebra is central.</p>
 <li>Add a configuration field, then misspell it and inspect the parse error.</li>
 <li>Compare the uniform-disk and Gaussian initial-condition tables.</li>
 <li>Change <code>sigma</code> and predict how much of the grid the Gaussian occupies.</li>
+<li>Draw the compact SVD shapes for the 4-by-3 matrix in <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/svd"><code>source-code/svd</code></a>.</li>
+<li>Change one matrix element, then rerun the SVD reconstruction test.</li>
 </ol>
 <h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
 <ul>
@@ -539,6 +600,9 @@ introduced with an example where linear algebra is central.</p>
 <li>Read-only <code>ArrayView2</code> values expose borrowed array data.</li>
 <li>Tagged enums model configuration alternatives with different parameters.</li>
 <li>TOML files make scientific run definitions reviewable and reproducible.</li>
+<li><code>ndarray-linalg</code> extends arrays with OpenBLAS-backed factorizations.</li>
+<li>A compact SVD reconstructs an array with two matrix multiplications.</li>
+<li>Numerical reconstruction checks require an explicit tolerance.</li>
 <li>Unit tests and cross-project output comparison support numerical
   refactoring.</li>
 </ul>

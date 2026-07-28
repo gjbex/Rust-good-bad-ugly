@@ -476,6 +476,7 @@ sequence.</p>
 <p>Primary example group:</p>
 <ul>
 <li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/heat-diffusion"><code>source-code/heat-diffusion</code></a></li>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/svd"><code>source-code/svd</code></a></li>
 </ul>
 <p>Topics:</p>
 <ul>
@@ -489,6 +490,9 @@ sequence.</p>
 <li>Broadcasting one-dimensional coordinate arrays into a Gaussian field.</li>
 <li>TOML configuration with nested structs and a tagged enum.</li>
 <li>Separating reproducible scientific parameters from operational CLI flags.</li>
+<li>Singular value decomposition with an OpenBLAS-backed crate.</li>
+<li>Matrix reconstruction with <code>dot</code> and a diagonal matrix.</li>
+<li>Maximum absolute and Frobenius error measures.</li>
 <li>Scientific unit tests and cross-implementation black-box tests.</li>
 <li>Behavior-preserving refactoring.</li>
 </ul>
@@ -496,7 +500,9 @@ sequence.</p>
 <p>Participants should be able to express a small multidimensional numerical
 algorithm with <code>ndarray</code>, configure reproducible runs, and reason about
 ownership, views, broadcasting, mutation, and the tests that protect a
-refactoring.</p>
+refactoring. They should also be able to use an external linear-algebra
+routine, reconstruct a matrix from a compact SVD, and assess the numerical
+difference from the original.</p>
 <p>Related module text:</p>
 <ul>
 <li><code>learning-modules/multidimensional-arrays-and-stencil-computation.md</code></li>

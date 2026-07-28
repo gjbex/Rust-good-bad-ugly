@@ -14,6 +14,7 @@ mathematics simple and make the ownership of each view explicit.
 - Reuse storage with double buffering
 - Broadcast coordinates into a Gaussian field
 - Move scientific parameters into TOML
+- Reconstruct a matrix from an OpenBLAS-backed SVD
 - Verify that the refactoring preserves behavior
 
 ::: notes
@@ -529,11 +530,78 @@ necessary.
 | NumPy-like arrays, slices, views | `ndarray` |
 | Vectors, matrices, transformations | `nalgebra` |
 | Dense linear algebra performance | `faer` |
-| Existing native linear algebra stack | BLAS/LAPACK-backed crate |
+| Existing native linear algebra stack | `ndarray-linalg` |
 
 ::: notes
 This is orientation, not an exhaustive ecosystem comparison. Dependency and
 deployment constraints may decide the practical choice.
+:::
+
+## Compact SVD Shapes
+
+```text
+A = U Sigma V^T
+
+A:       (m, n)
+U:       (m, k)
+Sigma:   (k, k)
+V^T:     (k, n)
+
+k = min(m, n)
+```
+
+::: notes
+Use the 4-by-3 matrix in source-code/svd. Ask participants to predict all four
+shapes before opening the implementation. The example selects the OpenBLAS
+backend explicitly.
+:::
+
+## Reconstruct With `dot`
+
+```rust
+let (u, singular_values, vt) = matrix.svd(true, true)?;
+let u = u.expect("U was requested");
+let vt = vt.expect("Vt was requested");
+
+let k = singular_values.len();
+let sigma = Array2::from_diag(&singular_values);
+let reconstructed = u
+    .slice(s![.., ..k])
+    .dot(&sigma)
+    .dot(&vt.slice(s![..k, ..]));
+```
+
+- `from_diag`: vector to diagonal matrix
+- `dot`: matrix multiplication
+
+::: notes
+The named U and Vt bindings keep the borrowed views alive through both matrix
+multiplications. Connect the dimensions on the previous slide to each dot
+product.
+:::
+
+## Measure Reconstruction Error
+
+```rust
+let difference = &reconstructed - &original;
+
+let max_error = difference
+    .iter()
+    .fold(0.0_f64, |max, &x| max.max(x.abs()));
+
+let frobenius_error =
+    difference.mapv(|x| x * x).sum().sqrt();
+```
+
+```{.bash}
+cd source-code/svd
+cargo run
+cargo test
+```
+
+::: notes
+Do not promise identical final digits across BLAS implementations. The unit
+test checks both errors against a tolerance of 1e-12.
 :::
 
 ## Refactoring Exercise
@@ -560,6 +628,8 @@ reference solutions after participants attempt individual steps.
 - Double buffering fits stencil semantics
 - Tagged enums model alternative configurations
 - TOML files make scientific runs reproducible
+- A compact SVD combines a factorization with matrix multiplication
+- Numerical comparisons need a stated tolerance
 - Tests protect both scientific properties and CLI behavior
 
 ::: notes
