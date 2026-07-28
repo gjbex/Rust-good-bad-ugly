@@ -12,6 +12,7 @@ invariants, not on Fourier-transform theory.
 - Identify what the C API cannot express to Rust
 - Own native buffers and plans with Rust types
 - Concentrate `unsafe` behind slice-based methods
+- Export optional visualization data through typed CLI paths
 - Validate both boundary failures and scientific behavior
 
 ::: notes
@@ -30,6 +31,7 @@ x[j] =
 - 64 real samples
 - Expected dominant bins: 3 and 7
 - Forward transform, inverse transform, error check
+- Optional signal and power-spectrum CSV
 
 ::: notes
 Ask for the expected bins before showing any Rust. This makes the later test a
@@ -215,6 +217,28 @@ This is both a numerical fact and a buffer-allocation invariant at the FFI
 boundary.
 :::
 
+## One-Sided Mean-Square Power
+
+```text
+P[k] = c[k] |X[k]|^2 / n^2
+
+c[k] = 1  at DC and Nyquist
+c[k] = 2  otherwise
+```
+
+```text
+sum(P[k]) = sum(x[j]^2) / n
+```
+
+- Bin 3: `0.5`
+- Bin 7: `0.125`
+- Total: `0.625`
+
+::: notes
+The factor of two accounts for the omitted negative-frequency partner. The
+Nyquist bin exists only for even signal lengths and must not be doubled.
+:::
+
 ## Normalize The Inverse
 
 ```rust
@@ -257,13 +281,66 @@ result would need a more restrictive API because the next transform overwrites
 the internal buffer.
 :::
 
+## Optional Visualization Output
+
+```{.bash}
+cargo run -- \
+  --signal-output signal.csv \
+  --spectrum-output power-spectrum.csv
+```
+
+```text
+signal.csv
+sample,value
+
+power-spectrum.csv
+frequency_bin,power
+```
+
+- Optional paths use `clap` and `PathBuf`
+- `BufWriter` writes full-precision numeric CSV
+- I/O failures propagate through `Result`
+- Output paths must be distinct
+
+::: notes
+The files remain tool-neutral even though the repository provides a Python
+helper. Participants can use their usual plotting environment instead.
+:::
+
+## Plot Both Results
+
+```{.bash}
+python3 -m pip install matplotlib
+
+./visualize-signal-and-spectrum.py \
+  signal.csv power-spectrum.csv
+```
+
+```{.bash}
+./visualize-signal-and-spectrum.py \
+  signal.csv power-spectrum.csv \
+  --output signal-and-spectrum.png
+```
+
+- Signal: sample index against value
+- Spectrum: frequency-bin index against mean-square power
+- No sampling interval means no physical time or frequency units
+
+::: notes
+Use `--output` on a headless teaching system. Matplotlib selects PNG, PDF, or
+SVG output from the filename extension.
+:::
+
 ## Test Both Contracts
 
 - Reject zero-length transforms
 - Reject incorrect signal and spectrum lengths
 - Check `64 / 2 + 1 == 33`
 - Detect bins 3 and 7
+- Check bin powers and the mean-square identity
 - Check forward/inverse errors against `1.0e-12`
+- Check CSV headers and formatting
+- Reject one path for both outputs
 
 ```{.bash}
 cd source-code/fftw-ffi
@@ -314,6 +391,9 @@ error. The cleanup trace is the deeper ownership exercise.
 - Own native memory and handles with RAII types
 - Keep `unsafe` small and state its invariants
 - Preserve lifetime and concurrency rules in the wrapper
+- Define spectral normalization before exporting results
+- Keep optional visualization output outside the FFI wrapper
+- Preserve units honestly in the plotting helper
 - Test boundary failures and scientific behavior
 
 ::: notes

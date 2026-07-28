@@ -18,6 +18,7 @@ By the end of this module, you should be able to:
 - release native resources through `Drop`;
 - concentrate `unsafe` operations behind a safe slice-based API;
 - translate native failures and boundary violations into Rust errors;
+- expose optional output files through typed `clap` arguments;
 - test the scientific behavior of an FFI wrapper with numerical tolerances.
 
 ## Prerequisites
@@ -47,7 +48,9 @@ It then:
 2. finds the two largest non-constant frequency bins;
 3. performs the inverse transform;
 4. normalizes the reconstructed signal;
-5. computes maximum absolute and root-mean-square errors.
+5. computes maximum absolute and root-mean-square errors;
+6. optionally writes the signal and power spectrum as CSV;
+7. visualizes both series with a separate Python helper.
 
 The expected dominant bins are 3 and 7. This gives the wrapper a scientific
 property test rather than merely checking that the native call returned.
@@ -88,6 +91,7 @@ another FFTW copy:
 
 ```toml
 [dependencies]
+clap = { version = "4.6.4", features = ["derive"] }
 fftw-sys = {
     version = "0.8.0",
     default-features = false,
@@ -247,6 +251,39 @@ let spectrum_length = length / 2 + 1;
 For 64 input samples, the example reports 33 complex values. The two dominant
 non-constant bins are found by sorting squared complex magnitudes.
 
+## Define A One-Sided Power Spectrum
+
+For a real signal, negative-frequency values repeat the power of their
+positive-frequency counterparts. The example therefore writes a one-sided
+mean-square power spectrum:
+
+```text
+P[k] = c[k] |X[k]|^2 / n^2
+
+c[k] = 1  for the DC bin and, when n is even, the Nyquist bin
+c[k] = 2  for every other stored bin
+```
+
+The factor of two accounts for the omitted negative-frequency value. With
+this normalization, the sum of the stored powers equals the signal's mean
+square:
+
+```text
+sum(P[k]) = sum(x[j]^2) / n
+```
+
+The implementation keeps this calculation separate from the FFI wrapper:
+
+```rust
+let one_sided_factor =
+    if is_dc || is_nyquist { 1.0 } else { 2.0 };
+
+one_sided_factor * value.norm_sqr() / (signal_length as f64).powi(2)
+```
+
+For the example signal, bin 3 has power `0.5` and bin 7 has power `0.125`.
+Their sum, `0.625`, is the signal's mean square.
+
 ## Normalize The Inverse Transform
 
 FFTW's inverse transform is unnormalized. A forward transform followed by its
@@ -287,6 +324,86 @@ let reconstructed = transform.inverse(&spectrum)?;
 No public method accepts a raw pointer, and no returned value borrows memory
 that FFTW may later overwrite.
 
+## Optional CSV Output
+
+The numerical computation always runs, while two optional `clap` arguments
+control visualization output:
+
+```rust
+#[derive(Debug, Parser)]
+struct Args {
+    #[arg(long, value_name = "FILE")]
+    signal_output: Option<PathBuf>,
+
+    #[arg(long, value_name = "FILE")]
+    spectrum_output: Option<PathBuf>,
+}
+```
+
+Generate both files with:
+
+```bash
+cargo run -- \
+  --signal-output signal.csv \
+  --spectrum-output power-spectrum.csv
+```
+
+The signal file contains:
+
+```text
+sample,value
+0,5.00000000000000000e-1
+...
+```
+
+The spectrum file contains:
+
+```text
+frequency_bin,power
+0,9.43705672749745568e-33
+...
+3,5.00000000000000222e-1
+```
+
+Both files use full-precision scientific notation. They can be read directly
+by Python, Julia, R, a spreadsheet, or a command-line plotting tool. File
+creation and write failures propagate through `Result` rather than being
+silently ignored. The program rejects using the same path for both files so
+that the second write cannot overwrite the first result.
+
+## Visualize The Signal And Spectrum
+
+The repository includes
+`source-code/fftw-ffi/visualize-signal-and-spectrum.py`. It validates the two
+CSV schemas and plots the signal and one-sided power spectrum side by side.
+Install Matplotlib:
+
+```bash
+python3 -m pip install matplotlib
+```
+
+After generating the CSV files, display the interactive figure with:
+
+```bash
+./visualize-signal-and-spectrum.py signal.csv power-spectrum.csv
+```
+
+On a headless system, write an image instead:
+
+```bash
+./visualize-signal-and-spectrum.py \
+  signal.csv power-spectrum.csv \
+  --output signal-and-spectrum.png
+```
+
+Matplotlib selects the output format from the filename extension, so the same
+option can also produce PDF or SVG output.
+
+The horizontal axes are the sample index and the discrete frequency-bin index.
+No physical time step or sampling frequency is specified by this example, so
+the script does not imply time or frequency units that the input data does not
+contain.
+
 ## Test Boundary And Scientific Behavior
 
 The unit tests cover both wrapper contracts and numerical results:
@@ -295,8 +412,12 @@ The unit tests cover both wrapper contracts and numerical results:
 - wrong input and spectrum lengths are rejected before the FFI call;
 - a 64-point real transform returns 33 complex values;
 - the dominant bins are 3 and 7;
+- bin powers are `0.5` and `0.125`;
+- total spectral power equals the signal mean square;
 - forward and inverse transforms reproduce the original signal within
-  `1.0e-12`.
+  `1.0e-12`;
+- the CSV writer produces the expected headers and numeric representation;
+- one path cannot be used for both output files.
 
 Run the complete example:
 
@@ -327,6 +448,7 @@ checks are the stable contract.
 4. Trace which destructors run if inverse-plan construction fails.
 5. Add a `len` method to `RealFft` without exposing either native buffer.
 6. Change the signal length and verify the `n / 2 + 1` spectrum shape.
+7. Generate both CSV files and visualize them with the Python helper.
 
 ## Summary
 
@@ -336,6 +458,9 @@ checks are the stable contract.
 - `NonNull`, owned lengths, and `Drop` model native allocations and handles.
 - Field order can be part of a resource-lifetime invariant.
 - Small `unsafe` blocks should state the invariants that make each call valid.
+- A one-sided spectrum needs explicit normalization and endpoint treatment.
+- Optional output paths keep visualization separate from the core computation.
+- A small plotting helper can consume the numerical CSV contract independently.
 - A native wrapper still needs scientific property and round-trip tests.
 - Rust can safely compose with established HPC libraries without rewriting
   their numerical kernels.

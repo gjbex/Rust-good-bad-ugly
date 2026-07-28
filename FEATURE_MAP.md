@@ -24,13 +24,13 @@ several places when they combine multiple ideas.
 
 | Feature | Where to look |
 |---|---|
-| `clap::Parser` derive | `source-code/hello-clap/src/main.rs`, `source-code/units/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/heat-diffusion/naive/src/main.rs`, `source-code/heat-diffusion/ndarray-features/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
-| Typed command-line argument struct | `source-code/hello-clap/src/main.rs`, `source-code/units/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/heat-diffusion/naive/src/main.rs`, `source-code/heat-diffusion/ndarray-features/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
+| `clap::Parser` derive | `source-code/hello-clap/src/main.rs`, `source-code/units/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/heat-diffusion/naive/src/main.rs`, `source-code/heat-diffusion/ndarray-features/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/fftw-ffi/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
+| Typed command-line argument struct | `source-code/hello-clap/src/main.rs`, `source-code/units/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/heat-diffusion/naive/src/main.rs`, `source-code/heat-diffusion/ndarray-features/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/fftw-ffi/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
 | Argument defaults | `source-code/numerical-function/src/main.rs`, `source-code/enum-match/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
 | Restricted argument values with `ValueEnum` | `source-code/enum-match/src/main.rs`, `source-code/random-numbers/src/main.rs`, `source-code/user-defined-trait/src/main.rs` |
-| File path arguments | `source-code/iterators/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
+| File path arguments | `source-code/iterators/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/fftw-ffi/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
 | Numeric parameters for reproducible runs | `source-code/random-numbers/src/main.rs`, `source-code/julia-set/julia-set-baseline/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
-| Optional output file arguments | `source-code/n-body-simulation/rust/src/main.rs` |
+| Optional output file arguments | `source-code/fftw-ffi/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
 
 ## Scalar Types And Arithmetic
 
@@ -222,7 +222,7 @@ several places when they combine multiple ideas.
 | Feature | Where to look |
 |---|---|
 | Buffered input with `BufReader` | `source-code/hashmap-hashset/src/count-nucleotides.rs`, `source-code/hashmap-hashset/src/read-errors.rs`, `source-code/strings/src/main.rs`, `source-code/structural-matching/src/main.rs` |
-| Buffered output with `BufWriter` | `source-code/hashmap-hashset/src/generate-data.rs` |
+| Buffered output with `BufWriter` | `source-code/hashmap-hashset/src/generate-data.rs`, `source-code/fftw-ffi/src/main.rs` |
 | Byte iterators over input streams | `source-code/hashmap-hashset/src/count-nucleotides.rs` |
 | Line iterators over buffered input | `source-code/strings/src/main.rs`, `source-code/structural-matching/src/main.rs` |
 | CSV input | `source-code/iterators/src/main.rs`, `source-code/iterators/data.txt` |
@@ -232,6 +232,7 @@ several places when they combine multiple ideas.
 | JSON serialization and deserialization | `source-code/smart-pointers/src/tree.rs` |
 | Serializing recursive data structures | `source-code/smart-pointers/src/tree.rs` |
 | Writing CSV records | `source-code/n-body-simulation/rust/src/main.rs` |
+| Writing indexed numerical CSV without a serialization crate | `source-code/fftw-ffi/src/main.rs` |
 | Serializing typed records to CSV | `source-code/n-body-simulation/rust/src/main.rs` |
 | TOML configuration file for run parameters | `source-code/heat-diffusion/configurable/configs/uniform-spot.toml`, `source-code/heat-diffusion/configurable/configs/gaussian-spot.toml`, `source-code/julia-set/julia-set-toml-config/julia-set.toml` |
 | Deserializing a TOML file into typed configuration | `source-code/heat-diffusion/configurable/src/config.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
@@ -278,6 +279,9 @@ several places when they combine multiple ideas.
 | Alternative uniform and Gaussian initial conditions | `source-code/heat-diffusion/configurable/src/config.rs`, `source-code/heat-diffusion/configurable/src/heat_diffusion.rs` |
 | FFTW real-to-complex transform through FFI | `source-code/fftw-ffi/` |
 | Spectral-peak and normalized round-trip tests | `source-code/fftw-ffi/src/main.rs` |
+| One-sided mean-square power spectrum | `source-code/fftw-ffi/src/main.rs` |
+| Parseval-style spectral power test | `source-code/fftw-ffi/src/main.rs` |
+| Optional signal and spectrum CSV output | `source-code/fftw-ffi/src/main.rs` |
 
 ## Python Visualization Helpers
 
@@ -288,6 +292,9 @@ several places when they combine multiple ideas.
 | Histogram visualization with Plotly | `source-code/random-numbers/show-distribution.py` |
 | 2D heatmap visualization with Plotly and `numpy.loadtxt` | `source-code/julia-set/view-fractal.py` |
 | CSV diagnostics visualization with Plotly | `source-code/n-body-simulation/visualize-evolution.py` |
+| Signal and power-spectrum visualization with Matplotlib | `source-code/fftw-ffi/visualize-signal-and-spectrum.py` |
+| Validating expected CSV columns before plotting | `source-code/fftw-ffi/visualize-signal-and-spectrum.py` |
+| Static figure output for headless systems | `source-code/fftw-ffi/visualize-signal-and-spectrum.py` |
 | Interactive 3D animation with Plotly | `source-code/n-body-simulation/animate-states.py` |
 
 ## Gaps To Add Later

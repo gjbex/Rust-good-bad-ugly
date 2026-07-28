@@ -78,8 +78,9 @@ prevent or make explicit in safe code.
    singular value decomposition, reconstruct a rectangular matrix with matrix
    multiplication, and measure the floating-point reconstruction error.
 1. `fftw-ffi`: wraps FFTW's raw C API in a safe slice-based Rust interface,
-   detects known frequencies in a synthetic signal, and validates the
-   normalized inverse transform.
+   detects known frequencies in a synthetic signal, validates the normalized
+   inverse transform, and optionally writes the signal and its one-sided power
+   spectrum as CSV for a Python visualization helper.
 
 `julia-set`: Julia set  implementations illustrating diverse aspects of Rust
 programming.

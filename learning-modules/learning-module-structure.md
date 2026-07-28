@@ -434,6 +434,9 @@ Topics:
 - Resource drop order and stable native heap addresses.
 - FFTW planner serialization and concurrent plan execution.
 - Real-to-complex spectrum shape and inverse normalization.
+- One-sided mean-square power normalization.
+- Optional CSV output paths parsed with `clap`.
+- Separate Matplotlib visualization of the signal and power spectrum.
 - Boundary-condition tests and numerical round-trip validation.
 - Linking against a system-provided HPC library.
 
@@ -441,7 +444,9 @@ Goal:
 
 Participants should be able to identify the obligations transferred by a C
 API, encode them in an owning Rust wrapper, keep `unsafe` local, and test both
-the boundary contract and the scientific result.
+the boundary contract and the scientific result. They should also be able to
+export a precisely defined derived quantity without coupling visualization to
+the FFI layer.
 
 Related module text:
 
