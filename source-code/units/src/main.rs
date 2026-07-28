@@ -3,13 +3,13 @@ use uom::si::f64::{Length, Time};
 
 #[derive(Parser)]
 struct Args {
-    #[clap(short, long)]
+    #[arg(short, long)]
     x0: f64,
 
-    #[clap(short, long)]
+    #[arg(short, long)]
     t0: f64,
 
-    #[clap(short, long)]
+    #[arg(short, long)]
     delta_t: f64,
 }
 
