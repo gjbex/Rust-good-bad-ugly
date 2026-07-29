@@ -44,6 +44,10 @@ execute:
 
 {{< include 13-integrated-numerical-example-n-body-simulation.qmd >}}
 
+{{< include 14-multidimensional-arrays-and-stencil-computation.qmd >}}
+
+{{< include 15-native-library-interoperability.qmd >}}
+
 {{< include ecosystem.qmd >}}
 
 {{< include finally.qmd >}}

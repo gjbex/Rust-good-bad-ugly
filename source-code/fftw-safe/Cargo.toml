@@ -1,0 +1,8 @@
+[package]
+name = "fftw-safe"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clap = { version = "4.6.4", features = ["derive"] }
+fftw = { version = "0.8.0", default-features = false, features = ["system"] }

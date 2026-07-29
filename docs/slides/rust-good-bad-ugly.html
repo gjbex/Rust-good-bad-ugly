@@ -6,8 +6,8 @@
 <script src="rust-good-bad-ugly_files/libs/quarto-html/tippy.umd.min.js"></script>
 <link href="rust-good-bad-ugly_files/libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="rust-good-bad-ugly_files/libs/quarto-html/light-border.css" rel="stylesheet">
-<link href="rust-good-bad-ugly_files/libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
-  <meta name="generator" content="quarto-1.10.18">
+<link href="rust-good-bad-ugly_files/libs/quarto-html/quarto-syntax-highlighting-46f66b053e56abd73bb6e954d61a315b.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.9.35">
 
   <meta name="author" content="Geert Jan Bex">
   <title>Rust, the good, the bad, and the ugly</title>
@@ -20,13 +20,10 @@
     /* Default styles provided by pandoc.
     ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
     */
+    code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
-    div.columns{display: flex; gap: 1.5em;}
-    div.column{flex: auto;}
-    @media screen {
-    div.columns{gap: min(4vw, 1.5em);}
-    div.column{overflow-x: auto;}
-    }
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
     div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
     ul.task-list{list-style: none;}
     ul.task-list li input[type="checkbox"] {
@@ -207,7 +204,7 @@
 <div class="quarto-title-authors">
 <div class="quarto-title-author">
 <div class="quarto-title-author-name">
-Geert Jan Bex
+Geert Jan Bex 
 </div>
 </div>
 </div>
@@ -395,16 +392,18 @@ Geert Jan Bex
           display:block!important;
       }</style></aside>
 </section>
-<section id="modules-10-13-scientific-workflows" class="slide level2">
-<h2>Modules 10-13: Scientific Workflows</h2>
+<section id="modules-10-15-scientific-workflows" class="slide level2">
+<h2>Modules 10-15: Scientific Workflows</h2>
 <ol start="10" type="1">
 <li>Randomness And Reproducible Runs</li>
 <li>Data Parallelism With Rayon</li>
 <li>Integrated Numerical Example: Julia Set</li>
 <li>Integrated Numerical Example: N-Body Simulation</li>
+<li>Multidimensional Arrays And Stencil Computation</li>
+<li>Native Library Interoperability</li>
 </ol>
 <aside class="notes">
-<p>These modules make the scientific-computing context explicit: reproducibility, parallelism, structured output, diagnostics, and visualization.</p>
+<p>These modules make the scientific-computing context explicit: reproducibility, parallelism, structured output, diagnostics, visualization, and multidimensional arrays. The final module connects Rust to an established HPC library.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -448,7 +447,7 @@ Geert Jan Bex
 <li>Use Modules 1-4 for the Rust core</li>
 <li>Add Modules 7-8 for practical data and errors</li>
 <li>Use the Julia set as the main integrated example</li>
-<li>Leave N-body as follow-up reading or an optional lab</li>
+<li>Leave N-body, heat diffusion, and FFI as follow-up or optional labs</li>
 </ul>
 <aside class="notes">
 <p>For a short delivery, do not try to cover every module equally. The numerical examples should receive more time than purely syntactic material for this audience.</p>
@@ -8948,6 +8947,1595 @@ Geert Jan Bex
 </ul>
 <aside class="notes">
 <p>Use this to summarize the two integrated examples together.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="module-14-multidimensional-arrays-and-stencil-computation" class="title-slide slide level1 center">
+<h1>Module 14: Multidimensional Arrays And Stencil Computation</h1>
+<aside class="notes">
+<p>This module uses a tested numerical refactoring to introduce ndarray. Keep the mathematics simple and make the ownership of each view explicit.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="module-arc-13" class="slide level2">
+<h2>Module Arc</h2>
+<ul>
+<li>Establish a tested loop-based baseline</li>
+<li>Represent a field with <code>Array2</code></li>
+<li>Select array regions with borrowed views</li>
+<li>Express a stencil with <code>Zip</code></li>
+<li>Reuse storage with double buffering</li>
+<li>Broadcast coordinates into a Gaussian field</li>
+<li>Move scientific parameters into TOML</li>
+<li>Reconstruct a matrix from an OpenBLAS-backed SVD</li>
+<li>Verify that the refactoring preserves behavior</li>
+</ul>
+<aside class="notes">
+<p>The example belongs near the end of the course because it combines ownership, methods, errors, testing, and numerical constraints.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="three-stages-one-numerical-core" class="slide level2">
+<h2>Three Stages, One Numerical Core</h2>
+<pre class="text"><code>source-code/heat-diffusion/
+|-- naive/
+|-- ndarray-features/
+|-- configurable/
+`-- test_consistency.sh</code></pre>
+<ul>
+<li>Explicit indices</li>
+<li>Array views and <code>Zip</code></li>
+<li>Structured runs and alternative initial conditions</li>
+</ul>
+<aside class="notes">
+<p>The naive implementation already stores its data in Array2. “Naive” refers to the explicit indexing and per-step clone, not to a different data structure. The uniform configuration preserves the earlier behavior; the Gaussian configuration adds a new option.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="start-with-tests" class="slide level2">
+<h2>Start With Tests</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb269"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb269-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> source-code/heat-diffusion</span>
+<span id="cb269-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> test <span class="at">--manifest-path</span> naive/Cargo.toml</span>
+<span id="cb269-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> test <span class="at">--manifest-path</span> ndarray-features/Cargo.toml</span>
+<span id="cb269-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> test <span class="at">--manifest-path</span> configurable/Cargo.toml</span>
+<span id="cb269-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">./test_consistency.sh</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Run these before showing the refactoring. The test suite is the evidence that the baseline behavior is understood.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="the-five-point-stencil" class="slide level2">
+<h2>The Five-Point Stencil</h2>
+<pre class="text"><code>                 up
+                  |
+left ---- center ---- right
+                  |
+                down</code></pre>
+<pre class="text"><code>new = center + alpha * dt
+      * (up + down + left + right - 4 * center)</code></pre>
+<aside class="notes">
+<p>The outer grid points are fixed boundary conditions, so only the interior is updated.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="stability-is-an-application-constraint" class="slide level2">
+<h2>Stability Is An Application Constraint</h2>
+<pre class="text"><code>alpha * dt &lt;= 0.25</code></pre>
+<ul>
+<li>Unit grid spacing</li>
+<li>Explicit two-dimensional scheme</li>
+<li>Checked before the simulation starts</li>
+</ul>
+<aside class="notes">
+<p>Rust prevents invalid memory access here, but it cannot infer numerical stability. This distinction matters in scientific software.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="owned-2d-storage" class="slide level2">
+<h2>Owned 2D Storage</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb273"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb273-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> grid <span class="op">=</span> <span class="pp">Array2::</span><span class="op">&lt;</span><span class="dt">f64</span><span class="op">&gt;</span><span class="pp">::</span>zeros((grid_size<span class="op">,</span> grid_size))<span class="op">;</span></span>
+<span id="cb273-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> (rows<span class="op">,</span> cols) <span class="op">=</span> grid<span class="op">.</span>dim()<span class="op">;</span></span>
+<span id="cb273-3"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb273-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> center <span class="op">=</span> grid[[rows <span class="op">/</span> <span class="dv">2</span><span class="op">,</span> cols <span class="op">/</span> <span class="dv">2</span>]]<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Shape belongs to the array</li>
+<li>Storage is rectangular</li>
+<li>Default layout is row-major</li>
+</ul>
+<aside class="notes">
+<p>Contrast this briefly with <code>Vec&lt;Vec&lt;f64&gt;&gt;</code>, where rows are separate allocations and can have different lengths.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="baseline-explicit-indices" class="slide level2">
+<h2>Baseline: Explicit Indices</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb274"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb274-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> row <span class="kw">in</span> <span class="dv">1</span><span class="op">..</span>rows <span class="op">-</span> <span class="dv">1</span> <span class="op">{</span></span>
+<span id="cb274-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> col <span class="kw">in</span> <span class="dv">1</span><span class="op">..</span>cols <span class="op">-</span> <span class="dv">1</span> <span class="op">{</span></span>
+<span id="cb274-3"><a href="" aria-hidden="true" tabindex="-1"></a>        new_grid[[row<span class="op">,</span> col]] <span class="op">=</span> <span class="kw">self</span><span class="op">.</span>grid[[row<span class="op">,</span> col]]</span>
+<span id="cb274-4"><a href="" aria-hidden="true" tabindex="-1"></a>            <span class="op">+</span> <span class="kw">self</span><span class="op">.</span>alpha <span class="op">*</span> dt</span>
+<span id="cb274-5"><a href="" aria-hidden="true" tabindex="-1"></a>                <span class="op">*</span> (<span class="kw">self</span><span class="op">.</span>grid[[row <span class="op">+</span> <span class="dv">1</span><span class="op">,</span> col]]</span>
+<span id="cb274-6"><a href="" aria-hidden="true" tabindex="-1"></a>                    <span class="op">+</span> <span class="kw">self</span><span class="op">.</span>grid[[row <span class="op">-</span> <span class="dv">1</span><span class="op">,</span> col]]</span>
+<span id="cb274-7"><a href="" aria-hidden="true" tabindex="-1"></a>                    <span class="op">+</span> <span class="kw">self</span><span class="op">.</span>grid[[row<span class="op">,</span> col <span class="op">+</span> <span class="dv">1</span>]]</span>
+<span id="cb274-8"><a href="" aria-hidden="true" tabindex="-1"></a>                    <span class="op">+</span> <span class="kw">self</span><span class="op">.</span>grid[[row<span class="op">,</span> col <span class="op">-</span> <span class="dv">1</span>]]</span>
+<span id="cb274-9"><a href="" aria-hidden="true" tabindex="-1"></a>                    <span class="op">-</span> <span class="dv">4.0</span> <span class="op">*</span> <span class="kw">self</span><span class="op">.</span>grid[[row<span class="op">,</span> col]])<span class="op">;</span></span>
+<span id="cb274-10"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb274-11"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>source-code/heat-diffusion/naive/src/heat_diffusion.rs</code></p>
+<aside class="notes">
+<p>Open the real implementation in the editor. The loop is direct and beginner-readable, which makes it a good reference implementation.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="s-describes-a-region" class="slide level2">
+<h2><code>s!</code> Describes A Region</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb275"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb275-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> interior <span class="op">=</span></span>
+<span id="cb275-2"><a href="" aria-hidden="true" tabindex="-1"></a>    grid<span class="op">.</span>slice(<span class="pp">s!</span>[<span class="dv">1</span><span class="op">..</span>rows <span class="op">-</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">1</span><span class="op">..</span>cols <span class="op">-</span> <span class="dv">1</span>])<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>all rows:       ..
+one row:        0
+interior rows:  1..rows - 1</code></pre>
+<aside class="notes">
+<p>The macro builds slice information; slice then creates a view that borrows the array. No element data is copied.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="mutable-boundary-views" class="slide level2">
+<h2>Mutable Boundary Views</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb277"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb277-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">self</span><span class="op">.</span>grid</span>
+<span id="cb277-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>slice_mut(<span class="pp">s!</span>[<span class="dv">0</span><span class="op">,</span> <span class="op">..</span>])</span>
+<span id="cb277-3"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>fill(boundary_temperature)<span class="op">;</span></span>
+<span id="cb277-4"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb277-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">self</span><span class="op">.</span>grid</span>
+<span id="cb277-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>slice_mut(<span class="pp">s!</span>[<span class="op">..,</span> <span class="dv">0</span>])</span>
+<span id="cb277-7"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>fill(boundary_temperature)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Select one boundary</li>
+<li>Borrow it mutably</li>
+<li>Apply one operation to the region</li>
+</ul>
+<aside class="notes">
+<p>Show the corresponding loops in the naive version. The slice formulation states which region may be mutated.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="circular-hot-spot" class="slide level2">
+<h2>Circular Hot Spot</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb278"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb278-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ((row<span class="op">,</span> col)<span class="op">,</span> temperature) <span class="kw">in</span> spot<span class="op">.</span>indexed_iter_mut() <span class="op">{</span></span>
+<span id="cb278-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> dr <span class="op">=</span> row<span class="op">.</span>abs_diff(spot_radius)<span class="op">;</span></span>
+<span id="cb278-3"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> dc <span class="op">=</span> col<span class="op">.</span>abs_diff(spot_radius)<span class="op">;</span></span>
+<span id="cb278-4"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb278-5"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> dr<span class="op">.</span>pow(<span class="dv">2</span>) <span class="op">+</span> dc<span class="op">.</span>pow(<span class="dv">2</span>) <span class="op">&lt;=</span> spot_radius<span class="op">.</span>pow(<span class="dv">2</span>) <span class="op">{</span></span>
+<span id="cb278-6"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="op">*</span>temperature <span class="op">=</span> spot_temperature<span class="op">;</span></span>
+<span id="cb278-7"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb278-8"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>The mutable view covers the smallest square containing the circle. Its indices are local to that view, so the radius is also the local center coordinate.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="five-aligned-views" class="slide level2">
+<h2>Five Aligned Views</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb279"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb279-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> center <span class="op">=</span> grid<span class="op">.</span>slice(<span class="pp">s!</span>[<span class="dv">1</span><span class="op">..</span>rows <span class="op">-</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">1</span><span class="op">..</span>cols <span class="op">-</span> <span class="dv">1</span>])<span class="op">;</span></span>
+<span id="cb279-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> up     <span class="op">=</span> grid<span class="op">.</span>slice(<span class="pp">s!</span>[<span class="dv">0</span><span class="op">..</span>rows <span class="op">-</span> <span class="dv">2</span><span class="op">,</span> <span class="dv">1</span><span class="op">..</span>cols <span class="op">-</span> <span class="dv">1</span>])<span class="op">;</span></span>
+<span id="cb279-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> down   <span class="op">=</span> grid<span class="op">.</span>slice(<span class="pp">s!</span>[<span class="dv">2</span><span class="op">..</span>rows<span class="op">,</span>     <span class="dv">1</span><span class="op">..</span>cols <span class="op">-</span> <span class="dv">1</span>])<span class="op">;</span></span>
+<span id="cb279-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> left   <span class="op">=</span> grid<span class="op">.</span>slice(<span class="pp">s!</span>[<span class="dv">1</span><span class="op">..</span>rows <span class="op">-</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">0</span><span class="op">..</span>cols <span class="op">-</span> <span class="dv">2</span>])<span class="op">;</span></span>
+<span id="cb279-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> right  <span class="op">=</span> grid<span class="op">.</span>slice(<span class="pp">s!</span>[<span class="dv">1</span><span class="op">..</span>rows <span class="op">-</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">2</span><span class="op">..</span>cols])<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>All five views have shape (rows - 2, cols - 2). At any shared view index, they refer to one point and its four neighbors.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="zip-walks-them-together" class="slide level2">
+<h2><code>Zip</code> Walks Them Together</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb280"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb280-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="pp">Zip::</span>from(<span class="kw">self</span><span class="op">.</span>next_grid<span class="op">.</span>slice_mut(</span>
+<span id="cb280-2"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="pp">s!</span>[<span class="dv">1</span><span class="op">..</span>rows <span class="op">-</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">1</span><span class="op">..</span>cols <span class="op">-</span> <span class="dv">1</span>]<span class="op">,</span></span>
+<span id="cb280-3"><a href="" aria-hidden="true" tabindex="-1"></a>    ))</span>
+<span id="cb280-4"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>and(center)</span>
+<span id="cb280-5"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>and(up)</span>
+<span id="cb280-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>and(down)</span>
+<span id="cb280-7"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>and(left)</span>
+<span id="cb280-8"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>and(right)</span>
+<span id="cb280-9"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>for_each(<span class="op">|</span>new<span class="op">,</span> <span class="op">&amp;</span>c<span class="op">,</span> <span class="op">&amp;</span>u<span class="op">,</span> <span class="op">&amp;</span>d<span class="op">,</span> <span class="op">&amp;</span>l<span class="op">,</span> <span class="op">&amp;</span>r<span class="op">|</span> <span class="op">{</span></span>
+<span id="cb280-10"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="op">*</span>new <span class="op">=</span> c <span class="op">+</span> factor <span class="op">*</span> (u <span class="op">+</span> d <span class="op">+</span> l <span class="op">+</span> r <span class="op">-</span> <span class="dv">4.0</span> <span class="op">*</span> c)<span class="op">;</span></span>
+<span id="cb280-11"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span>)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Use the real source for the complete closure. Zip handles aligned traversal; the code still states the numerical formula explicitly.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="borrowing-shapes-the-design" class="slide level2">
+<h2>Borrowing Shapes The Design</h2>
+<ul>
+<li>Input views borrow <code>grid</code> immutably</li>
+<li>The output view borrows <code>next_grid</code> mutably</li>
+<li>Distinct fields can be borrowed at the same time</li>
+<li>An in-place stencil would change later inputs</li>
+</ul>
+<aside class="notes">
+<p>This is the ownership lesson. The algorithm naturally needs an old state and a new state, and Rust makes those roles visible.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="double-buffering" class="slide level2">
+<h2>Double Buffering</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb281"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb281-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">struct</span> System <span class="op">{</span></span>
+<span id="cb281-2"><a href="" aria-hidden="true" tabindex="-1"></a>    grid<span class="op">:</span> Array2<span class="op">&lt;</span><span class="dt">f64</span><span class="op">&gt;,</span></span>
+<span id="cb281-3"><a href="" aria-hidden="true" tabindex="-1"></a>    next_grid<span class="op">:</span> Array2<span class="op">&lt;</span><span class="dt">f64</span><span class="op">&gt;,</span></span>
+<span id="cb281-4"><a href="" aria-hidden="true" tabindex="-1"></a>    alpha<span class="op">:</span> <span class="dt">f64</span><span class="op">,</span></span>
+<span id="cb281-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb282"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb282-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="pp">std::mem::</span>swap(<span class="op">&amp;</span><span class="kw">mut</span> <span class="kw">self</span><span class="op">.</span>grid<span class="op">,</span> <span class="op">&amp;</span><span class="kw">mut</span> <span class="kw">self</span><span class="op">.</span>next_grid)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Two allocations, reused for every step</li>
+<li>Current state and next state stay separate</li>
+</ul>
+<aside class="notes">
+<p>The fixed boundaries are initialized in both arrays. Only the interior is overwritten during each step.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="fuse-the-convergence-reduction" class="slide level2">
+<h2>Fuse The Convergence Reduction</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb283"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb283-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> new_value <span class="op">=</span> c <span class="op">+</span> factor <span class="op">*</span> (u <span class="op">+</span> d <span class="op">+</span> l <span class="op">+</span> r <span class="op">-</span> <span class="dv">4.0</span> <span class="op">*</span> c)<span class="op">;</span></span>
+<span id="cb283-2"><a href="" aria-hidden="true" tabindex="-1"></a>max_change <span class="op">=</span> max_change<span class="op">.</span>max((new_value <span class="op">-</span> c)<span class="op">.</span>abs())<span class="op">;</span></span>
+<span id="cb283-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">*</span>new <span class="op">=</span> new_value<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Compute the update</li>
+<li>Measure its change</li>
+<li>Store it in one traversal</li>
+</ul>
+<aside class="notes">
+<p>This removes the extra pass that compared old and new grids. It is still straightforward because max_change is a scalar local to the sequential Zip.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="return-a-borrowed-array-view" class="slide level2">
+<h2>Return A Borrowed Array View</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb284"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb284-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">fn</span> get_grid(<span class="op">&amp;</span><span class="kw">self</span>) <span class="op">-&gt;</span> ArrayView2<span class="op">&lt;</span><span class="ot">'_</span><span class="op">,</span> <span class="dt">f64</span><span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb284-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="kw">self</span><span class="op">.</span>grid<span class="op">.</span>view()</span>
+<span id="cb284-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Read-only access</li>
+<li>Shape and stride metadata</li>
+<li>Cannot outlive <code>self</code></li>
+<li>No element copy</li>
+</ul>
+<aside class="notes">
+<p>Callers that only index or iterate barely change. The return type makes the borrowed array interface explicit and does not transfer ownership.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="third-stage-structured-runs" class="slide level2">
+<h2>Third Stage: Structured Runs</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb285"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb285-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="at">#[</span>derive<span class="at">(</span><span class="bu">Debug</span><span class="op">,</span> Parser<span class="at">)]</span></span>
+<span id="cb285-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Args <span class="op">{</span></span>
+<span id="cb285-3"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="at">#[</span>arg<span class="at">(</span>short<span class="op">,</span> long<span class="op">,</span> value_name <span class="op">=</span> <span class="st">"FILE"</span><span class="at">)]</span></span>
+<span id="cb285-4"><a href="" aria-hidden="true" tabindex="-1"></a>    config<span class="op">:</span> <span class="dt">PathBuf</span><span class="op">,</span></span>
+<span id="cb285-5"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb285-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="at">#[</span>arg<span class="at">(</span>long<span class="at">)]</span></span>
+<span id="cb285-7"><a href="" aria-hidden="true" tabindex="-1"></a>    show<span class="op">:</span> <span class="dt">bool</span><span class="op">,</span></span>
+<span id="cb285-8"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Scientific parameters move to TOML</li>
+<li><code>--show</code> remains an operational choice</li>
+<li>A file gives the run a reviewable identity</li>
+</ul>
+<aside class="notes">
+<p>The motivation is not only argument count. Nested parameter groups, alternative model choices, and reproducibility make a configuration file more appropriate.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="configuration-mirrors-the-domain" class="slide level2">
+<h2>Configuration Mirrors The Domain</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb286"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb286-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">[grid]</span></span>
+<span id="cb286-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">size</span> <span class="op">=</span> <span class="dv">21</span></span>
+<span id="cb286-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">background_temperature</span> <span class="op">=</span> <span class="fl">0.0</span></span>
+<span id="cb286-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">boundary_temperature</span> <span class="op">=</span> <span class="fl">20.0</span></span>
+<span id="cb286-5"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb286-6"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">[material]</span></span>
+<span id="cb286-7"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">thermal_diffusivity</span> <span class="op">=</span> <span class="fl">0.1</span></span>
+<span id="cb286-8"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb286-9"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">[solver]</span></span>
+<span id="cb286-10"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">time_step</span> <span class="op">=</span> <span class="fl">0.01</span></span>
+<span id="cb286-11"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">max_steps</span> <span class="op">=</span> <span class="dv">25</span></span>
+<span id="cb286-12"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">tolerance</span> <span class="op">=</span> <span class="fl">1.0e-12</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Open one of the real files under configurable/configs. Contrast the grouped tables with the flat command line from the first two implementations.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="one-table-two-variants" class="slide level2">
+<h2>One Table, Two Variants</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb287"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb287-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="at">#[</span>serde<span class="at">(</span>tag <span class="op">=</span> <span class="st">"type"</span><span class="op">,</span> rename_all <span class="op">=</span> <span class="st">"kebab-case"</span><span class="at">)]</span></span>
+<span id="cb287-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> InitialCondition <span class="op">{</span></span>
+<span id="cb287-3"><a href="" aria-hidden="true" tabindex="-1"></a>    UniformDisk <span class="op">{</span></span>
+<span id="cb287-4"><a href="" aria-hidden="true" tabindex="-1"></a>        temperature<span class="op">:</span> <span class="dt">f64</span><span class="op">,</span></span>
+<span id="cb287-5"><a href="" aria-hidden="true" tabindex="-1"></a>        radius<span class="op">:</span> <span class="dt">usize</span><span class="op">,</span></span>
+<span id="cb287-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span></span>
+<span id="cb287-7"><a href="" aria-hidden="true" tabindex="-1"></a>    Gaussian <span class="op">{</span></span>
+<span id="cb287-8"><a href="" aria-hidden="true" tabindex="-1"></a>        peak_temperature<span class="op">:</span> <span class="dt">f64</span><span class="op">,</span></span>
+<span id="cb287-9"><a href="" aria-hidden="true" tabindex="-1"></a>        sigma<span class="op">:</span> <span class="dt">f64</span><span class="op">,</span></span>
+<span id="cb287-10"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span></span>
+<span id="cb287-11"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>The <code>type</code> field selects a variant</li>
+<li>Each variant requires only its own parameters</li>
+</ul>
+<aside class="notes">
+<p>This is a concrete tagged-enum use. Serde rejects fields that do not belong to the selected variant because the source also uses deny_unknown_fields.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="gaussian-coordinates" class="slide level2">
+<h2>Gaussian Coordinates</h2>
+<pre class="text"><code>row squared: (rows, 1)
+col squared: (1, cols)
+sum:         (rows, cols)</code></pre>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb289"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb289-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> radius_squared <span class="op">=</span> <span class="op">&amp;</span>row_squared <span class="op">+</span> <span class="op">&amp;</span>col_squared<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Singleton axes are broadcast</li>
+<li>The result covers the complete grid</li>
+<li>No nested coordinate loop</li>
+</ul>
+<aside class="notes">
+<p>Draw the shapes before showing the addition. This is a small example where broadcasting is clearer than manually repeating row and column coordinates.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="map-radius-to-temperature" class="slide level2">
+<h2>Map Radius To Temperature</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb290"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb290-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> amplitude <span class="op">=</span> peak_temperature <span class="op">-</span> background_temperature<span class="op">;</span></span>
+<span id="cb290-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> denominator <span class="op">=</span> <span class="dv">2.0</span> <span class="op">*</span> sigma<span class="op">.</span>powi(<span class="dv">2</span>)<span class="op">;</span></span>
+<span id="cb290-3"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb290-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">self</span><span class="op">.</span>grid<span class="op">.</span>assign(</span>
+<span id="cb290-5"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">&amp;</span>radius_squared<span class="op">.</span>mapv(<span class="op">|</span>r2<span class="op">|</span> <span class="op">{</span></span>
+<span id="cb290-6"><a href="" aria-hidden="true" tabindex="-1"></a>        background_temperature</span>
+<span id="cb290-7"><a href="" aria-hidden="true" tabindex="-1"></a>            <span class="op">+</span> amplitude <span class="op">*</span> (<span class="op">-</span>r2 <span class="op">/</span> denominator)<span class="op">.</span>exp()</span>
+<span id="cb290-8"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span>)<span class="op">,</span></span>
+<span id="cb290-9"><a href="" aria-hidden="true" tabindex="-1"></a>)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Peak at the center</li>
+<li>Symmetric radial decay</li>
+<li>Fixed boundaries applied afterward</li>
+</ul>
+<aside class="notes">
+<p>The Gaussian is evaluated over the complete field. The domain still enforces its configured outer boundary temperature.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="parse-then-validate" class="slide level2">
+<h2>Parse, Then Validate</h2>
+<ul>
+<li><code>Deserialize</code> checks TOML structure and types</li>
+<li><code>deny_unknown_fields</code> catches misspellings</li>
+<li>Validation checks finite values and ranges</li>
+<li>Stability remains an application constraint</li>
+</ul>
+<pre class="text"><code>TOML text -&gt; Config -&gt; validated Config -&gt; System</code></pre>
+<aside class="notes">
+<p>Separate structural parsing from scientific validation. A syntactically valid floating-point value can still be an invalid time step or Gaussian width.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="scientific-unit-tests" class="slide level2">
+<h2>Scientific Unit Tests</h2>
+<ul>
+<li>Circular initial condition</li>
+<li>Gaussian peak, symmetry, and radial decay</li>
+<li>Fixed boundaries</li>
+<li>One hand-calculated step</li>
+<li>Symmetry after one step</li>
+<li>Configuration parsing and unknown fields</li>
+<li>Stability and input validation</li>
+<li>Convergence or maximum steps</li>
+</ul>
+<aside class="notes">
+<p>These tests check properties of the model and method, not implementation details. Point out the 5-by-5 hand calculation and the reflection checks.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="one-step-reference-case" class="slide level2">
+<h2>One-Step Reference Case</h2>
+<pre class="text"><code>grid:       5 x 5
+center:     100
+boundary:   20
+alpha:      0.1
+dt:         0.5
+
+new center: 80
+max change: 20</code></pre>
+<aside class="notes">
+<p>Ask participants to calculate the result before opening the test. A small known case is easier to trust than a large output file.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="black-box-consistency" class="slide level2">
+<h2>Black-Box Consistency</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb293"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb293-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> source-code/heat-diffusion</span>
+<span id="cb293-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">./test_consistency.sh</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Build each Cargo project independently</li>
+<li>Run matching argument sets</li>
+<li>Compare complete CLI output with <code>diff</code></li>
+<li>Match the uniform TOML run to CLI parameters</li>
+</ul>
+<aside class="notes">
+<p>Unit tests localize failures inside each project. The shell test separately checks the behavior-preserving refactoring contract. The Gaussian behavior is covered by properties because the earlier programs cannot select it.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="terminal-compare-a-visible-state" class="slide level2">
+<h2>Terminal: Compare A Visible State</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb294"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb294-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run <span class="at">--manifest-path</span> naive/Cargo.toml <span class="at">--</span> <span class="dt">\</span></span>
+<span id="cb294-2"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--grid-size</span> 21 <span class="at">--spot-radius</span> 5 <span class="at">--steps</span> 25 <span class="at">--show</span></span>
+<span id="cb294-3"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb294-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run <span class="at">--manifest-path</span> ndarray-features/Cargo.toml <span class="at">--</span> <span class="dt">\</span></span>
+<span id="cb294-5"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--grid-size</span> 21 <span class="at">--spot-radius</span> 5 <span class="at">--steps</span> 25 <span class="at">--show</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Run from source-code/heat-diffusion. Reduce the grid size if the terminal is narrow.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="terminal-configured-runs" class="slide level2">
+<h2>Terminal: Configured Runs</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb295"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb295-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run <span class="at">--manifest-path</span> configurable/Cargo.toml <span class="at">--</span> <span class="dt">\</span></span>
+<span id="cb295-2"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--config</span> configurable/configs/uniform-spot.toml <span class="at">--show</span></span>
+<span id="cb295-3"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb295-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run <span class="at">--manifest-path</span> configurable/Cargo.toml <span class="at">--</span> <span class="dt">\</span></span>
+<span id="cb295-5"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--config</span> configurable/configs/gaussian-spot.toml <span class="at">--show</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Same solver, different initial-condition variant</li>
+<li>Configuration records the complete scientific run</li>
+</ul>
+<aside class="notes">
+<p>Run from source-code/heat-diffusion. Compare the shape of the two printed fields, then open the two TOML files side by side.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="layout-and-performance" class="slide level2">
+<h2>Layout And Performance</h2>
+<ul>
+<li>Row-major is the default for owned <code>Array2</code></li>
+<li>Views may be strided and non-contiguous</li>
+<li>Syntax alone does not establish performance</li>
+<li>Benchmark representative release builds</li>
+</ul>
+<aside class="notes">
+<p>Do not claim that Zip is automatically faster. The refactor first improves the array-level expression and removes repeated allocation; measurement remains necessary.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="which-crate" class="slide level2">
+<h2>Which Crate?</h2>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Need</th>
+<th>Starting point</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>NumPy-like arrays, slices, views</td>
+<td><code>ndarray</code></td>
+</tr>
+<tr class="even">
+<td>Vectors, matrices, transformations</td>
+<td><code>nalgebra</code></td>
+</tr>
+<tr class="odd">
+<td>Dense linear algebra performance</td>
+<td><code>faer</code></td>
+</tr>
+<tr class="even">
+<td>Existing native linear algebra stack</td>
+<td><code>ndarray-linalg</code></td>
+</tr>
+</tbody>
+</table>
+<aside class="notes">
+<p>This is orientation, not an exhaustive ecosystem comparison. Dependency and deployment constraints may decide the practical choice.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="compact-svd-shapes" class="slide level2">
+<h2>Compact SVD Shapes</h2>
+<pre class="text"><code>A = U Sigma V^T
+
+A:       (m, n)
+U:       (m, k)
+Sigma:   (k, k)
+V^T:     (k, n)
+
+k = min(m, n)</code></pre>
+<aside class="notes">
+<p>Use the 4-by-3 matrix in source-code/svd. Ask participants to predict all four shapes before opening the implementation. The example selects the OpenBLAS backend explicitly.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="reconstruct-with-dot" class="slide level2">
+<h2>Reconstruct With <code>dot</code></h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb297"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb297-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> (u<span class="op">,</span> singular_values<span class="op">,</span> vt) <span class="op">=</span> matrix<span class="op">.</span>svd(<span class="cn">true</span><span class="op">,</span> <span class="cn">true</span>)<span class="op">?;</span></span>
+<span id="cb297-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> u <span class="op">=</span> u<span class="op">.</span>expect(<span class="st">"U was requested"</span>)<span class="op">;</span></span>
+<span id="cb297-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> vt <span class="op">=</span> vt<span class="op">.</span>expect(<span class="st">"Vt was requested"</span>)<span class="op">;</span></span>
+<span id="cb297-4"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb297-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> k <span class="op">=</span> singular_values<span class="op">.</span>len()<span class="op">;</span></span>
+<span id="cb297-6"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> sigma <span class="op">=</span> <span class="pp">Array2::</span>from_diag(<span class="op">&amp;</span>singular_values)<span class="op">;</span></span>
+<span id="cb297-7"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> reconstructed <span class="op">=</span> u</span>
+<span id="cb297-8"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>slice(<span class="pp">s!</span>[<span class="op">..,</span> <span class="op">..</span>k])</span>
+<span id="cb297-9"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>dot(<span class="op">&amp;</span>sigma)</span>
+<span id="cb297-10"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>dot(<span class="op">&amp;</span>vt<span class="op">.</span>slice(<span class="pp">s!</span>[<span class="op">..</span>k<span class="op">,</span> <span class="op">..</span>]))<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li><code>from_diag</code>: vector to diagonal matrix</li>
+<li><code>dot</code>: matrix multiplication</li>
+</ul>
+<aside class="notes">
+<p>The named U and Vt bindings keep the borrowed views alive through both matrix multiplications. Connect the dimensions on the previous slide to each dot product.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="measure-reconstruction-error" class="slide level2">
+<h2>Measure Reconstruction Error</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb298"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb298-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> difference <span class="op">=</span> <span class="op">&amp;</span>reconstructed <span class="op">-</span> <span class="op">&amp;</span>original<span class="op">;</span></span>
+<span id="cb298-2"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb298-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> max_error <span class="op">=</span> difference</span>
+<span id="cb298-4"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>iter()</span>
+<span id="cb298-5"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>fold(<span class="dv">0.0_f64</span><span class="op">,</span> <span class="op">|</span>max<span class="op">,</span> <span class="op">&amp;</span>x<span class="op">|</span> max<span class="op">.</span>max(x<span class="op">.</span>abs()))<span class="op">;</span></span>
+<span id="cb298-6"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb298-7"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> frobenius_error <span class="op">=</span></span>
+<span id="cb298-8"><a href="" aria-hidden="true" tabindex="-1"></a>    difference<span class="op">.</span>mapv(<span class="op">|</span>x<span class="op">|</span> x <span class="op">*</span> x)<span class="op">.</span>sum()<span class="op">.</span>sqrt()<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb299"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb299-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> source-code/svd</span>
+<span id="cb299-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run</span>
+<span id="cb299-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> test</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Do not promise identical final digits across BLAS implementations. The unit test checks both errors against a tolerance of 1e-12.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="refactoring-exercise" class="slide level2">
+<h2>Refactoring Exercise</h2>
+<ol type="1">
+<li>Add or identify a protecting unit test</li>
+<li>Replace one loop with an array operation</li>
+<li>Run that project’s unit tests</li>
+<li>Run <code>./test_consistency.sh</code></li>
+<li>Move run parameters into TOML</li>
+<li>Add a tagged initial-condition variant</li>
+<li>Inspect any diff before continuing</li>
+</ol>
+<aside class="notes">
+<p>Make one conceptual change at a time. The later implementations can serve as reference solutions after participants attempt individual steps.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="module-takeaways" class="slide level2">
+<h2>Module Takeaways</h2>
+<ul>
+<li>Arrays own data; views borrow regions</li>
+<li>Mutable views make write regions explicit</li>
+<li><code>Zip</code> aligns several same-shaped views</li>
+<li>Broadcasting builds the Gaussian coordinate field</li>
+<li>Double buffering fits stencil semantics</li>
+<li>Tagged enums model alternative configurations</li>
+<li>TOML files make scientific runs reproducible</li>
+<li>A compact SVD combines a factorization with matrix multiplication</li>
+<li>Numerical comparisons need a stated tolerance</li>
+<li>Tests protect both scientific properties and CLI behavior</li>
+</ul>
+<aside class="notes">
+<p>Close by connecting this example back to ownership: the borrowing rules are not incidental here; they express the lifetime and mutation constraints of the numerical algorithm.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="module-15-native-library-interoperability" class="title-slide slide level1 center">
+<h1>Module 15: Native Library Interoperability</h1>
+<aside class="notes">
+<p>This module shows how to reuse a mature HPC library without exposing its raw pointer API to the rest of the application. Keep the focus on boundary invariants, not on Fourier-transform theory.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="module-arc-14" class="slide level2">
+<h2>Module Arc</h2>
+<ul>
+<li>Start with a signal whose spectrum is predictable</li>
+<li>Identify what the C API cannot express to Rust</li>
+<li>Own native buffers and plans with Rust types</li>
+<li>Concentrate <code>unsafe</code> behind slice-based methods</li>
+<li>Compare the local wrapper with the high-level <code>fftw</code> crate</li>
+<li>Export optional visualization data through typed CLI paths</li>
+<li>Validate both boundary failures and scientific behavior</li>
+</ul>
+<aside class="notes">
+<p>Connect this to the OpenBLAS-backed SVD example: there learners consumed a safe wrapper. Here they first build one around FFTW’s raw bindings, then replace that boundary code with an existing safe crate.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="a-testable-signal" class="slide level2">
+<h2>A Testable Signal</h2>
+<pre class="text"><code>x[j] =
+    sin(2 pi 3 j / n)
+    + 0.5 cos(2 pi 7 j / n)</code></pre>
+<ul>
+<li>64 real samples</li>
+<li>Expected dominant bins: 3 and 7</li>
+<li>Forward transform, inverse transform, error check</li>
+<li>Optional signal and power-spectrum CSV</li>
+</ul>
+<aside class="notes">
+<p>Ask for the expected bins before showing any Rust. This makes the later test a scientific property rather than a check that the FFI call did not crash.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="four-layers" class="slide level2">
+<h2>Four Layers</h2>
+<pre class="text"><code>main.rs
+  safe vectors and Result
+          |
+RealFft
+  safe slice-based wrapper
+          |
+fftw-sys
+  raw pointers and unsafe calls
+          |
+libfftw3.so</code></pre>
+<aside class="notes">
+<p>The sys crate supplies declarations close to C. RealFft is the abstraction boundary owned by this project.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="terminal-native-dependency" class="slide level2">
+<h2>Terminal: Native Dependency</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb302"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb302-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt install libfftw3-dev</span>
+<span id="cb302-2"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb302-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> source-code/fftw-ffi</span>
+<span id="cb302-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb303"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb303-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">fftw-sys</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb303-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">    </span><span class="dt">version</span><span class="op"> =</span> <span class="st">"0.8.0"</span><span class="op">,</span></span>
+<span id="cb303-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">    </span><span class="dt">default-features</span><span class="op"> =</span> <span class="cn">false</span><span class="op">,</span></span>
+<span id="cb303-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">    </span><span class="dt">features</span><span class="op"> =</span> <span class="op">[</span><span class="st">"system"</span><span class="op">]</span></span>
+<span id="cb303-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>On an HPC system, replace the package-manager command with the site’s FFTW module and compiler environment. Point out that the system choice is explicit.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="what-rust-cannot-check" class="slide level2">
+<h2>What Rust Cannot Check</h2>
+<ul>
+<li>Does the pointer reference enough elements?</li>
+<li>Is the allocation aligned as FFTW requires?</li>
+<li>Is the complex buffer exactly <code>n / 2 + 1</code> elements?</li>
+<li>Does the plan outlive its buffers?</li>
+<li>Which planner operations require serialization?</li>
+<li>Which native function releases each resource?</li>
+</ul>
+<aside class="notes">
+<p>Unsafe does not disable these requirements. It tells the compiler that this block is relying on facts established elsewhere.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="validate-before-ffi" class="slide level2">
+<h2>Validate Before FFI</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb304"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb304-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> length <span class="op">==</span> <span class="dv">0</span> <span class="op">{</span></span>
+<span id="cb304-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="cn">Err</span>(<span class="pp">FftError::</span>EmptyInput)<span class="op">;</span></span>
+<span id="cb304-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb304-4"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb304-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> ffi_length <span class="op">=</span> <span class="dt">i32</span><span class="pp">::</span>try_from(length)</span>
+<span id="cb304-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>map_err(<span class="op">|</span>_<span class="op">|</span> <span class="pp">FftError::</span>LengthTooLarge(length))<span class="op">?;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Rust API: <code>usize</code></li>
+<li>C API: <code>int</code></li>
+<li>Conversion failure becomes a normal error</li>
+</ul>
+<aside class="notes">
+<p>Also show the slice-length checks in real_fft.rs. The native call should never be responsible for discovering an undersized Rust slice.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="own-aligned-memory" class="slide level2">
+<h2>Own Aligned Memory</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb305"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb305-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> FftwBuffer<span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb305-2"><a href="" aria-hidden="true" tabindex="-1"></a>    pointer<span class="op">:</span> NonNull<span class="op">&lt;</span>T<span class="op">&gt;,</span></span>
+<span id="cb305-3"><a href="" aria-hidden="true" tabindex="-1"></a>    length<span class="op">:</span> <span class="dt">usize</span><span class="op">,</span></span>
+<span id="cb305-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>FFTW performs the allocation</li>
+<li><code>NonNull</code> records successful construction</li>
+<li>Length travels with the pointer</li>
+<li>Memory is initialized before creating Rust slices</li>
+</ul>
+<aside class="notes">
+<p>Open source-code/fftw-ffi/src/real_fft.rs for the allocation calls and their safety comments. Do not place the full implementation on the slide.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="release-with-drop" class="slide level2">
+<h2>Release With <code>Drop</code></h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb306"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb306-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">impl</span><span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="bu">Drop</span> <span class="cf">for</span> FftwBuffer<span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb306-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> drop(<span class="op">&amp;</span><span class="kw">mut</span> <span class="kw">self</span>) <span class="op">{</span></span>
+<span id="cb306-3"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="kw">unsafe</span> <span class="op">{</span></span>
+<span id="cb306-4"><a href="" aria-hidden="true" tabindex="-1"></a>            fftw_free(<span class="kw">self</span><span class="op">.</span>pointer<span class="op">.</span>as_ptr()<span class="op">.</span>cast())<span class="op">;</span></span>
+<span id="cb306-5"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb306-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb306-7"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>FFTW allocation pairs with FFTW deallocation</li>
+<li>Early <code>?</code> returns still clean up constructed values</li>
+<li>Native ownership becomes Rust RAII</li>
+</ul>
+<aside class="notes">
+<p>Plans have a matching Drop implementation using fftw_destroy_plan. Contrast this with manually repeating cleanup at every return site.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="drop-order-is-an-invariant" class="slide level2">
+<h2>Drop Order Is An Invariant</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb307"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb307-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">struct</span> RealFft <span class="op">{</span></span>
+<span id="cb307-2"><a href="" aria-hidden="true" tabindex="-1"></a>    length<span class="op">:</span> <span class="dt">usize</span><span class="op">,</span></span>
+<span id="cb307-3"><a href="" aria-hidden="true" tabindex="-1"></a>    spectrum_length<span class="op">:</span> <span class="dt">usize</span><span class="op">,</span></span>
+<span id="cb307-4"><a href="" aria-hidden="true" tabindex="-1"></a>    forward_plan<span class="op">:</span> FftwPlan<span class="op">,</span></span>
+<span id="cb307-5"><a href="" aria-hidden="true" tabindex="-1"></a>    inverse_plan<span class="op">:</span> FftwPlan<span class="op">,</span></span>
+<span id="cb307-6"><a href="" aria-hidden="true" tabindex="-1"></a>    real_buffer<span class="op">:</span> FftwBuffer<span class="op">&lt;</span><span class="dt">f64</span><span class="op">&gt;,</span></span>
+<span id="cb307-7"><a href="" aria-hidden="true" tabindex="-1"></a>    complex_buffer<span class="op">:</span> FftwBuffer<span class="op">&lt;</span>Complex64<span class="op">&gt;,</span></span>
+<span id="cb307-8"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Plans retain buffer addresses</li>
+<li>Fields drop in declaration order</li>
+<li>Plans are destroyed before buffers</li>
+</ul>
+<aside class="notes">
+<p>Moving RealFft is still valid because its FFTW allocations remain at stable heap addresses.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="preserve-native-concurrency-rules" class="slide level2">
+<h2>Preserve Native Concurrency Rules</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb308"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb308-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">static</span> FFTW_PLANNER_LOCK<span class="op">:</span> Mutex<span class="op">&lt;</span>()<span class="op">&gt;</span> <span class="op">=</span> <span class="pp">Mutex::</span>new(())<span class="op">;</span></span>
+<span id="cb308-2"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb308-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> lock_planner() <span class="op">-&gt;</span> MutexGuard<span class="op">&lt;</span><span class="ot">'static</span><span class="op">,</span> ()<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb308-4"><a href="" aria-hidden="true" tabindex="-1"></a>    FFTW_PLANNER_LOCK</span>
+<span id="cb308-5"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span>lock()</span>
+<span id="cb308-6"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span>unwrap_or_else(<span class="pp">PoisonError::</span>into_inner)</span>
+<span id="cb308-7"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Plan creation and destruction are serialized</li>
+<li>Independent plan execution remains unlocked</li>
+</ul>
+<aside class="notes">
+<p>A wrapper that works only when constructed on one thread is not yet a sound general-purpose safe API. Encode the library’s actual concurrency rule.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="real-transform-shape" class="slide level2">
+<h2>Real Transform Shape</h2>
+<pre class="text"><code>real input:      n
+complex output:  floor(n / 2) + 1
+
+n = 64  -&gt;  33 complex values</code></pre>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb310"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb310-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> spectrum_length <span class="op">=</span> length <span class="op">/</span> <span class="dv">2</span> <span class="op">+</span> <span class="dv">1</span><span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Real input has a conjugate-symmetric spectrum</li>
+<li>FFTW returns only the non-redundant half</li>
+</ul>
+<aside class="notes">
+<p>This is both a numerical fact and a buffer-allocation invariant at the FFI boundary.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="one-sided-mean-square-power" class="slide level2">
+<h2>One-Sided Mean-Square Power</h2>
+<pre class="text"><code>P[k] = c[k] |X[k]|^2 / n^2
+
+c[k] = 1  at DC and Nyquist
+c[k] = 2  otherwise</code></pre>
+<pre class="text"><code>sum(P[k]) = sum(x[j]^2) / n</code></pre>
+<ul>
+<li>Bin 3: <code>0.5</code></li>
+<li>Bin 7: <code>0.125</code></li>
+<li>Total: <code>0.625</code></li>
+</ul>
+<aside class="notes">
+<p>The factor of two accounts for the omitted negative-frequency partner. The Nyquist bin exists only for even signal lengths and must not be doubled.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="normalize-the-inverse" class="slide level2">
+<h2>Normalize The Inverse</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb313"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb313-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> normalization <span class="op">=</span> <span class="kw">self</span><span class="op">.</span>length <span class="kw">as</span> <span class="dt">f64</span><span class="op">;</span></span>
+<span id="cb313-2"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb313-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> reconstructed <span class="op">=</span> <span class="kw">self</span></span>
+<span id="cb313-4"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>real_buffer</span>
+<span id="cb313-5"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>as_slice()</span>
+<span id="cb313-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>iter()</span>
+<span id="cb313-7"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>map(<span class="op">|</span>value<span class="op">|</span> value <span class="op">/</span> normalization)</span>
+<span id="cb313-8"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>collect()<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>FFTW’s inverse is unnormalized</li>
+<li>The inverse may overwrite its complex input</li>
+<li>Copy into owned native storage before execution</li>
+</ul>
+<aside class="notes">
+<p>Remove the division during a live edit and ask participants to predict the scale of the reconstructed signal.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="the-public-api-is-safe" class="slide level2">
+<h2>The Public API Is Safe</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb314"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb314-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> <span class="kw">mut</span> transform <span class="op">=</span> <span class="pp">RealFft::</span>new(signal<span class="op">.</span>len())<span class="op">?;</span></span>
+<span id="cb314-2"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb314-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> spectrum <span class="op">=</span> transform<span class="op">.</span>forward(<span class="op">&amp;</span>signal)<span class="op">?;</span></span>
+<span id="cb314-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> reconstructed <span class="op">=</span> transform<span class="op">.</span>inverse(<span class="op">&amp;</span>spectrum)<span class="op">?;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>No public raw pointers</li>
+<li>No returned borrow into reusable FFTW storage</li>
+<li>Length failures use <code>FftError</code></li>
+<li>Native failures propagate through <code>Result</code></li>
+</ul>
+<aside class="notes">
+<p>Returning owned vectors is a deliberate teaching choice. A borrowed zero-copy result would need a more restrictive API because the next transform overwrites the internal buffer.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="use-the-existing-fftw-crate" class="slide level2">
+<h2>Use The Existing <code>fftw</code> Crate</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb315"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb315-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">fftw</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb315-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">    </span><span class="dt">version</span><span class="op"> =</span> <span class="st">"0.8.0"</span><span class="op">,</span></span>
+<span id="cb315-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">    </span><span class="dt">default-features</span><span class="op"> =</span> <span class="cn">false</span><span class="op">,</span></span>
+<span id="cb315-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">    </span><span class="dt">features</span><span class="op"> =</span> <span class="op">[</span><span class="st">"system"</span><span class="op">]</span></span>
+<span id="cb315-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb316"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb316-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> <span class="kw">mut</span> input <span class="op">=</span> <span class="pp">AlignedVec::</span>new(length)<span class="op">;</span></span>
+<span id="cb316-2"><a href="" aria-hidden="true" tabindex="-1"></a>input<span class="op">.</span>copy_from_slice(signal)<span class="op">;</span></span>
+<span id="cb316-3"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb316-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> <span class="kw">mut</span> spectrum <span class="op">=</span> <span class="pp">AlignedVec::</span>new(length <span class="op">/</span> <span class="dv">2</span> <span class="op">+</span> <span class="dv">1</span>)<span class="op">;</span></span>
+<span id="cb316-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> <span class="kw">mut</span> plan <span class="op">=</span> <span class="pp">R2CPlan64::</span>aligned(</span>
+<span id="cb316-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">&amp;</span>[length]<span class="op">,</span></span>
+<span id="cb316-7"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="pp">Flag::</span>ESTIMATE<span class="op">,</span></span>
+<span id="cb316-8"><a href="" aria-hidden="true" tabindex="-1"></a>)<span class="op">?;</span></span>
+<span id="cb316-9"><a href="" aria-hidden="true" tabindex="-1"></a>plan<span class="op">.</span>r2c(<span class="op">&amp;</span><span class="kw">mut</span> input<span class="op">,</span> <span class="op">&amp;</span><span class="kw">mut</span> spectrum)<span class="op">?;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>The safe crate still uses fftw-sys internally. It moves responsibility for aligned allocation, plan ownership, raw calls, and native errors out of the application.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="what-the-safe-crate-removes" class="slide level2">
+<h2>What The Safe Crate Removes</h2>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Local <code>fftw-sys</code> wrapper</th>
+<th>Application using <code>fftw</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>NonNull</code> and allocation wrappers</td>
+<td><code>AlignedVec</code></td>
+</tr>
+<tr class="even">
+<td>Local plan and <code>Drop</code> types</td>
+<td>Owning plan types</td>
+</tr>
+<tr class="odd">
+<td>Raw pointer calls</td>
+<td>Safe transform methods</td>
+</tr>
+<tr class="even">
+<td>Local planner lock</td>
+<td>Crate-managed planning</td>
+</tr>
+<tr class="odd">
+<td>Safety comments and invariants</td>
+<td>No application <code>unsafe</code></td>
+</tr>
+</tbody>
+</table>
+<p>Still application responsibilities:</p>
+<ul>
+<li>Inverse normalization</li>
+<li>One-sided power definition</li>
+<li>CLI and output schemas</li>
+<li>Scientific tests</li>
+</ul>
+<aside class="notes">
+<p>Both projects solve the same numerical problem and generate byte-identical CSV files. The raw version teaches how safety is established; the high-level version shows what application code should normally prefer when the API fits.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="scientific--sys-and-wrapper-crates" class="slide level2">
+<h2>Scientific <code>-sys</code> And Wrapper Crates</h2>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Native library</th>
+<th>Raw bindings</th>
+<th>Wrapper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>FFTW</td>
+<td><code>fftw-sys</code></td>
+<td><code>fftw</code></td>
+</tr>
+<tr class="even">
+<td>MPI</td>
+<td><code>mpi-sys</code></td>
+<td><code>mpi</code></td>
+</tr>
+<tr class="odd">
+<td>HDF5</td>
+<td><code>hdf5-sys</code></td>
+<td><code>hdf5</code></td>
+</tr>
+<tr class="even">
+<td>netCDF</td>
+<td><code>netcdf-sys</code></td>
+<td><code>netcdf</code></td>
+</tr>
+<tr class="odd">
+<td>SUNDIALS</td>
+<td><code>sundials-sys</code></td>
+<td><code>sundials</code></td>
+</tr>
+<tr class="even">
+<td>BLAS</td>
+<td><code>blas-sys</code></td>
+<td><code>blas</code></td>
+</tr>
+<tr class="odd">
+<td>LAPACK</td>
+<td><code>lapack-sys</code></td>
+<td><code>lapack</code>, <code>ndarray-linalg</code></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Coverage and safety level differ between wrappers</li>
+<li><code>blas</code> and <code>lapack</code> calls remain <code>unsafe</code></li>
+<li><code>ndarray-linalg</code> provides higher-level array methods</li>
+</ul>
+<aside class="notes">
+<p>Treat this as a discovery map, not an endorsement. A project still needs to check native-version coverage, maintenance, thread safety, error handling, and system-linking behavior. Connect ndarray-linalg back to the SVD example.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="optional-visualization-output" class="slide level2">
+<h2>Optional Visualization Output</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb317"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb317-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run <span class="at">--</span> <span class="dt">\</span></span>
+<span id="cb317-2"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--signal-output</span> signal.csv <span class="dt">\</span></span>
+<span id="cb317-3"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--spectrum-output</span> power-spectrum.csv</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>signal.csv
+sample,value
+
+power-spectrum.csv
+frequency_bin,power</code></pre>
+<ul>
+<li>Optional paths use <code>clap</code> and <code>PathBuf</code></li>
+<li><code>BufWriter</code> writes full-precision numeric CSV</li>
+<li>I/O failures propagate through <code>Result</code></li>
+<li>Output paths must be distinct</li>
+</ul>
+<aside class="notes">
+<p>The files remain tool-neutral even though the repository provides a Python helper. Participants can use their usual plotting environment instead.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="plot-both-results" class="slide level2">
+<h2>Plot Both Results</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb319"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb319-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> <span class="at">-m</span> pip install matplotlib</span>
+<span id="cb319-2"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb319-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">./visualize-signal-and-spectrum.py</span> <span class="dt">\</span></span>
+<span id="cb319-4"><a href="" aria-hidden="true" tabindex="-1"></a>  signal.csv power-spectrum.csv</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb320"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb320-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">./visualize-signal-and-spectrum.py</span> <span class="dt">\</span></span>
+<span id="cb320-2"><a href="" aria-hidden="true" tabindex="-1"></a>  signal.csv power-spectrum.csv <span class="dt">\</span></span>
+<span id="cb320-3"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--output</span> signal-and-spectrum.png</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Signal: sample index against value</li>
+<li>Spectrum: frequency-bin index against mean-square power</li>
+<li>No sampling interval means no physical time or frequency units</li>
+</ul>
+<aside class="notes">
+<p>Use <code>--output</code> on a headless teaching system. Matplotlib selects PNG, PDF, or SVG output from the filename extension.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="test-both-implementations" class="slide level2">
+<h2>Test Both Implementations</h2>
+<ul>
+<li>Raw wrapper: reject invalid lengths before FFI</li>
+<li>Check <code>64 / 2 + 1 == 33</code></li>
+<li>Detect bins 3 and 7</li>
+<li>Check bin powers and the mean-square identity</li>
+<li>Check forward/inverse errors against <code>1.0e-12</code></li>
+<li>Check CSV headers and formatting</li>
+<li>Reject one path for both outputs</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb321"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb321-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> source-code/fftw-ffi</span>
+<span id="cb321-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> test</span>
+<span id="cb321-3"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb321-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> ../fftw-safe</span>
+<span id="cb321-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> test</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Boundary tests protect the local raw wrapper’s memory assumptions. Both implementations retain tests for the scientific meaning and output contract.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="terminal-inspect-the-link" class="slide level2">
+<h2>Terminal: Inspect The Link</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb322"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb322-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> source-code/fftw-ffi</span>
+<span id="cb322-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run</span>
+<span id="cb322-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">ldd</span> target/debug/fftw-ffi <span class="kw">|</span> <span class="fu">grep</span> fftw</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>Dominant frequency bins: [3, 7]
+Maximum round-trip error: 4.441e-16
+RMS round-trip error: 1.640e-16</code></pre>
+<aside class="notes">
+<p>The exact error digits can differ across builds. The bins and tolerance are the stable checks. Use the final command on Linux to confirm system linking.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="exercises" class="slide level2">
+<h2>Exercises</h2>
+<ol type="1">
+<li>Change one frequency and predict the detected bins</li>
+<li>Remove inverse normalization and explain the scale</li>
+<li>Trigger a <code>LengthMismatch</code> before the native call</li>
+<li>Trace cleanup after partial construction</li>
+<li>Add a safe <code>len</code> method without exposing buffers</li>
+<li>Compare the code owned by <code>fftw-ffi</code> and <code>fftw-safe</code></li>
+<li>Change both signals and compare their CSV output</li>
+</ol>
+<aside class="notes">
+<p>For a short session, choose either the normalization edit or the boundary error. Use the implementation comparison to discuss when a dependency removes enough maintenance burden to justify its abstraction.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="module-takeaways-1" class="slide level2">
+<h2>Module Takeaways</h2>
+<ul>
+<li>FFI transfers obligations that types must recover</li>
+<li>Validate dimensions and conversions before native calls</li>
+<li>Own native memory and handles with RAII types</li>
+<li>Keep <code>unsafe</code> small and state its invariants</li>
+<li>Preserve lifetime and concurrency rules in the wrapper</li>
+<li>Prefer a maintained safe crate when it exposes the required native features</li>
+<li>Define spectral normalization before exporting results</li>
+<li>Keep optional visualization output outside the FFI wrapper</li>
+<li>Preserve units honestly in the plotting helper</li>
+<li>Test boundary failures and scientific behavior</li>
+</ul>
+<aside class="notes">
+<p>Close with the integration message: Rust can be introduced as a safe component around established HPC libraries rather than as a demand to replace them.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;

@@ -24,6 +24,7 @@ When you complete this training you will
   * organize Rust projects into binaries, libraries, modules, and tests;
   * use random-number generation in reproducible runs;
   * use Rayon for data-parallel computations;
+  * wrap an established native scientific library in a safe Rust interface;
   * relate Rust's ecosystem to scientific-computing workflows.
 
 
@@ -120,6 +121,8 @@ Rust toolchain and `cargo` for building and running the examples.
 Some examples use Python helper scripts for visualization, and the learning
 module website is built with MkDocs. The repository contains an
 `environment.yml` file for creating the Python environment with `mamba`.
+The later linear-algebra and interoperability examples use system OpenBLAS and
+FFTW development libraries.
 
 See the repository's `SETUP.md` file for installation and verification
 commands.

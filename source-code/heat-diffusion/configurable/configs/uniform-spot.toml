@@ -1,0 +1,17 @@
+[grid]
+size = 21
+background_temperature = 0.0
+boundary_temperature = 20.0
+
+[material]
+thermal_diffusivity = 0.1
+
+[solver]
+time_step = 0.01
+max_steps = 25
+tolerance = 1.0e-12
+
+[initial_condition]
+type = "uniform-disk"
+temperature = 100.0
+radius = 5

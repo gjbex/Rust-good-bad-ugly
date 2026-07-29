@@ -22,6 +22,8 @@ The modules are written as reading material. The slide deck in
 11. [Data Parallelism With Rayon](data-parallelism-with-rayon.md)
 12. [Integrated Numerical Example: Julia Set](integrated-numerical-example-julia-set.md)
 13. [Integrated Numerical Example: N-Body Simulation](integrated-numerical-example-n-body-simulation.md)
+14. [Multidimensional Arrays And Stencil Computation](multidimensional-arrays-and-stencil-computation.md)
+15. [Native Library Interoperability](native-library-interoperability.md)
 
 The [module structure](learning-module-structure.md) page gives an overview of
 the intended sequence and the source-code examples used in each module.

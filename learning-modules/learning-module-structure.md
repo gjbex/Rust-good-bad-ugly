@@ -374,6 +374,96 @@ This module should be treated as an integrated numerical example, similar in
 role to the Julia set module, rather than as part of the initial feature-by-feature
 sequence.
 
+## Module 14: Multidimensional Arrays And Stencil Computation
+
+Primary example group:
+
+- `source-code/heat-diffusion`
+- `source-code/svd`
+
+Topics:
+
+- Owned two-dimensional arrays with `ndarray::Array2`.
+- Shapes, indexing, slices, and borrowed array views.
+- Mutable views and conditional initialization.
+- Aligned traversal with `ndarray::Zip`.
+- Five-point stencil computation.
+- Double buffering and allocation reuse.
+- Read-only APIs with `ArrayView2`.
+- Broadcasting one-dimensional coordinate arrays into a Gaussian field.
+- TOML configuration with nested structs and a tagged enum.
+- Separating reproducible scientific parameters from operational CLI flags.
+- Singular value decomposition with an OpenBLAS-backed crate.
+- Matrix reconstruction with `dot` and a diagonal matrix.
+- Maximum absolute and Frobenius error measures.
+- Scientific unit tests and cross-implementation black-box tests.
+- Behavior-preserving refactoring.
+
+Goal:
+
+Participants should be able to express a small multidimensional numerical
+algorithm with `ndarray`, configure reproducible runs, and reason about
+ownership, views, broadcasting, mutation, and the tests that protect a
+refactoring. They should also be able to use an external linear-algebra
+routine, reconstruct a matrix from a compact SVD, and assess the numerical
+difference from the original.
+
+Related module text:
+
+- `learning-modules/multidimensional-arrays-and-stencil-computation.md`
+
+Suggested placement:
+
+This module belongs near the end of the course. It revisits ownership,
+project-level testing, and numerical validation through a practical
+multidimensional-array workflow.
+
+## Module 15: Native Library Interoperability
+
+Primary examples:
+
+- `source-code/fftw-ffi`
+- `source-code/fftw-safe`
+
+Topics:
+
+- Raw C bindings through a `-sys` crate.
+- Checked conversion between Rust and C integer types.
+- Raw pointers, `NonNull`, and native aligned allocation.
+- Safe slice-based APIs around a small `unsafe` implementation.
+- Comparison with an existing high-level crate built on the same `-sys` layer.
+- Survey of scientific `-sys` crates and their wrapper crates.
+- Safe aligned buffers and owning FFTW plan types from the `fftw` crate.
+- RAII cleanup of native allocations and opaque handles with `Drop`.
+- Resource drop order and stable native heap addresses.
+- FFTW planner serialization and concurrent plan execution.
+- Real-to-complex spectrum shape and inverse normalization.
+- One-sided mean-square power normalization.
+- Optional CSV output paths parsed with `clap`.
+- Separate Matplotlib visualization of the signal and power spectrum.
+- Boundary-condition tests and numerical round-trip validation.
+- Linking against a system-provided HPC library.
+
+Goal:
+
+Participants should be able to identify the obligations transferred by a C
+API, encode them in an owning Rust wrapper, keep `unsafe` local, and test both
+the boundary contract and the scientific result. They should be able to decide
+when an existing safe wrapper is preferable while retaining responsibility for
+normalization and scientific validation. They should also be able to export a
+precisely defined derived quantity without coupling visualization to the FFI
+layer.
+
+Related module text:
+
+- `learning-modules/native-library-interoperability.md`
+
+Suggested placement:
+
+This is the final core module. It relies on ownership, errors, library
+organization, tests, arrays, and numerical tolerances, then demonstrates how
+Rust can be introduced around an established HPC library.
+
 ## Optional Module: Rust By Contrast With C++
 
 Primary example:
@@ -413,11 +503,13 @@ A compact course can use this order:
 11. Data Parallelism With Rayon.
 12. Integrated Numerical Example: Julia Set.
 13. Integrated Numerical Example: N-Body Simulation.
+14. Multidimensional Arrays And Stencil Computation.
+15. Native Library Interoperability.
 
 For a shorter course, the Julia set example can be used as the main integrated
-example and the N-body simulation can be left as an additional integrated
-example.
+example, while the N-body simulation, heat-diffusion refactoring, and native
+interoperability module can be left as additional integrated examples.
 
-For a course aimed at scientific programmers, the numerical, randomness, Julia
-set, and N-body modules should receive more time than the purely syntactic
-examples.
+For a course aimed at scientific programmers, the numerical, randomness,
+Julia-set, N-body, multidimensional-array, and native-interoperability modules
+should receive more time than the purely syntactic examples.

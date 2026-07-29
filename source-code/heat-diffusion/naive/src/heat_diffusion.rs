@@ -1,0 +1,302 @@
+use ndarray::Array2;
+
+const MAX_DIFFUSION_FACTOR: f64 = 0.25;
+
+pub struct System {
+    grid: Array2<f64>,
+    alpha: f64, // thermal diffusivity
+}
+
+impl System {
+    pub fn new(grid_size: usize, alpha: f64) -> Result<Self, &'static str> {
+        if grid_size < 3 {
+            return Err("Grid size must be at least 3.");
+        }
+        if !alpha.is_finite() || alpha < 0.0 {
+            return Err("Thermal diffusivity must be finite and non-negative.");
+        }
+
+        let grid = Array2::<f64>::zeros((grid_size, grid_size));
+        Ok(System { grid, alpha })
+    }
+
+    pub fn initialize_grid(
+        &mut self,
+        spot_temperature: f64,
+        spot_radius: usize,
+        boundary_temperature: f64,
+    ) -> Result<(), &'static str> {
+        let (rows, cols) = self.grid.dim();
+        let center_row = rows / 2;
+        let center_col = cols / 2;
+        if !spot_temperature.is_finite() || !boundary_temperature.is_finite() {
+            return Err("Temperatures must be finite.");
+        }
+        if spot_radius >= center_row
+            || spot_radius >= center_col
+            || center_row + spot_radius >= rows - 1
+            || center_col + spot_radius >= cols - 1
+        {
+            return Err("Spot radius must fit inside the grid boundary.");
+        }
+        for i in (center_row - spot_radius)..=(center_row + spot_radius) {
+            for j in (center_col - spot_radius)..=(center_col + spot_radius) {
+                let row_distance = i as f64 - center_row as f64;
+                let col_distance = j as f64 - center_col as f64;
+                let distance = (row_distance.powi(2) + col_distance.powi(2)).sqrt();
+                if distance <= spot_radius as f64 {
+                    self.grid[[i, j]] = spot_temperature;
+                }
+            }
+        }
+        self.grid[[center_row, center_col]] = spot_temperature; // central point
+        for i in 0..rows {
+            self.grid[[i, 0]] = boundary_temperature; // left boundary
+            self.grid[[i, cols - 1]] = boundary_temperature; // right boundary
+        }
+        for j in 0..cols {
+            self.grid[[0, j]] = boundary_temperature; // top boundary
+            self.grid[[rows - 1, j]] = boundary_temperature; // bottom boundary
+        }
+        Ok(())
+    }
+
+    fn step(&mut self, dt: f64) -> f64 {
+        let (rows, cols) = self.grid.dim();
+        let mut new_grid = self.grid.clone();
+
+        for i in 1..rows - 1 {
+            for j in 1..cols - 1 {
+                new_grid[[i, j]] = self.grid[[i, j]]
+                    + self.alpha
+                        * dt
+                        * (self.grid[[i + 1, j]]
+                            + self.grid[[i - 1, j]]
+                            + self.grid[[i, j + 1]]
+                            + self.grid[[i, j - 1]]
+                            - 4.0 * self.grid[[i, j]]);
+            }
+        }
+        let mut max_change = 0.0;
+        for i in 1..rows - 1 {
+            for j in 1..cols - 1 {
+                let change = (new_grid[[i, j]] - self.grid[[i, j]]).abs();
+                if change > max_change {
+                    max_change = change;
+                }
+            }
+        }
+        self.grid = new_grid;
+        max_change
+    }
+
+    pub fn run_simulation(
+        &mut self,
+        dt: f64,
+        max_steps: usize,
+        tolerance: f64,
+    ) -> Result<usize, &'static str> {
+        if !dt.is_finite() || dt <= 0.0 {
+            return Err("Time step must be finite and positive.");
+        }
+        if !tolerance.is_finite() || tolerance <= 0.0 {
+            return Err("Tolerance must be finite and positive.");
+        }
+
+        let diffusion_factor = self.alpha * dt;
+        if !diffusion_factor.is_finite() || diffusion_factor > MAX_DIFFUSION_FACTOR {
+            return Err("Unstable parameters: alpha * dt must not exceed 0.25.");
+        }
+
+        for step in 1..=max_steps {
+            let max_change = self.step(dt);
+            if max_change < tolerance {
+                return Ok(step);
+            }
+        }
+        Ok(max_steps)
+    }
+
+    pub fn get_grid(&self) -> &Array2<f64> {
+        &self.grid
+    }
+}
+
+impl std::fmt::Display for System {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for row in self.get_grid().rows() {
+            for &value in row {
+                write!(f, "{:.2} ", value)?;
+            }
+            writeln!(f)?;
+        }
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const EPSILON: f64 = 1.0e-12;
+
+    #[test]
+    fn initializes_circular_spot_and_fixed_boundaries() {
+        let grid_size = 11;
+        let spot_radius = 3;
+        let spot_temperature = 100.0;
+        let boundary_temperature = 20.0;
+        let mut system = System::new(grid_size, 0.1).unwrap();
+
+        system
+            .initialize_grid(spot_temperature, spot_radius, boundary_temperature)
+            .unwrap();
+
+        let center = grid_size / 2;
+        for ((row, col), &temperature) in system.grid.indexed_iter() {
+            let on_boundary = row == 0 || col == 0 || row == grid_size - 1 || col == grid_size - 1;
+            let row_distance = row.abs_diff(center);
+            let col_distance = col.abs_diff(center);
+            let inside_spot = row_distance * row_distance + col_distance * col_distance
+                <= spot_radius * spot_radius;
+
+            let expected = if on_boundary {
+                boundary_temperature
+            } else if inside_spot {
+                spot_temperature
+            } else {
+                0.0
+            };
+
+            assert_eq!(
+                temperature, expected,
+                "unexpected temperature at ({row}, {col})"
+            );
+        }
+    }
+
+    #[test]
+    fn rejects_spot_that_reaches_beyond_the_grid_center() {
+        let mut system = System::new(10, 0.1).unwrap();
+
+        let result = system.initialize_grid(100.0, 5, 20.0);
+
+        assert_eq!(
+            result,
+            Err("Spot radius must fit inside the grid boundary.")
+        );
+    }
+
+    #[test]
+    fn performs_one_hand_calculated_diffusion_step() {
+        let mut system = System::new(5, 0.1).unwrap();
+        system.initialize_grid(100.0, 0, 20.0).unwrap();
+
+        let max_change = system.step(0.5);
+
+        assert!((system.grid[[2, 2]] - 80.0).abs() < EPSILON);
+        assert!((max_change - 20.0).abs() < EPSILON);
+        assert_eq!(system.grid[[0, 2]], 20.0);
+        assert_eq!(system.grid[[4, 2]], 20.0);
+        assert_eq!(system.grid[[2, 0]], 20.0);
+        assert_eq!(system.grid[[2, 4]], 20.0);
+    }
+
+    #[test]
+    fn preserves_symmetry_after_one_step() {
+        let grid_size = 11;
+        let mut system = System::new(grid_size, 0.1).unwrap();
+        system.initialize_grid(100.0, 2, 20.0).unwrap();
+
+        system.step(0.5);
+
+        let grid = system.get_grid();
+        for row in 0..grid_size {
+            for col in 0..grid_size {
+                let value = grid[[row, col]];
+                let horizontal_reflection = grid[[grid_size - 1 - row, col]];
+                let vertical_reflection = grid[[row, grid_size - 1 - col]];
+                let diagonal_reflection = grid[[col, row]];
+
+                assert!(
+                    (value - horizontal_reflection).abs() < EPSILON,
+                    "horizontal symmetry differs at ({row}, {col})"
+                );
+                assert!(
+                    (value - vertical_reflection).abs() < EPSILON,
+                    "vertical symmetry differs at ({row}, {col})"
+                );
+                assert!(
+                    (value - diagonal_reflection).abs() < EPSILON,
+                    "diagonal symmetry differs at ({row}, {col})"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn reports_convergence_or_the_maximum_step_count() {
+        let mut converging_system = System::new(5, 0.1).unwrap();
+        converging_system.initialize_grid(100.0, 0, 20.0).unwrap();
+
+        let converged_after = converging_system.run_simulation(0.5, 10, 21.0).unwrap();
+
+        assert_eq!(converged_after, 1);
+
+        let mut limited_system = System::new(5, 0.1).unwrap();
+        limited_system.initialize_grid(100.0, 0, 20.0).unwrap();
+
+        let completed_steps = limited_system.run_simulation(0.5, 3, 1.0e-12).unwrap();
+
+        assert_eq!(completed_steps, 3);
+    }
+
+    #[test]
+    fn rejects_invalid_construction_parameters() {
+        assert_eq!(
+            System::new(2, 0.1).err(),
+            Some("Grid size must be at least 3.")
+        );
+        assert_eq!(
+            System::new(5, -0.1).err(),
+            Some("Thermal diffusivity must be finite and non-negative.")
+        );
+        assert_eq!(
+            System::new(5, f64::NAN).err(),
+            Some("Thermal diffusivity must be finite and non-negative.")
+        );
+    }
+
+    #[test]
+    fn rejects_invalid_or_unstable_simulation_parameters() {
+        let mut system = System::new(5, 0.1).unwrap();
+        system.initialize_grid(100.0, 0, 20.0).unwrap();
+
+        assert_eq!(
+            system.run_simulation(0.0, 10, 1.0e-3),
+            Err("Time step must be finite and positive.")
+        );
+        assert_eq!(
+            system.run_simulation(0.5, 10, 0.0),
+            Err("Tolerance must be finite and positive.")
+        );
+        assert_eq!(
+            system.run_simulation(3.0, 10, 1.0e-3),
+            Err("Unstable parameters: alpha * dt must not exceed 0.25.")
+        );
+    }
+
+    #[test]
+    fn rejects_non_finite_temperatures() {
+        let mut system = System::new(5, 0.1).unwrap();
+
+        assert_eq!(
+            system.initialize_grid(f64::NAN, 0, 20.0),
+            Err("Temperatures must be finite.")
+        );
+        assert_eq!(
+            system.initialize_grid(100.0, 0, f64::INFINITY),
+            Err("Temperatures must be finite.")
+        );
+    }
+}

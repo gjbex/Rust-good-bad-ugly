@@ -5,11 +5,11 @@ use smart_pointers::tree::Tree;
 use std::collections::BTreeSet;
 
 #[derive(Parser)]
-#[clap(version, about = "build a binary search tree")]
+#[command(version, about = "build a binary search tree")]
 struct Args {
-    #[clap(short, long, default_value = "20")]
+    #[arg(short, long, default_value_t = 20)]
     num_elements: usize,
-    #[clap(short, long, default_value = "42")]
+    #[arg(short, long, default_value_t = 42)]
     seed: u64,
 }
 

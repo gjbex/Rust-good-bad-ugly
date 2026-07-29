@@ -69,6 +69,22 @@ prevent or make explicit in safe code.
 1. `structural-matching`: variant of `strings` that illustrates structural
    matching by pattern matching on `split_once` results when parsing
    `key: value` record fields.
+1. `heat-diffusion`: a two-dimensional stencil example with naive,
+   `ndarray`-oriented, and TOML-configured implementations. It illustrates
+   `Array2`, slicing, mutable views, `Zip`, double buffering, broadcasting,
+   tagged configuration variants, numerical unit tests, and
+   behavior-preserving refactoring.
+1. `svd`: uses `ndarray` and OpenBLAS-backed `ndarray-linalg` to compute a
+   singular value decomposition, reconstruct a rectangular matrix with matrix
+   multiplication, and measure the floating-point reconstruction error.
+1. `fftw-ffi`: wraps FFTW's raw C API in a safe slice-based Rust interface,
+   detects known frequencies in a synthetic signal, validates the normalized
+   inverse transform, and optionally writes the signal and its one-sided power
+   spectrum as CSV for a Python visualization helper.
+1. `fftw-safe`: performs the same FFTW workflow and produces the same CSV
+   output through the high-level `fftw` crate, illustrating how an existing
+   safe wrapper removes application-owned raw pointers, allocation cleanup,
+   and plan-lifetime invariants.
 
 `julia-set`: Julia set  implementations illustrating diverse aspects of Rust
 programming.

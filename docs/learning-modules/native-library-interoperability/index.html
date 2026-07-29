@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>15. Native Library Interoperability - Rust, the good, the bad, and the ugly</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "15. Native Library Interoperability";
+        var mkdocs_page_input_path = "native-library-interoperability.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/rust.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/bash.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/toml.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Rust, the good, the bad, and the ugly
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../learning-module-structure/">Module Structure</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../rust-false-friends-by-language/">False Friends By Programming Background</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Learning Modules</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../getting-started-with-rust-projects/">1. Getting Started With Rust Projects</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scalar-computation-and-numeric-basics/">2. Scalar Computation And Numeric Basics</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../control-flow-and-program-structure/">3. Control Flow And Program Structure</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ownership-borrowing-and-mutation/">4. Ownership, Borrowing, And Mutation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-modeling-with-structs-and-methods/">5. Data Modeling With Structs And Methods</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reusable-abstractions-with-traits/">6. Reusable Abstractions With Traits</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../collections-iterators-and-text-data/">7. Collections, Iterators, And Text Data</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error-handling/">8. Error Handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../project-organization-libraries-and-tests/">9. Project Organization, Libraries, And Tests</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../randomness-and-reproducible-runs/">10. Randomness And Reproducible Runs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../data-parallelism-with-rayon/">11. Data Parallelism With Rayon</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-julia-set/">12. Integrated Numerical Example: Julia Set</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../integrated-numerical-example-n-body-simulation/">13. Integrated Numerical Example: N-Body Simulation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../multidimensional-arrays-and-stencil-computation/">14. Multidimensional Arrays And Stencil Computation</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">15. Native Library Interoperability</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#learning-objectives">Learning Objectives</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#the-scientific-workflow">The Scientific Workflow</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#the-raw-and-safe-layers">The Raw And Safe Layers</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#use-the-system-fftw-installation">Use The System FFTW Installation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#validate-values-at-the-boundary">Validate Values At The Boundary</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#own-native-allocations">Own Native Allocations</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#release-resources-with-drop">Release Resources With Drop</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#drop-order-is-part-of-the-design">Drop Order Is Part Of The Design</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#concurrency-requirements-still-matter">Concurrency Requirements Still Matter</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#real-fft-output-shape">Real FFT Output Shape</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#define-a-one-sided-power-spectrum">Define A One-Sided Power Spectrum</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#normalize-the-inverse-transform">Normalize The Inverse Transform</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#keep-unsafe-local">Keep Unsafe Local</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#prefer-an-existing-safe-wrapper-when-it-fits">Prefer An Existing Safe Wrapper When It Fits</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#other-scientific-binding-layers">Other Scientific Binding Layers</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#optional-csv-output">Optional CSV Output</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#visualize-the-signal-and-spectrum">Visualize The Signal And Spectrum</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#test-boundary-and-scientific-behavior">Test Boundary And Scientific Behavior</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#hands-on-exercises">Hands-On Exercises</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#summary">Summary</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Rust, the good, the bad, and the ugly</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Learning Modules</li>
+      <li class="breadcrumb-item active">15. Native Library Interoperability</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="native-library-interoperability">Native Library Interoperability<a class="headerlink" href="#native-library-interoperability" title="Permanent link">&para;</a></h1>
+<p>Scientific Rust programs rarely start in isolation. They often need mature C
+or Fortran libraries that already implement validated algorithms and are
+installed on HPC systems. This module wraps FFTW's C API in a small safe Rust
+interface, then compares that local wrapper with the existing high-level
+<code>fftw</code> crate.</p>
+<p>The two complete implementations are:</p>
+<ul>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/fftw-ffi"><code>source-code/fftw-ffi</code></a>, which builds a wrapper directly on <code>fftw-sys</code>;</li>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/fftw-safe"><code>source-code/fftw-safe</code></a>, which performs the same workflow with <code>fftw</code>.</li>
+</ul>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>By the end of this module, you should be able to:</p>
+<ul>
+<li>recognize a raw FFI layer and the obligations it transfers to the caller;</li>
+<li>convert Rust lengths to C integer types with validation;</li>
+<li>pass contiguous buffers to native functions through raw pointers;</li>
+<li>represent native allocation and opaque handles with owning Rust types;</li>
+<li>release native resources through <code>Drop</code>;</li>
+<li>concentrate <code>unsafe</code> operations behind a safe slice-based API;</li>
+<li>translate native failures and boundary violations into Rust errors;</li>
+<li>decide when to use an existing safe crate instead of maintaining a local FFI
+  wrapper;</li>
+<li>expose optional output files through typed <code>clap</code> arguments;</li>
+<li>test the scientific behavior of an FFI wrapper with numerical tolerances.</li>
+</ul>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<p>This module builds on:</p>
+<ul>
+<li>ownership and borrowing from Module 4;</li>
+<li>structs and methods from Module 5;</li>
+<li>error handling from Module 8;</li>
+<li>library organization and tests from Module 9;</li>
+<li>numerical array validation from Module 14.</li>
+</ul>
+<p>It belongs at the end of the course because FFI code must state requirements
+that the Rust compiler cannot infer from a C API.</p>
+<h2 id="the-scientific-workflow">The Scientific Workflow<a class="headerlink" href="#the-scientific-workflow" title="Permanent link">&para;</a></h2>
+<p>The example creates a 64-sample signal with two known frequency components:</p>
+<pre class="highlight"><code class="language-text">x[j] = sin(2 pi 3 j / n) + 0.5 cos(2 pi 7 j / n)</code></pre>
+<p>It then:</p>
+<ol>
+<li>computes a real-to-complex Fourier transform;</li>
+<li>finds the two largest non-constant frequency bins;</li>
+<li>performs the inverse transform;</li>
+<li>normalizes the reconstructed signal;</li>
+<li>computes maximum absolute and root-mean-square errors;</li>
+<li>optionally writes the signal and power spectrum as CSV;</li>
+<li>visualizes both series with a separate Python helper.</li>
+</ol>
+<p>The expected dominant bins are 3 and 7. This gives the wrapper a scientific
+property test rather than merely checking that the native call returned.</p>
+<h2 id="the-raw-and-safe-layers">The Raw And Safe Layers<a class="headerlink" href="#the-raw-and-safe-layers" title="Permanent link">&para;</a></h2>
+<p>The <code>fftw-sys</code> crate exposes FFTW declarations close to the C API. Its
+functions are unsafe because Rust cannot verify the pointer sizes, alignment,
+aliasing, initialization, handle lifetime, or concurrency rules.</p>
+<p>The example separates those declarations from participant-facing code:</p>
+<pre class="highlight"><code class="language-text">src/
+|-- lib.rs
+|-- main.rs
+`-- real_fft.rs</code></pre>
+<ul>
+<li><code>real_fft.rs</code> contains all calls to the raw FFTW API;</li>
+<li><code>lib.rs</code> exposes only <code>RealFft</code> and <code>FftError</code>;</li>
+<li><code>main.rs</code> uses ordinary slices, vectors, and <code>Result</code>.</li>
+</ul>
+<p>The goal is not to make the native operations safe. The goal is to establish
+and enforce their requirements once, then expose an API whose callers cannot
+violate them.</p>
+<h2 id="use-the-system-fftw-installation">Use The System FFTW Installation<a class="headerlink" href="#use-the-system-fftw-installation" title="Permanent link">&para;</a></h2>
+<p>On Debian or Ubuntu, install the development package:</p>
+<pre class="highlight"><code class="language-bash">sudo apt install libfftw3-dev</code></pre>
+<p>The manifest selects the system library rather than downloading and compiling
+another FFTW copy:</p>
+<pre class="highlight"><code class="language-toml">[dependencies]
+clap = { version = "4.6.4", features = ["derive"] }
+fftw-sys = {
+    version = "0.8.0",
+    default-features = false,
+    features = ["system"]
+}
+num-complex = "0.4.6"</code></pre>
+<p>This keeps the dependency choice visible. On an HPC system, the build may
+instead use a site-provided FFTW module and matching compiler environment.</p>
+<h2 id="validate-values-at-the-boundary">Validate Values At The Boundary<a class="headerlink" href="#validate-values-at-the-boundary" title="Permanent link">&para;</a></h2>
+<p>FFTW's one-dimensional planning function accepts its transform length as a C
+<code>int</code>. The Rust API accepts a <code>usize</code>, rejects zero, and performs a checked
+conversion:</p>
+<pre class="highlight"><code class="language-rust">if length == 0 {
+    return Err(FftError::EmptyInput);
+}
+
+let ffi_length =
+    i32::try_from(length).map_err(|_| FftError::LengthTooLarge(length))?;</code></pre>
+<p>The wrapper also validates input slice lengths before passing their pointers
+to FFTW:</p>
+<pre class="highlight"><code class="language-rust">pub fn forward(
+    &amp;mut self,
+    signal: &amp;[f64],
+) -&gt; Result&lt;Vec&lt;Complex64&gt;, FftError&gt; {
+    self.check_length(self.length, signal.len())?;
+    self.real_buffer.as_mut_slice().copy_from_slice(signal);
+    self.forward_plan.execute();
+    Ok(self.complex_buffer.as_slice().to_vec())
+}</code></pre>
+<p>These checks turn potential out-of-bounds native access into ordinary Rust
+errors.</p>
+<h2 id="own-native-allocations">Own Native Allocations<a class="headerlink" href="#own-native-allocations" title="Permanent link">&para;</a></h2>
+<p>FFTW provides aligned allocation functions. <code>FftwBuffer&lt;T&gt;</code> records the
+non-null pointer and element count:</p>
+<pre class="highlight"><code class="language-rust">struct FftwBuffer&lt;T&gt; {
+    pointer: NonNull&lt;T&gt;,
+    length: usize,
+}</code></pre>
+<p>Construction checks for a null result. The allocation is initialized before
+the wrapper creates Rust slices over it:</p>
+<pre class="highlight"><code class="language-rust">let pointer = unsafe { fftw_alloc_real(length) };
+let pointer =
+    NonNull::new(pointer).ok_or(FftError::AllocationFailed("real-valued"))?;
+
+unsafe { pointer.as_ptr().write_bytes(0, length) };</code></pre>
+<p>The safety comments state facts that must remain true when the code changes.
+They are not a substitute for those facts.</p>
+<h2 id="release-resources-with-drop">Release Resources With Drop<a class="headerlink" href="#release-resources-with-drop" title="Permanent link">&para;</a></h2>
+<p>Native allocations must be returned with FFTW's matching deallocator:</p>
+<pre class="highlight"><code class="language-rust">impl&lt;T&gt; Drop for FftwBuffer&lt;T&gt; {
+    fn drop(&amp;mut self) {
+        unsafe {
+            fftw_free(self.pointer.as_ptr().cast::&lt;c_void&gt;());
+        }
+    }
+}</code></pre>
+<p>Plans are opaque native handles with their own <code>Drop</code> implementation:</p>
+<pre class="highlight"><code class="language-rust">impl Drop for FftwPlan {
+    fn drop(&amp;mut self) {
+        let _planner_guard = lock_planner();
+        unsafe {
+            fftw_destroy_plan(self.0.as_ptr());
+        }
+    }
+}</code></pre>
+<p>This is RAII applied across an FFI boundary. Normal returns, early <code>?</code>
+propagation, and panics all run the destructors for fully constructed values.</p>
+<h2 id="drop-order-is-part-of-the-design">Drop Order Is Part Of The Design<a class="headerlink" href="#drop-order-is-part-of-the-design" title="Permanent link">&para;</a></h2>
+<p>An FFTW plan retains the addresses of the buffers used during plan creation.
+The wrapper therefore declares plans before buffers:</p>
+<pre class="highlight"><code class="language-rust">pub struct RealFft {
+    length: usize,
+    spectrum_length: usize,
+    forward_plan: FftwPlan,
+    inverse_plan: FftwPlan,
+    real_buffer: FftwBuffer&lt;f64&gt;,
+    complex_buffer: FftwBuffer&lt;Complex64&gt;,
+}</code></pre>
+<p>Rust drops struct fields in declaration order. The plans are destroyed before
+the allocations whose addresses they reference. Moving <code>RealFft</code> itself is
+safe because moving the owner does not move its native heap allocations.</p>
+<h2 id="concurrency-requirements-still-matter">Concurrency Requirements Still Matter<a class="headerlink" href="#concurrency-requirements-still-matter" title="Permanent link">&para;</a></h2>
+<p>FFTW permits independent plans to execute concurrently, but its planner
+operations require serialization. The wrapper protects plan creation and
+destruction with one process-wide mutex:</p>
+<pre class="highlight"><code class="language-rust">static FFTW_PLANNER_LOCK: Mutex&lt;()&gt; = Mutex::new(());
+
+fn lock_planner() -&gt; MutexGuard&lt;'static, ()&gt; {
+    FFTW_PLANNER_LOCK
+        .lock()
+        .unwrap_or_else(PoisonError::into_inner)
+}</code></pre>
+<p>The execution path does not take this lock. The wrapper encodes the native
+library's narrower concurrency rule instead of serializing the numerical
+work.</p>
+<h2 id="real-fft-output-shape">Real FFT Output Shape<a class="headerlink" href="#real-fft-output-shape" title="Permanent link">&para;</a></h2>
+<p>For <code>n</code> real input samples, FFTW returns only the non-redundant half of the
+spectrum:</p>
+<pre class="highlight"><code class="language-text">real input:      n values
+complex output:  floor(n / 2) + 1 values</code></pre>
+<p>The wrapper computes and exposes that size:</p>
+<pre class="highlight"><code class="language-rust">let spectrum_length = length / 2 + 1;</code></pre>
+<p>For 64 input samples, the example reports 33 complex values. The two dominant
+non-constant bins are found by sorting squared complex magnitudes.</p>
+<h2 id="define-a-one-sided-power-spectrum">Define A One-Sided Power Spectrum<a class="headerlink" href="#define-a-one-sided-power-spectrum" title="Permanent link">&para;</a></h2>
+<p>For a real signal, negative-frequency values repeat the power of their
+positive-frequency counterparts. The example therefore writes a one-sided
+mean-square power spectrum:</p>
+<pre class="highlight"><code class="language-text">P[k] = c[k] |X[k]|^2 / n^2
+
+c[k] = 1  for the DC bin and, when n is even, the Nyquist bin
+c[k] = 2  for every other stored bin</code></pre>
+<p>The factor of two accounts for the omitted negative-frequency value. With
+this normalization, the sum of the stored powers equals the signal's mean
+square:</p>
+<pre class="highlight"><code class="language-text">sum(P[k]) = sum(x[j]^2) / n</code></pre>
+<p>The implementation keeps this calculation separate from the FFI wrapper:</p>
+<pre class="highlight"><code class="language-rust">let one_sided_factor =
+    if is_dc || is_nyquist { 1.0 } else { 2.0 };
+
+one_sided_factor * value.norm_sqr() / (signal_length as f64).powi(2)</code></pre>
+<p>For the example signal, bin 3 has power <code>0.5</code> and bin 7 has power <code>0.125</code>.
+Their sum, <code>0.625</code>, is the signal's mean square.</p>
+<h2 id="normalize-the-inverse-transform">Normalize The Inverse Transform<a class="headerlink" href="#normalize-the-inverse-transform" title="Permanent link">&para;</a></h2>
+<p>FFTW's inverse transform is unnormalized. A forward transform followed by its
+inverse returns <code>n</code> times the input. The wrapper performs the normalization
+before returning an owned vector:</p>
+<pre class="highlight"><code class="language-rust">let normalization = self.length as f64;
+let reconstructed = self
+    .real_buffer
+    .as_slice()
+    .iter()
+    .map(|value| value / normalization)
+    .collect();</code></pre>
+<p>The complex input to an inverse real transform may be overwritten, so
+<code>inverse</code> copies the caller's slice into its owned FFTW buffer first. The
+caller's spectrum remains unchanged.</p>
+<h2 id="keep-unsafe-local">Keep Unsafe Local<a class="headerlink" href="#keep-unsafe-local" title="Permanent link">&para;</a></h2>
+<p>The raw operations are limited to:</p>
+<ul>
+<li>allocating and freeing FFTW memory;</li>
+<li>creating, executing, and destroying plans;</li>
+<li>initializing native allocations;</li>
+<li>constructing slices from owned pointer-and-length pairs.</li>
+</ul>
+<p>Every public operation on <code>RealFft</code> is safe:</p>
+<pre class="highlight"><code class="language-rust">let mut transform = RealFft::new(signal.len())?;
+let spectrum = transform.forward(&amp;signal)?;
+let reconstructed = transform.inverse(&amp;spectrum)?;</code></pre>
+<p>No public method accepts a raw pointer, and no returned value borrows memory
+that FFTW may later overwrite.</p>
+<h2 id="prefer-an-existing-safe-wrapper-when-it-fits">Prefer An Existing Safe Wrapper When It Fits<a class="headerlink" href="#prefer-an-existing-safe-wrapper-when-it-fits" title="Permanent link">&para;</a></h2>
+<p>Writing the raw wrapper exposes the invariants that make FFI difficult, but an
+application should not automatically maintain those invariants itself. The
+<code>fftw</code> crate builds on <code>fftw-sys</code> and already provides aligned buffers, owning
+plan types, safe transform methods, and Rust error values.</p>
+<p>The companion project selects the same system FFTW installation:</p>
+<pre class="highlight"><code class="language-toml">fftw = {
+    version = "0.8.0",
+    default-features = false,
+    features = ["system"]
+}</code></pre>
+<p>Its forward transform uses safe crate APIs throughout:</p>
+<pre class="highlight"><code class="language-rust">let mut input = AlignedVec::new(length);
+input.copy_from_slice(signal);
+
+let mut spectrum = AlignedVec::new(length / 2 + 1);
+let mut plan = R2CPlan64::aligned(&amp;[length], Flag::ESTIMATE)?;
+plan.r2c(&amp;mut input, &amp;mut spectrum)?;</code></pre>
+<p>The distinction is about ownership of the boundary:</p>
+<table>
+<thead>
+<tr>
+<th>Concern</th>
+<th>Local <code>fftw-sys</code> wrapper</th>
+<th>High-level <code>fftw</code> crate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Aligned allocation and cleanup</td>
+<td>Implemented with <code>NonNull</code> and <code>Drop</code></td>
+<td>Provided by <code>AlignedVec</code></td>
+</tr>
+<tr>
+<td>Plan ownership and destruction</td>
+<td>Implemented locally</td>
+<td>Provided by owning plan types</td>
+</tr>
+<tr>
+<td>Raw pointers and safety invariants</td>
+<td>Documented in local <code>unsafe</code> blocks</td>
+<td>Encapsulated by the crate</td>
+</tr>
+<tr>
+<td>Planner synchronization</td>
+<td>Implemented locally</td>
+<td>Handled by the crate</td>
+</tr>
+<tr>
+<td>Signal definition and FFT normalization</td>
+<td>Application responsibility</td>
+<td>Application responsibility</td>
+</tr>
+<tr>
+<td>Power-spectrum meaning and tests</td>
+<td>Application responsibility</td>
+<td>Application responsibility</td>
+</tr>
+</tbody>
+</table>
+<p>The two programs intentionally expose the same CLI and CSV schemas. For the
+training signal, their generated signal and power-spectrum files are
+byte-for-byte identical. That equivalence makes the comparison about API
+design rather than different numerical problems.</p>
+<p>For normal application code, start by evaluating a maintained high-level crate
+such as <code>fftw</code>. Build directly on a <code>-sys</code> crate when the safe crate does not
+expose a required feature, when its abstraction is unsuitable, or when the
+wrapper itself is the subject being taught.</p>
+<h2 id="other-scientific-binding-layers">Other Scientific Binding Layers<a class="headerlink" href="#other-scientific-binding-layers" title="Permanent link">&para;</a></h2>
+<p>The raw-binding and wrapper split appears throughout the scientific Rust
+ecosystem:</p>
+<table>
+<thead>
+<tr>
+<th>Native library</th>
+<th>Raw binding crate</th>
+<th>Wrapper or application-level crate</th>
+<th>Main abstraction added</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FFTW</td>
+<td><code>fftw-sys</code></td>
+<td><code>fftw</code></td>
+<td>Aligned buffers and owning transform plans</td>
+</tr>
+<tr>
+<td>MPI</td>
+<td><code>mpi-sys</code></td>
+<td><code>mpi</code></td>
+<td>Communicators, requests, and datatype traits</td>
+</tr>
+<tr>
+<td>HDF5</td>
+<td><code>hdf5-sys</code></td>
+<td><code>hdf5</code></td>
+<td>Files, groups, datasets, and <code>ndarray</code> I/O</td>
+</tr>
+<tr>
+<td>netCDF</td>
+<td><code>netcdf-sys</code></td>
+<td><code>netcdf</code></td>
+<td>Files, dimensions, variables, and attributes</td>
+</tr>
+<tr>
+<td>SUNDIALS</td>
+<td><code>sundials-sys</code></td>
+<td><code>sundials</code></td>
+<td>Contexts and selected solver interfaces</td>
+</tr>
+<tr>
+<td>BLAS</td>
+<td><code>blas-sys</code></td>
+<td><code>blas</code></td>
+<td>Typed BLAS functions; calls remain <code>unsafe</code></td>
+</tr>
+<tr>
+<td>LAPACK</td>
+<td><code>lapack-sys</code></td>
+<td><code>lapack</code>, <code>ndarray-linalg</code></td>
+<td>Thin functions or higher-level array methods</td>
+</tr>
+</tbody>
+</table>
+<p>This table is a starting point, not a guarantee that every native operation is
+covered or safe. In particular, the <code>blas</code> and <code>lapack</code> crates remain close to
+their Fortran APIs and expose <code>unsafe</code> numerical calls. The
+<a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/svd"><code>source-code/svd</code></a> example instead uses <code>ndarray-linalg</code>, which provides
+array-oriented decomposition methods while delegating to LAPACK and OpenBLAS
+below that interface.</p>
+<p>Before choosing a wrapper, check its supported native-library versions,
+feature coverage, thread-safety model, error handling, maintenance status, and
+system-linking options. Dropping to the corresponding <code>-sys</code> crate may still
+be necessary for functionality the wrapper does not expose.</p>
+<h2 id="optional-csv-output">Optional CSV Output<a class="headerlink" href="#optional-csv-output" title="Permanent link">&para;</a></h2>
+<p>Both implementations always run the numerical computation, while two optional
+<code>clap</code> arguments control visualization output:</p>
+<pre class="highlight"><code class="language-rust">#[derive(Debug, Parser)]
+struct Args {
+    #[arg(long, value_name = "FILE")]
+    signal_output: Option&lt;PathBuf&gt;,
+
+    #[arg(long, value_name = "FILE")]
+    spectrum_output: Option&lt;PathBuf&gt;,
+}</code></pre>
+<p>Generate both files with:</p>
+<pre class="highlight"><code class="language-bash">cargo run -- \
+  --signal-output signal.csv \
+  --spectrum-output power-spectrum.csv</code></pre>
+<p>The signal file contains:</p>
+<pre class="highlight"><code class="language-text">sample,value
+0,5.00000000000000000e-1
+...</code></pre>
+<p>The spectrum file contains:</p>
+<pre class="highlight"><code class="language-text">frequency_bin,power
+0,9.43705672749745568e-33
+...
+3,5.00000000000000222e-1</code></pre>
+<p>Both files use full-precision scientific notation. They can be read directly
+by Python, Julia, R, a spreadsheet, or a command-line plotting tool. File
+creation and write failures propagate through <code>Result</code> rather than being
+silently ignored. The program rejects using the same path for both files so
+that the second write cannot overwrite the first result.</p>
+<h2 id="visualize-the-signal-and-spectrum">Visualize The Signal And Spectrum<a class="headerlink" href="#visualize-the-signal-and-spectrum" title="Permanent link">&para;</a></h2>
+<p>The repository includes
+<a href="https://github.com/gjbex/Rust-good-bad-ugly/blob/main/source-code/fftw-ffi/visualize-signal-and-spectrum.py"><code>source-code/fftw-ffi/visualize-signal-and-spectrum.py</code></a>. It validates the two
+CSV schemas and plots the signal and one-sided power spectrum side by side.
+Install Matplotlib:</p>
+<pre class="highlight"><code class="language-bash">python3 -m pip install matplotlib</code></pre>
+<p>After generating the CSV files, display the interactive figure with:</p>
+<pre class="highlight"><code class="language-bash">./visualize-signal-and-spectrum.py signal.csv power-spectrum.csv</code></pre>
+<p>On a headless system, write an image instead:</p>
+<pre class="highlight"><code class="language-bash">./visualize-signal-and-spectrum.py \
+  signal.csv power-spectrum.csv \
+  --output signal-and-spectrum.png</code></pre>
+<p>Matplotlib selects the output format from the filename extension, so the same
+option can also produce PDF or SVG output.</p>
+<p>The horizontal axes are the sample index and the discrete frequency-bin index.
+No physical time step or sampling frequency is specified by this example, so
+the script does not imply time or frequency units that the input data does not
+contain.</p>
+<h2 id="test-boundary-and-scientific-behavior">Test Boundary And Scientific Behavior<a class="headerlink" href="#test-boundary-and-scientific-behavior" title="Permanent link">&para;</a></h2>
+<p>The raw-wrapper tests cover both boundary contracts and numerical results:</p>
+<ul>
+<li>an empty transform is rejected;</li>
+<li>wrong input and spectrum lengths are rejected before the FFI call;</li>
+<li>a 64-point real transform returns 33 complex values;</li>
+<li>the dominant bins are 3 and 7;</li>
+<li>bin powers are <code>0.5</code> and <code>0.125</code>;</li>
+<li>total spectral power equals the signal mean square;</li>
+<li>forward and inverse transforms reproduce the original signal within
+  <code>1.0e-12</code>;</li>
+<li>the CSV writer produces the expected headers and numeric representation;</li>
+<li>one path cannot be used for both output files.</li>
+</ul>
+<p>The safe-crate version repeats the scientific, round-trip, CSV, and CLI
+contract tests. Its dependency owns the raw allocation and plan boundary, so
+the application does not repeat the local wrapper's boundary tests.</p>
+<p>Run both implementations:</p>
+<pre class="highlight"><code class="language-bash">cd source-code/fftw-ffi
+cargo run
+cargo test
+
+cd ../fftw-safe
+cargo run
+cargo test</code></pre>
+<p>Representative output is:</p>
+<pre class="highlight"><code class="language-text">Signal length: 64
+Non-redundant spectrum length: 33
+Dominant frequency bins: [3, 7]
+Maximum round-trip error: 4.441e-16
+RMS round-trip error: 1.640e-16</code></pre>
+<p>The final digits may vary with the FFTW build. The frequency bins and tolerance
+checks are the stable contract.</p>
+<h2 id="hands-on-exercises">Hands-On Exercises<a class="headerlink" href="#hands-on-exercises" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Change one frequency in <code>create_signal</code> and predict the dominant bins.</li>
+<li>Remove the inverse normalization and explain the resulting scale factor.</li>
+<li>Pass a slice with the wrong length and inspect the <code>FftError</code>.</li>
+<li>Trace which destructors run if inverse-plan construction fails.</li>
+<li>Add a <code>len</code> method to <code>RealFft</code> without exposing either native buffer.</li>
+<li>Change the signal length and verify the <code>n / 2 + 1</code> spectrum shape.</li>
+<li>Generate both CSV files and visualize them with the Python helper.</li>
+<li>Compare <code>fftw-ffi</code> with <code>fftw-safe</code>: list which safety obligations disappear
+   from the application and which scientific responsibilities remain.</li>
+<li>Change the signal in both versions and compare their generated CSV files.</li>
+</ol>
+<h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Raw FFI functions transfer pointer, lifetime, and concurrency obligations to
+  the caller.</li>
+<li>A safe wrapper validates dimensions and conversions before the native call.</li>
+<li><code>NonNull</code>, owned lengths, and <code>Drop</code> model native allocations and handles.</li>
+<li>Field order can be part of a resource-lifetime invariant.</li>
+<li>Small <code>unsafe</code> blocks should state the invariants that make each call valid.</li>
+<li>A suitable high-level crate avoids duplicating native ownership and safety
+  machinery in application code.</li>
+<li>A one-sided spectrum needs explicit normalization and endpoint treatment.</li>
+<li>Optional output paths keep visualization separate from the core computation.</li>
+<li>A small plotting helper can consume the numerical CSV contract independently.</li>
+<li>Safe native bindings still need application-level scientific property and
+  round-trip tests.</li>
+<li>Rust can safely compose with established HPC libraries without rewriting
+  their numerical kernels.</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../multidimensional-arrays-and-stencil-computation/" class="btn btn-neutral float-left" title="14. Multidimensional Arrays And Stencil Computation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../multidimensional-arrays-and-stencil-computation/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
