@@ -10,6 +10,11 @@ This application wraps FFTW's raw C interface in a small safe Rust API. It:
 * optionally writes the signal and its one-sided power spectrum as CSV;
 * visualizes both series with a small Python helper.
 
+The companion project `../fftw-safe` performs the same computation through the
+high-level `fftw` crate. Compare the two to see which allocation, lifetime,
+planner, and raw-pointer responsibilities a safe ecosystem wrapper removes
+from application code.
+
 The wrapper owns FFTW-aligned buffers and opaque plans. Its `Drop`
 implementations release those native resources, while the public `RealFft`
 methods accept ordinary Rust slices.

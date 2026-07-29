@@ -63,8 +63,8 @@ sudo apt install build-essential curl
 
 ## Native Scientific Libraries
 
-The SVD and FFTW FFI examples deliberately use system-provided native
-libraries. On Debian or Ubuntu, install their development packages with:
+The SVD and FFTW examples deliberately use system-provided native libraries.
+On Debian or Ubuntu, install their development packages with:
 
 ```bash
 sudo apt install libopenblas-dev libfftw3-dev pkg-config

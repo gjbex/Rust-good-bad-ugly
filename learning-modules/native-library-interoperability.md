@@ -3,9 +3,13 @@
 Scientific Rust programs rarely start in isolation. They often need mature C
 or Fortran libraries that already implement validated algorithms and are
 installed on HPC systems. This module wraps FFTW's C API in a small safe Rust
-interface.
+interface, then compares that local wrapper with the existing high-level
+`fftw` crate.
 
-The complete example is in `source-code/fftw-ffi`.
+The two complete implementations are:
+
+- `source-code/fftw-ffi`, which builds a wrapper directly on `fftw-sys`;
+- `source-code/fftw-safe`, which performs the same workflow with `fftw`.
 
 ## Learning Objectives
 
@@ -18,6 +22,8 @@ By the end of this module, you should be able to:
 - release native resources through `Drop`;
 - concentrate `unsafe` operations behind a safe slice-based API;
 - translate native failures and boundary violations into Rust errors;
+- decide when to use an existing safe crate instead of maintaining a local FFI
+  wrapper;
 - expose optional output files through typed `clap` arguments;
 - test the scientific behavior of an FFI wrapper with numerical tolerances.
 
@@ -324,10 +330,86 @@ let reconstructed = transform.inverse(&spectrum)?;
 No public method accepts a raw pointer, and no returned value borrows memory
 that FFTW may later overwrite.
 
+## Prefer An Existing Safe Wrapper When It Fits
+
+Writing the raw wrapper exposes the invariants that make FFI difficult, but an
+application should not automatically maintain those invariants itself. The
+`fftw` crate builds on `fftw-sys` and already provides aligned buffers, owning
+plan types, safe transform methods, and Rust error values.
+
+The companion project selects the same system FFTW installation:
+
+```toml
+fftw = {
+    version = "0.8.0",
+    default-features = false,
+    features = ["system"]
+}
+```
+
+Its forward transform uses safe crate APIs throughout:
+
+```rust
+let mut input = AlignedVec::new(length);
+input.copy_from_slice(signal);
+
+let mut spectrum = AlignedVec::new(length / 2 + 1);
+let mut plan = R2CPlan64::aligned(&[length], Flag::ESTIMATE)?;
+plan.r2c(&mut input, &mut spectrum)?;
+```
+
+The distinction is about ownership of the boundary:
+
+| Concern | Local `fftw-sys` wrapper | High-level `fftw` crate |
+|---|---|---|
+| Aligned allocation and cleanup | Implemented with `NonNull` and `Drop` | Provided by `AlignedVec` |
+| Plan ownership and destruction | Implemented locally | Provided by owning plan types |
+| Raw pointers and safety invariants | Documented in local `unsafe` blocks | Encapsulated by the crate |
+| Planner synchronization | Implemented locally | Handled by the crate |
+| Signal definition and FFT normalization | Application responsibility | Application responsibility |
+| Power-spectrum meaning and tests | Application responsibility | Application responsibility |
+
+The two programs intentionally expose the same CLI and CSV schemas. For the
+training signal, their generated signal and power-spectrum files are
+byte-for-byte identical. That equivalence makes the comparison about API
+design rather than different numerical problems.
+
+For normal application code, start by evaluating a maintained high-level crate
+such as `fftw`. Build directly on a `-sys` crate when the safe crate does not
+expose a required feature, when its abstraction is unsuitable, or when the
+wrapper itself is the subject being taught.
+
+## Other Scientific Binding Layers
+
+The raw-binding and wrapper split appears throughout the scientific Rust
+ecosystem:
+
+| Native library | Raw binding crate | Wrapper or application-level crate | Main abstraction added |
+|---|---|---|---|
+| FFTW | `fftw-sys` | `fftw` | Aligned buffers and owning transform plans |
+| MPI | `mpi-sys` | `mpi` | Communicators, requests, and datatype traits |
+| HDF5 | `hdf5-sys` | `hdf5` | Files, groups, datasets, and `ndarray` I/O |
+| netCDF | `netcdf-sys` | `netcdf` | Files, dimensions, variables, and attributes |
+| SUNDIALS | `sundials-sys` | `sundials` | Contexts and selected solver interfaces |
+| BLAS | `blas-sys` | `blas` | Typed BLAS functions; calls remain `unsafe` |
+| LAPACK | `lapack-sys` | `lapack`, `ndarray-linalg` | Thin functions or higher-level array methods |
+
+This table is a starting point, not a guarantee that every native operation is
+covered or safe. In particular, the `blas` and `lapack` crates remain close to
+their Fortran APIs and expose `unsafe` numerical calls. The
+`source-code/svd` example instead uses `ndarray-linalg`, which provides
+array-oriented decomposition methods while delegating to LAPACK and OpenBLAS
+below that interface.
+
+Before choosing a wrapper, check its supported native-library versions,
+feature coverage, thread-safety model, error handling, maintenance status, and
+system-linking options. Dropping to the corresponding `-sys` crate may still
+be necessary for functionality the wrapper does not expose.
+
 ## Optional CSV Output
 
-The numerical computation always runs, while two optional `clap` arguments
-control visualization output:
+Both implementations always run the numerical computation, while two optional
+`clap` arguments control visualization output:
 
 ```rust
 #[derive(Debug, Parser)]
@@ -406,7 +488,7 @@ contain.
 
 ## Test Boundary And Scientific Behavior
 
-The unit tests cover both wrapper contracts and numerical results:
+The raw-wrapper tests cover both boundary contracts and numerical results:
 
 - an empty transform is rejected;
 - wrong input and spectrum lengths are rejected before the FFI call;
@@ -419,10 +501,18 @@ The unit tests cover both wrapper contracts and numerical results:
 - the CSV writer produces the expected headers and numeric representation;
 - one path cannot be used for both output files.
 
-Run the complete example:
+The safe-crate version repeats the scientific, round-trip, CSV, and CLI
+contract tests. Its dependency owns the raw allocation and plan boundary, so
+the application does not repeat the local wrapper's boundary tests.
+
+Run both implementations:
 
 ```bash
 cd source-code/fftw-ffi
+cargo run
+cargo test
+
+cd ../fftw-safe
 cargo run
 cargo test
 ```
@@ -449,6 +539,9 @@ checks are the stable contract.
 5. Add a `len` method to `RealFft` without exposing either native buffer.
 6. Change the signal length and verify the `n / 2 + 1` spectrum shape.
 7. Generate both CSV files and visualize them with the Python helper.
+8. Compare `fftw-ffi` with `fftw-safe`: list which safety obligations disappear
+   from the application and which scientific responsibilities remain.
+9. Change the signal in both versions and compare their generated CSV files.
 
 ## Summary
 
@@ -458,9 +551,12 @@ checks are the stable contract.
 - `NonNull`, owned lengths, and `Drop` model native allocations and handles.
 - Field order can be part of a resource-lifetime invariant.
 - Small `unsafe` blocks should state the invariants that make each call valid.
+- A suitable high-level crate avoids duplicating native ownership and safety
+  machinery in application code.
 - A one-sided spectrum needs explicit normalization and endpoint treatment.
 - Optional output paths keep visualization separate from the core computation.
 - A small plotting helper can consume the numerical CSV contract independently.
-- A native wrapper still needs scientific property and round-trip tests.
+- Safe native bindings still need application-level scientific property and
+  round-trip tests.
 - Rust can safely compose with established HPC libraries without rewriting
   their numerical kernels.

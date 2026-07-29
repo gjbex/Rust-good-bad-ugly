@@ -109,9 +109,19 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#real-fft-output-shape">Real FFT Output Shape</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#define-a-one-sided-power-spectrum">Define A One-Sided Power Spectrum</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#normalize-the-inverse-transform">Normalize The Inverse Transform</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#keep-unsafe-local">Keep Unsafe Local</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#prefer-an-existing-safe-wrapper-when-it-fits">Prefer An Existing Safe Wrapper When It Fits</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#other-scientific-binding-layers">Other Scientific Binding Layers</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#optional-csv-output">Optional CSV Output</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#visualize-the-signal-and-spectrum">Visualize The Signal And Spectrum</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#test-boundary-and-scientific-behavior">Test Boundary And Scientific Behavior</a>
     </li>
@@ -150,8 +160,13 @@
 <p>Scientific Rust programs rarely start in isolation. They often need mature C
 or Fortran libraries that already implement validated algorithms and are
 installed on HPC systems. This module wraps FFTW's C API in a small safe Rust
-interface.</p>
-<p>The complete example is in <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/fftw-ffi"><code>source-code/fftw-ffi</code></a>.</p>
+interface, then compares that local wrapper with the existing high-level
+<code>fftw</code> crate.</p>
+<p>The two complete implementations are:</p>
+<ul>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/fftw-ffi"><code>source-code/fftw-ffi</code></a>, which builds a wrapper directly on <code>fftw-sys</code>;</li>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/fftw-safe"><code>source-code/fftw-safe</code></a>, which performs the same workflow with <code>fftw</code>.</li>
+</ul>
 <h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
 <p>By the end of this module, you should be able to:</p>
 <ul>
@@ -162,6 +177,9 @@ interface.</p>
 <li>release native resources through <code>Drop</code>;</li>
 <li>concentrate <code>unsafe</code> operations behind a safe slice-based API;</li>
 <li>translate native failures and boundary violations into Rust errors;</li>
+<li>decide when to use an existing safe crate instead of maintaining a local FFI
+  wrapper;</li>
+<li>expose optional output files through typed <code>clap</code> arguments;</li>
 <li>test the scientific behavior of an FFI wrapper with numerical tolerances.</li>
 </ul>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
@@ -184,7 +202,9 @@ that the Rust compiler cannot infer from a C API.</p>
 <li>finds the two largest non-constant frequency bins;</li>
 <li>performs the inverse transform;</li>
 <li>normalizes the reconstructed signal;</li>
-<li>computes maximum absolute and root-mean-square errors.</li>
+<li>computes maximum absolute and root-mean-square errors;</li>
+<li>optionally writes the signal and power spectrum as CSV;</li>
+<li>visualizes both series with a separate Python helper.</li>
 </ol>
 <p>The expected dominant bins are 3 and 7. This gives the wrapper a scientific
 property test rather than merely checking that the native call returned.</p>
@@ -211,6 +231,7 @@ violate them.</p>
 <p>The manifest selects the system library rather than downloading and compiling
 another FFTW copy:</p>
 <pre class="highlight"><code class="language-toml">[dependencies]
+clap = { version = "4.6.4", features = ["derive"] }
 fftw-sys = {
     version = "0.8.0",
     default-features = false,
@@ -315,6 +336,25 @@ complex output:  floor(n / 2) + 1 values</code></pre>
 <pre class="highlight"><code class="language-rust">let spectrum_length = length / 2 + 1;</code></pre>
 <p>For 64 input samples, the example reports 33 complex values. The two dominant
 non-constant bins are found by sorting squared complex magnitudes.</p>
+<h2 id="define-a-one-sided-power-spectrum">Define A One-Sided Power Spectrum<a class="headerlink" href="#define-a-one-sided-power-spectrum" title="Permanent link">&para;</a></h2>
+<p>For a real signal, negative-frequency values repeat the power of their
+positive-frequency counterparts. The example therefore writes a one-sided
+mean-square power spectrum:</p>
+<pre class="highlight"><code class="language-text">P[k] = c[k] |X[k]|^2 / n^2
+
+c[k] = 1  for the DC bin and, when n is even, the Nyquist bin
+c[k] = 2  for every other stored bin</code></pre>
+<p>The factor of two accounts for the omitted negative-frequency value. With
+this normalization, the sum of the stored powers equals the signal's mean
+square:</p>
+<pre class="highlight"><code class="language-text">sum(P[k]) = sum(x[j]^2) / n</code></pre>
+<p>The implementation keeps this calculation separate from the FFI wrapper:</p>
+<pre class="highlight"><code class="language-rust">let one_sided_factor =
+    if is_dc || is_nyquist { 1.0 } else { 2.0 };
+
+one_sided_factor * value.norm_sqr() / (signal_length as f64).powi(2)</code></pre>
+<p>For the example signal, bin 3 has power <code>0.5</code> and bin 7 has power <code>0.125</code>.
+Their sum, <code>0.625</code>, is the signal's mean square.</p>
 <h2 id="normalize-the-inverse-transform">Normalize The Inverse Transform<a class="headerlink" href="#normalize-the-inverse-transform" title="Permanent link">&para;</a></h2>
 <p>FFTW's inverse transform is unnormalized. A forward transform followed by its
 inverse returns <code>n</code> times the input. The wrapper performs the normalization
@@ -343,18 +383,211 @@ let spectrum = transform.forward(&amp;signal)?;
 let reconstructed = transform.inverse(&amp;spectrum)?;</code></pre>
 <p>No public method accepts a raw pointer, and no returned value borrows memory
 that FFTW may later overwrite.</p>
+<h2 id="prefer-an-existing-safe-wrapper-when-it-fits">Prefer An Existing Safe Wrapper When It Fits<a class="headerlink" href="#prefer-an-existing-safe-wrapper-when-it-fits" title="Permanent link">&para;</a></h2>
+<p>Writing the raw wrapper exposes the invariants that make FFI difficult, but an
+application should not automatically maintain those invariants itself. The
+<code>fftw</code> crate builds on <code>fftw-sys</code> and already provides aligned buffers, owning
+plan types, safe transform methods, and Rust error values.</p>
+<p>The companion project selects the same system FFTW installation:</p>
+<pre class="highlight"><code class="language-toml">fftw = {
+    version = "0.8.0",
+    default-features = false,
+    features = ["system"]
+}</code></pre>
+<p>Its forward transform uses safe crate APIs throughout:</p>
+<pre class="highlight"><code class="language-rust">let mut input = AlignedVec::new(length);
+input.copy_from_slice(signal);
+
+let mut spectrum = AlignedVec::new(length / 2 + 1);
+let mut plan = R2CPlan64::aligned(&amp;[length], Flag::ESTIMATE)?;
+plan.r2c(&amp;mut input, &amp;mut spectrum)?;</code></pre>
+<p>The distinction is about ownership of the boundary:</p>
+<table>
+<thead>
+<tr>
+<th>Concern</th>
+<th>Local <code>fftw-sys</code> wrapper</th>
+<th>High-level <code>fftw</code> crate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Aligned allocation and cleanup</td>
+<td>Implemented with <code>NonNull</code> and <code>Drop</code></td>
+<td>Provided by <code>AlignedVec</code></td>
+</tr>
+<tr>
+<td>Plan ownership and destruction</td>
+<td>Implemented locally</td>
+<td>Provided by owning plan types</td>
+</tr>
+<tr>
+<td>Raw pointers and safety invariants</td>
+<td>Documented in local <code>unsafe</code> blocks</td>
+<td>Encapsulated by the crate</td>
+</tr>
+<tr>
+<td>Planner synchronization</td>
+<td>Implemented locally</td>
+<td>Handled by the crate</td>
+</tr>
+<tr>
+<td>Signal definition and FFT normalization</td>
+<td>Application responsibility</td>
+<td>Application responsibility</td>
+</tr>
+<tr>
+<td>Power-spectrum meaning and tests</td>
+<td>Application responsibility</td>
+<td>Application responsibility</td>
+</tr>
+</tbody>
+</table>
+<p>The two programs intentionally expose the same CLI and CSV schemas. For the
+training signal, their generated signal and power-spectrum files are
+byte-for-byte identical. That equivalence makes the comparison about API
+design rather than different numerical problems.</p>
+<p>For normal application code, start by evaluating a maintained high-level crate
+such as <code>fftw</code>. Build directly on a <code>-sys</code> crate when the safe crate does not
+expose a required feature, when its abstraction is unsuitable, or when the
+wrapper itself is the subject being taught.</p>
+<h2 id="other-scientific-binding-layers">Other Scientific Binding Layers<a class="headerlink" href="#other-scientific-binding-layers" title="Permanent link">&para;</a></h2>
+<p>The raw-binding and wrapper split appears throughout the scientific Rust
+ecosystem:</p>
+<table>
+<thead>
+<tr>
+<th>Native library</th>
+<th>Raw binding crate</th>
+<th>Wrapper or application-level crate</th>
+<th>Main abstraction added</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FFTW</td>
+<td><code>fftw-sys</code></td>
+<td><code>fftw</code></td>
+<td>Aligned buffers and owning transform plans</td>
+</tr>
+<tr>
+<td>MPI</td>
+<td><code>mpi-sys</code></td>
+<td><code>mpi</code></td>
+<td>Communicators, requests, and datatype traits</td>
+</tr>
+<tr>
+<td>HDF5</td>
+<td><code>hdf5-sys</code></td>
+<td><code>hdf5</code></td>
+<td>Files, groups, datasets, and <code>ndarray</code> I/O</td>
+</tr>
+<tr>
+<td>netCDF</td>
+<td><code>netcdf-sys</code></td>
+<td><code>netcdf</code></td>
+<td>Files, dimensions, variables, and attributes</td>
+</tr>
+<tr>
+<td>SUNDIALS</td>
+<td><code>sundials-sys</code></td>
+<td><code>sundials</code></td>
+<td>Contexts and selected solver interfaces</td>
+</tr>
+<tr>
+<td>BLAS</td>
+<td><code>blas-sys</code></td>
+<td><code>blas</code></td>
+<td>Typed BLAS functions; calls remain <code>unsafe</code></td>
+</tr>
+<tr>
+<td>LAPACK</td>
+<td><code>lapack-sys</code></td>
+<td><code>lapack</code>, <code>ndarray-linalg</code></td>
+<td>Thin functions or higher-level array methods</td>
+</tr>
+</tbody>
+</table>
+<p>This table is a starting point, not a guarantee that every native operation is
+covered or safe. In particular, the <code>blas</code> and <code>lapack</code> crates remain close to
+their Fortran APIs and expose <code>unsafe</code> numerical calls. The
+<a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/svd"><code>source-code/svd</code></a> example instead uses <code>ndarray-linalg</code>, which provides
+array-oriented decomposition methods while delegating to LAPACK and OpenBLAS
+below that interface.</p>
+<p>Before choosing a wrapper, check its supported native-library versions,
+feature coverage, thread-safety model, error handling, maintenance status, and
+system-linking options. Dropping to the corresponding <code>-sys</code> crate may still
+be necessary for functionality the wrapper does not expose.</p>
+<h2 id="optional-csv-output">Optional CSV Output<a class="headerlink" href="#optional-csv-output" title="Permanent link">&para;</a></h2>
+<p>Both implementations always run the numerical computation, while two optional
+<code>clap</code> arguments control visualization output:</p>
+<pre class="highlight"><code class="language-rust">#[derive(Debug, Parser)]
+struct Args {
+    #[arg(long, value_name = "FILE")]
+    signal_output: Option&lt;PathBuf&gt;,
+
+    #[arg(long, value_name = "FILE")]
+    spectrum_output: Option&lt;PathBuf&gt;,
+}</code></pre>
+<p>Generate both files with:</p>
+<pre class="highlight"><code class="language-bash">cargo run -- \
+  --signal-output signal.csv \
+  --spectrum-output power-spectrum.csv</code></pre>
+<p>The signal file contains:</p>
+<pre class="highlight"><code class="language-text">sample,value
+0,5.00000000000000000e-1
+...</code></pre>
+<p>The spectrum file contains:</p>
+<pre class="highlight"><code class="language-text">frequency_bin,power
+0,9.43705672749745568e-33
+...
+3,5.00000000000000222e-1</code></pre>
+<p>Both files use full-precision scientific notation. They can be read directly
+by Python, Julia, R, a spreadsheet, or a command-line plotting tool. File
+creation and write failures propagate through <code>Result</code> rather than being
+silently ignored. The program rejects using the same path for both files so
+that the second write cannot overwrite the first result.</p>
+<h2 id="visualize-the-signal-and-spectrum">Visualize The Signal And Spectrum<a class="headerlink" href="#visualize-the-signal-and-spectrum" title="Permanent link">&para;</a></h2>
+<p>The repository includes
+<a href="https://github.com/gjbex/Rust-good-bad-ugly/blob/main/source-code/fftw-ffi/visualize-signal-and-spectrum.py"><code>source-code/fftw-ffi/visualize-signal-and-spectrum.py</code></a>. It validates the two
+CSV schemas and plots the signal and one-sided power spectrum side by side.
+Install Matplotlib:</p>
+<pre class="highlight"><code class="language-bash">python3 -m pip install matplotlib</code></pre>
+<p>After generating the CSV files, display the interactive figure with:</p>
+<pre class="highlight"><code class="language-bash">./visualize-signal-and-spectrum.py signal.csv power-spectrum.csv</code></pre>
+<p>On a headless system, write an image instead:</p>
+<pre class="highlight"><code class="language-bash">./visualize-signal-and-spectrum.py \
+  signal.csv power-spectrum.csv \
+  --output signal-and-spectrum.png</code></pre>
+<p>Matplotlib selects the output format from the filename extension, so the same
+option can also produce PDF or SVG output.</p>
+<p>The horizontal axes are the sample index and the discrete frequency-bin index.
+No physical time step or sampling frequency is specified by this example, so
+the script does not imply time or frequency units that the input data does not
+contain.</p>
 <h2 id="test-boundary-and-scientific-behavior">Test Boundary And Scientific Behavior<a class="headerlink" href="#test-boundary-and-scientific-behavior" title="Permanent link">&para;</a></h2>
-<p>The unit tests cover both wrapper contracts and numerical results:</p>
+<p>The raw-wrapper tests cover both boundary contracts and numerical results:</p>
 <ul>
 <li>an empty transform is rejected;</li>
 <li>wrong input and spectrum lengths are rejected before the FFI call;</li>
 <li>a 64-point real transform returns 33 complex values;</li>
 <li>the dominant bins are 3 and 7;</li>
+<li>bin powers are <code>0.5</code> and <code>0.125</code>;</li>
+<li>total spectral power equals the signal mean square;</li>
 <li>forward and inverse transforms reproduce the original signal within
-  <code>1.0e-12</code>.</li>
+  <code>1.0e-12</code>;</li>
+<li>the CSV writer produces the expected headers and numeric representation;</li>
+<li>one path cannot be used for both output files.</li>
 </ul>
-<p>Run the complete example:</p>
+<p>The safe-crate version repeats the scientific, round-trip, CSV, and CLI
+contract tests. Its dependency owns the raw allocation and plan boundary, so
+the application does not repeat the local wrapper's boundary tests.</p>
+<p>Run both implementations:</p>
 <pre class="highlight"><code class="language-bash">cd source-code/fftw-ffi
+cargo run
+cargo test
+
+cd ../fftw-safe
 cargo run
 cargo test</code></pre>
 <p>Representative output is:</p>
@@ -373,6 +606,10 @@ checks are the stable contract.</p>
 <li>Trace which destructors run if inverse-plan construction fails.</li>
 <li>Add a <code>len</code> method to <code>RealFft</code> without exposing either native buffer.</li>
 <li>Change the signal length and verify the <code>n / 2 + 1</code> spectrum shape.</li>
+<li>Generate both CSV files and visualize them with the Python helper.</li>
+<li>Compare <code>fftw-ffi</code> with <code>fftw-safe</code>: list which safety obligations disappear
+   from the application and which scientific responsibilities remain.</li>
+<li>Change the signal in both versions and compare their generated CSV files.</li>
 </ol>
 <h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
 <ul>
@@ -382,7 +619,13 @@ checks are the stable contract.</p>
 <li><code>NonNull</code>, owned lengths, and <code>Drop</code> model native allocations and handles.</li>
 <li>Field order can be part of a resource-lifetime invariant.</li>
 <li>Small <code>unsafe</code> blocks should state the invariants that make each call valid.</li>
-<li>A native wrapper still needs scientific property and round-trip tests.</li>
+<li>A suitable high-level crate avoids duplicating native ownership and safety
+  machinery in application code.</li>
+<li>A one-sided spectrum needs explicit normalization and endpoint treatment.</li>
+<li>Optional output paths keep visualization separate from the core computation.</li>
+<li>A small plotting helper can consume the numerical CSV contract independently.</li>
+<li>Safe native bindings still need application-level scientific property and
+  round-trip tests.</li>
 <li>Rust can safely compose with established HPC libraries without rewriting
   their numerical kernels.</li>
 </ul>

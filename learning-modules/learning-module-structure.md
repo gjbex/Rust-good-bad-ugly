@@ -420,9 +420,10 @@ multidimensional-array workflow.
 
 ## Module 15: Native Library Interoperability
 
-Primary example:
+Primary examples:
 
 - `source-code/fftw-ffi`
+- `source-code/fftw-safe`
 
 Topics:
 
@@ -430,6 +431,9 @@ Topics:
 - Checked conversion between Rust and C integer types.
 - Raw pointers, `NonNull`, and native aligned allocation.
 - Safe slice-based APIs around a small `unsafe` implementation.
+- Comparison with an existing high-level crate built on the same `-sys` layer.
+- Survey of scientific `-sys` crates and their wrapper crates.
+- Safe aligned buffers and owning FFTW plan types from the `fftw` crate.
 - RAII cleanup of native allocations and opaque handles with `Drop`.
 - Resource drop order and stable native heap addresses.
 - FFTW planner serialization and concurrent plan execution.
@@ -444,9 +448,11 @@ Goal:
 
 Participants should be able to identify the obligations transferred by a C
 API, encode them in an owning Rust wrapper, keep `unsafe` local, and test both
-the boundary contract and the scientific result. They should also be able to
-export a precisely defined derived quantity without coupling visualization to
-the FFI layer.
+the boundary contract and the scientific result. They should be able to decide
+when an existing safe wrapper is preferable while retaining responsibility for
+normalization and scientific validation. They should also be able to export a
+precisely defined derived quantity without coupling visualization to the FFI
+layer.
 
 Related module text:
 

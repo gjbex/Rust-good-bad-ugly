@@ -81,6 +81,10 @@ prevent or make explicit in safe code.
    detects known frequencies in a synthetic signal, validates the normalized
    inverse transform, and optionally writes the signal and its one-sided power
    spectrum as CSV for a Python visualization helper.
+1. `fftw-safe`: performs the same FFTW workflow and produces the same CSV
+   output through the high-level `fftw` crate, illustrating how an existing
+   safe wrapper removes application-owned raw pointers, allocation cleanup,
+   and plan-lifetime invariants.
 
 `julia-set`: Julia set  implementations illustrating diverse aspects of Rust
 programming.

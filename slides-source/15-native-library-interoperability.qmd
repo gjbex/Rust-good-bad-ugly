@@ -12,12 +12,14 @@ invariants, not on Fourier-transform theory.
 - Identify what the C API cannot express to Rust
 - Own native buffers and plans with Rust types
 - Concentrate `unsafe` behind slice-based methods
+- Compare the local wrapper with the high-level `fftw` crate
 - Export optional visualization data through typed CLI paths
 - Validate both boundary failures and scientific behavior
 
 ::: notes
 Connect this to the OpenBLAS-backed SVD example: there learners consumed a safe
-wrapper. Here they build one around FFTW's raw bindings.
+wrapper. Here they first build one around FFTW's raw bindings, then replace
+that boundary code with an existing safe crate.
 :::
 
 ## A Testable Signal
@@ -281,6 +283,79 @@ result would need a more restrictive API because the next transform overwrites
 the internal buffer.
 :::
 
+## Use The Existing `fftw` Crate
+
+```toml
+fftw = {
+    version = "0.8.0",
+    default-features = false,
+    features = ["system"]
+}
+```
+
+```rust
+let mut input = AlignedVec::new(length);
+input.copy_from_slice(signal);
+
+let mut spectrum = AlignedVec::new(length / 2 + 1);
+let mut plan = R2CPlan64::aligned(
+    &[length],
+    Flag::ESTIMATE,
+)?;
+plan.r2c(&mut input, &mut spectrum)?;
+```
+
+::: notes
+The safe crate still uses fftw-sys internally. It moves responsibility for
+aligned allocation, plan ownership, raw calls, and native errors out of the
+application.
+:::
+
+## What The Safe Crate Removes
+
+| Local `fftw-sys` wrapper | Application using `fftw` |
+|---|---|
+| `NonNull` and allocation wrappers | `AlignedVec` |
+| Local plan and `Drop` types | Owning plan types |
+| Raw pointer calls | Safe transform methods |
+| Local planner lock | Crate-managed planning |
+| Safety comments and invariants | No application `unsafe` |
+
+Still application responsibilities:
+
+- Inverse normalization
+- One-sided power definition
+- CLI and output schemas
+- Scientific tests
+
+::: notes
+Both projects solve the same numerical problem and generate byte-identical CSV
+files. The raw version teaches how safety is established; the high-level
+version shows what application code should normally prefer when the API fits.
+:::
+
+## Scientific `-sys` And Wrapper Crates
+
+| Native library | Raw bindings | Wrapper |
+|---|---|---|
+| FFTW | `fftw-sys` | `fftw` |
+| MPI | `mpi-sys` | `mpi` |
+| HDF5 | `hdf5-sys` | `hdf5` |
+| netCDF | `netcdf-sys` | `netcdf` |
+| SUNDIALS | `sundials-sys` | `sundials` |
+| BLAS | `blas-sys` | `blas` |
+| LAPACK | `lapack-sys` | `lapack`, `ndarray-linalg` |
+
+- Coverage and safety level differ between wrappers
+- `blas` and `lapack` calls remain `unsafe`
+- `ndarray-linalg` provides higher-level array methods
+
+::: notes
+Treat this as a discovery map, not an endorsement. A project still needs to
+check native-version coverage, maintenance, thread safety, error handling, and
+system-linking behavior. Connect ndarray-linalg back to the SVD example.
+:::
+
 ## Optional Visualization Output
 
 ```{.bash}
@@ -331,10 +406,9 @@ Use `--output` on a headless teaching system. Matplotlib selects PNG, PDF, or
 SVG output from the filename extension.
 :::
 
-## Test Both Contracts
+## Test Both Implementations
 
-- Reject zero-length transforms
-- Reject incorrect signal and spectrum lengths
+- Raw wrapper: reject invalid lengths before FFI
 - Check `64 / 2 + 1 == 33`
 - Detect bins 3 and 7
 - Check bin powers and the mean-square identity
@@ -345,11 +419,14 @@ SVG output from the filename extension.
 ```{.bash}
 cd source-code/fftw-ffi
 cargo test
+
+cd ../fftw-safe
+cargo test
 ```
 
 ::: notes
-Boundary tests protect memory assumptions. The peak and round-trip tests
-protect the scientific meaning of the wrapper.
+Boundary tests protect the local raw wrapper's memory assumptions. Both
+implementations retain tests for the scientific meaning and output contract.
 :::
 
 ## Terminal: Inspect The Link
@@ -378,10 +455,13 @@ the stable checks. Use the final command on Linux to confirm system linking.
 3. Trigger a `LengthMismatch` before the native call
 4. Trace cleanup after partial construction
 5. Add a safe `len` method without exposing buffers
+6. Compare the code owned by `fftw-ffi` and `fftw-safe`
+7. Change both signals and compare their CSV output
 
 ::: notes
 For a short session, choose either the normalization edit or the boundary
-error. The cleanup trace is the deeper ownership exercise.
+error. Use the implementation comparison to discuss when a dependency removes
+enough maintenance burden to justify its abstraction.
 :::
 
 ## Module Takeaways
@@ -391,6 +471,7 @@ error. The cleanup trace is the deeper ownership exercise.
 - Own native memory and handles with RAII types
 - Keep `unsafe` small and state its invariants
 - Preserve lifetime and concurrency rules in the wrapper
+- Prefer a maintained safe crate when it exposes the required native features
 - Define spectral normalization before exporting results
 - Keep optional visualization output outside the FFI wrapper
 - Preserve units honestly in the plotting helper

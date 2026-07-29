@@ -516,9 +516,10 @@ difference from the original.</p>
 project-level testing, and numerical validation through a practical
 multidimensional-array workflow.</p>
 <h2 id="module-15-native-library-interoperability">Module 15: Native Library Interoperability<a class="headerlink" href="#module-15-native-library-interoperability" title="Permanent link">&para;</a></h2>
-<p>Primary example:</p>
+<p>Primary examples:</p>
 <ul>
 <li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/fftw-ffi"><code>source-code/fftw-ffi</code></a></li>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/fftw-safe"><code>source-code/fftw-safe</code></a></li>
 </ul>
 <p>Topics:</p>
 <ul>
@@ -526,17 +527,27 @@ multidimensional-array workflow.</p>
 <li>Checked conversion between Rust and C integer types.</li>
 <li>Raw pointers, <code>NonNull</code>, and native aligned allocation.</li>
 <li>Safe slice-based APIs around a small <code>unsafe</code> implementation.</li>
+<li>Comparison with an existing high-level crate built on the same <code>-sys</code> layer.</li>
+<li>Survey of scientific <code>-sys</code> crates and their wrapper crates.</li>
+<li>Safe aligned buffers and owning FFTW plan types from the <code>fftw</code> crate.</li>
 <li>RAII cleanup of native allocations and opaque handles with <code>Drop</code>.</li>
 <li>Resource drop order and stable native heap addresses.</li>
 <li>FFTW planner serialization and concurrent plan execution.</li>
 <li>Real-to-complex spectrum shape and inverse normalization.</li>
+<li>One-sided mean-square power normalization.</li>
+<li>Optional CSV output paths parsed with <code>clap</code>.</li>
+<li>Separate Matplotlib visualization of the signal and power spectrum.</li>
 <li>Boundary-condition tests and numerical round-trip validation.</li>
 <li>Linking against a system-provided HPC library.</li>
 </ul>
 <p>Goal:</p>
 <p>Participants should be able to identify the obligations transferred by a C
 API, encode them in an owning Rust wrapper, keep <code>unsafe</code> local, and test both
-the boundary contract and the scientific result.</p>
+the boundary contract and the scientific result. They should be able to decide
+when an existing safe wrapper is preferable while retaining responsibility for
+normalization and scientific validation. They should also be able to export a
+precisely defined derived quantity without coupling visualization to the FFI
+layer.</p>
 <p>Related module text:</p>
 <ul>
 <li><code>learning-modules/native-library-interoperability.md</code></li>
