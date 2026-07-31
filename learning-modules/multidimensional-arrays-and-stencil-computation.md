@@ -605,6 +605,85 @@ Both errors should be close to machine precision. Their exact final digits can
 depend on the linear-algebra backend, so the test checks a tolerance rather
 than a printed reference value.
 
+## Extended Example: Persisting Arrays With HDF5
+
+The preceding examples keep arrays in memory or print small fields to the
+terminal. Scientific applications usually need a richer persistent format
+that preserves array shapes and metadata and supports reading subsets of a
+large dataset. The optional `source-code/hdf5-snapshot` example illustrates
+that transition with HDF5.
+
+The Cargo dependency renames the maintained `hdf5-metno` package to the short
+crate name used in the source:
+
+```toml
+hdf5 = { package = "hdf5-metno", version = "0.14.0" }
+ndarray = "0.17.2"
+```
+
+The example creates a Gaussian temperature field and writes this logical
+structure:
+
+```text
+/snapshot
+  @description
+  @time_seconds
+  @step
+  x                 one-dimensional coordinates, units = "m"
+  y                 one-dimensional coordinates, units = "m"
+  temperature       two-dimensional field, units and valid range
+```
+
+HDF5 datasets retain their element type and shape. Attributes attach context
+to a group or dataset without encoding it into a filename or a separate text
+file. The temperature dataset is chunked and compressed:
+
+```rust
+let (rows, columns) = snapshot.temperature.dim();
+let temperature_dataset = group
+    .new_dataset_builder()
+    .chunk((rows.min(16), columns.min(16)))
+    .deflate(4)
+    .with_data(snapshot.temperature.view())
+    .create("temperature")?;
+```
+
+Chunking divides the logical array into independently stored blocks. It is
+required for compression and affects the cost of reading array subsets, so a
+chunk shape should reflect expected access patterns rather than being chosen
+arbitrarily.
+
+The reader demonstrates an HDF5 hyperslab by loading only the central 3-by-3
+selection into an `Array2`:
+
+```rust
+let center = dataset.read_slice_2d(s![
+    row_start..row_start + 3,
+    column_start..column_start + 3
+])?;
+```
+
+The minimum and maximum are computed while the field is still in memory and
+stored as scalar attributes. The inspection path can therefore report the
+range without rereading the complete field. Keeping such summary metadata
+consistent with the dataset becomes part of the writer's responsibility.
+
+Run the example and inspect the resulting file with language-independent HDF5
+tools:
+
+```bash
+cd source-code/hdf5-snapshot
+cargo run --release
+h5ls -r temperature-snapshot.h5
+h5dump -pH temperature-snapshot.h5
+```
+
+The high-level crate keeps native handles and raw pointers out of the
+application code, but deployment still depends on a compatible HDF5 library.
+This makes the example a useful bridge to Module 15: a safe Rust API does not
+remove the need to understand system packages, library discovery, cluster
+modules, containers, and CI environments.
+
 ## Hands-On Refactoring
 
 1. Add a unit test to one implementation before changing it.
@@ -618,6 +697,9 @@ than a printed reference value.
 9. Change `sigma` and predict how much of the grid the Gaussian occupies.
 10. Draw the compact SVD shapes for the 4-by-3 matrix in `source-code/svd`.
 11. Change one matrix element, then rerun the SVD reconstruction test.
+12. Run `source-code/hdf5-snapshot` and identify its groups, datasets, and
+    attributes with `h5ls` and `h5dump`.
+13. Change the HDF5 chunk shape and explain which access pattern it favors.
 
 ## Summary
 
@@ -633,5 +715,7 @@ than a printed reference value.
 - `ndarray-linalg` extends arrays with OpenBLAS-backed factorizations.
 - A compact SVD reconstructs an array with two matrix multiplications.
 - Numerical reconstruction checks require an explicit tolerance.
+- HDF5 stores typed multidimensional datasets together with metadata.
+- Chunking enables compression and efficient subset-oriented I/O.
 - Unit tests and cross-project output comparison support numerical
   refactoring.

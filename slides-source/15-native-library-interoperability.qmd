@@ -340,7 +340,7 @@ version shows what application code should normally prefer when the API fits.
 |---|---|---|
 | FFTW | `fftw-sys` | `fftw` |
 | MPI | `mpi-sys` | `mpi` |
-| HDF5 | `hdf5-sys` | `hdf5` |
+| HDF5 | `hdf5-metno-sys` | `hdf5-metno` |
 | netCDF | `netcdf-sys` | `netcdf` |
 | SUNDIALS | `sundials-sys` | `sundials` |
 | BLAS | `blas-sys` | `blas` |
@@ -353,7 +353,9 @@ version shows what application code should normally prefer when the API fits.
 ::: notes
 Treat this as a discovery map, not an endorsement. A project still needs to
 check native-version coverage, maintenance, thread safety, error handling, and
-system-linking behavior. Connect ndarray-linalg back to the SVD example.
+system-linking behavior. Connect ndarray-linalg back to the SVD example and
+`hdf5-metno` to `source-code/hdf5-snapshot`; that project renames the package
+to `hdf5` for concise source paths.
 :::
 
 ## Optional Visualization Output

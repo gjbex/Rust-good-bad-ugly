@@ -604,6 +604,45 @@ Do not promise identical final digits across BLAS implementations. The unit
 test checks both errors against a tolerance of 1e-12.
 :::
 
+## Extended Example: HDF5 Snapshot
+
+```{.bash}
+cd source-code/hdf5-snapshot
+cargo run --release
+h5ls -r temperature-snapshot.h5
+```
+
+- Coordinate arrays and a two-dimensional temperature field
+- Groups and attributes preserve scientific context
+- Chunked, gzip-compressed storage
+- Complete round-trip tests
+
+::: notes
+Present this as an optional extension, not another numbered module. Build it
+before the session because it links to the system HDF5 library. The example is
+a bridge between ndarray in this module and native dependencies in Module 15.
+:::
+
+## Read Only The Required Region
+
+```rust
+let center = dataset.read_slice_2d(s![
+    row_start..row_start + 3,
+    column_start..column_start + 3
+])?;
+```
+
+- HDF5 calls this selection a hyperslab
+- The result is an `Array2<f64>`
+- Chunk shape influences subset-I/O cost
+- File schema and access pattern are design decisions
+
+::: notes
+Contrast this direct subset read with parsing a complete text file. Avoid
+claiming that one chunk shape is universally optimal: it depends on whether
+the application reads tiles, rows, columns, or full fields.
+:::
+
 ## Refactoring Exercise
 
 1. Add or identify a protecting unit test
@@ -613,6 +652,7 @@ test checks both errors against a tolerance of 1e-12.
 5. Move run parameters into TOML
 6. Add a tagged initial-condition variant
 7. Inspect any diff before continuing
+8. Inspect the HDF5 snapshot with `h5ls -r` and `h5dump -pH`
 
 ::: notes
 Make one conceptual change at a time. The later implementations can serve as
@@ -630,6 +670,8 @@ reference solutions after participants attempt individual steps.
 - TOML files make scientific runs reproducible
 - A compact SVD combines a factorization with matrix multiplication
 - Numerical comparisons need a stated tolerance
+- HDF5 preserves array shapes and metadata
+- Chunking supports compression and subset reads
 - Tests protect both scientific properties and CLI behavior
 
 ::: notes

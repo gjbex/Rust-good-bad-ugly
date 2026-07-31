@@ -418,6 +418,13 @@ This module belongs near the end of the course. It revisits ownership,
 project-level testing, and numerical validation through a practical
 multidimensional-array workflow.
 
+Optional extended example:
+
+- `source-code/hdf5-snapshot` persists an `ndarray` field and metadata in a
+  chunked, compressed HDF5 dataset, then demonstrates a full round trip and a
+  hyperslab read. It also bridges this module to the native-library deployment
+  concerns in Module 15.
+
 ## Module 15: Native Library Interoperability
 
 Primary examples:
