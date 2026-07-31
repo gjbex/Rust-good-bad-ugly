@@ -88,6 +88,17 @@ pub fn write_snapshot(
     write_string_attribute(&y_dataset, "units", "m")?;
 
     let (rows, columns) = snapshot.temperature.dim();
+    if rows == 0 || columns == 0 {
+        return Err(Error::Internal("temperature must be non-empty".to_owned()));
+    }
+    if snapshot.x.len() != columns || snapshot.y.len() != rows {
+        return Err(Error::Internal(format!(
+            "coordinate lengths must match temperature shape: x={}, y={}, temperature=({rows}, {columns})",
+            snapshot.x.len(),
+            snapshot.y.len(),
+        )));
+    }
+
     let temperature_dataset = group
         .new_dataset_builder()
         .chunk((rows.min(CHUNK_SIZE), columns.min(CHUNK_SIZE)))
