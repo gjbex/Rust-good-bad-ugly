@@ -77,6 +77,10 @@ prevent or make explicit in safe code.
 1. `svd`: uses `ndarray` and OpenBLAS-backed `ndarray-linalg` to compute a
    singular value decomposition, reconstruct a rectangular matrix with matrix
    multiplication, and measure the floating-point reconstruction error.
+1. `hdf5-snapshot`: an extended scientific-data example that stores an
+   `ndarray` temperature field, coordinate arrays, and metadata in HDF5. It
+   demonstrates groups, attributes, chunking, compression, full-array
+   round trips, and direct hyperslab reads through a high-level native wrapper.
 1. `fftw-ffi`: wraps FFTW's raw C API in a safe slice-based Rust interface,
    detects known frequencies in a synthetic signal, validates the normalized
    inverse transform, and optionally writes the signal and its one-sided power

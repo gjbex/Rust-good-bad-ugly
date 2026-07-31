@@ -388,7 +388,7 @@ ecosystem:
 |---|---|---|---|
 | FFTW | `fftw-sys` | `fftw` | Aligned buffers and owning transform plans |
 | MPI | `mpi-sys` | `mpi` | Communicators, requests, and datatype traits |
-| HDF5 | `hdf5-sys` | `hdf5` | Files, groups, datasets, and `ndarray` I/O |
+| HDF5 | `hdf5-metno-sys` | `hdf5-metno` | Files, groups, datasets, and `ndarray` I/O |
 | netCDF | `netcdf-sys` | `netcdf` | Files, dimensions, variables, and attributes |
 | SUNDIALS | `sundials-sys` | `sundials` | Contexts and selected solver interfaces |
 | BLAS | `blas-sys` | `blas` | Typed BLAS functions; calls remain `unsafe` |
@@ -400,6 +400,12 @@ their Fortran APIs and expose `unsafe` numerical calls. The
 `source-code/svd` example instead uses `ndarray-linalg`, which provides
 array-oriented decomposition methods while delegating to LAPACK and OpenBLAS
 below that interface.
+
+The optional `source-code/hdf5-snapshot` example uses the maintained
+`hdf5-metno` wrapper and renames it to `hdf5` in `Cargo.toml`, keeping concise
+`hdf5::...` paths in application code. It demonstrates another reason to start
+with a high-level wrapper: the application can work with files, datasets,
+attributes, and `ndarray` values without owning raw HDF5 handles.
 
 Before choosing a wrapper, check its supported native-library versions,
 feature coverage, thread-safety model, error handling, maintenance status, and

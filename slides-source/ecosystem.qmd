@@ -118,14 +118,17 @@ interoperability with Python, R, Spark, DuckDB, and other tools.
 
 ## HDF5
 
-[`hdf5`](https://docs.rs/hdf5/latest/hdf5/): HDF5 access from Rust
+[`hdf5-metno`](https://docs.rs/hdf5-metno/latest/hdf5_metno/): high-level HDF5 access from Rust
 
 - Useful when existing instruments or simulations already produce HDF5
 - Check native-library availability on clusters and CI systems
+- Extended example: `source-code/hdf5-snapshot`
 
 ::: notes
 HDF5 is often an operational dependency question, not only a programming API
 question. The system library and deployment environment matter.
+The example renames the package to `hdf5` in Cargo.toml, so the source keeps
+the conventional `hdf5::...` crate path.
 :::
 
 ## Adoption Checklist

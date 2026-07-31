@@ -1,0 +1,13 @@
+[package]
+name = "hdf5-snapshot"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clap = { version = "4.6.4", features = ["derive"] }
+hdf5 = { package = "hdf5-metno", version = "0.14.0" }
+ndarray = "0.17.2"
+
+[dev-dependencies]
+tempfile = "3"
+
