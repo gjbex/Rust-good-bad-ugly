@@ -618,6 +618,62 @@ The cases are:
 
 This combines pattern matching with collection updates.
 
+## Extended Example: DataFrames With Polars
+
+The `csv` example above is a good fit when each record is processed in a
+direct iterator pipeline. Scientific data exploration often grows into a
+different workload: join several tables, derive columns, group rows, and
+write a columnar result. The optional `source-code/polars-data-analysis`
+example shows that workflow with the Rust API of
+[`polars`](https://docs.rs/polars/latest/polars/).
+
+Run it from its project directory:
+
+```bash
+cd source-code/polars-data-analysis
+cargo run --release
+```
+
+The analysis is expressed as a lazy query:
+
+```rust
+measurements
+    .inner_join(metadata, col("patient"), col("patient"))
+    .filter(col("temperature").is_not_null())
+    .with_columns([/* derived expressions */])
+    .group_by([col("condition"), col("gender")])
+    .agg([/* summary expressions */])
+    .sort(["condition", "gender"], Default::default())
+```
+
+This resembles an iterator pipeline, but each expression describes operations
+on whole columns. Nothing is executed until `collect()` is called. Polars can
+therefore optimize the query, including reading only columns selected by the
+pipeline. Inspect that plan with:
+
+```bash
+cargo run --release -- --show-plan
+```
+
+The input deliberately contains unmatched records and a missing temperature.
+The inner join excludes measurements for a patient without metadata, while
+the filter excludes the missing temperature before aggregation. These are not
+just API details: they are scientific data-quality decisions that should be
+made and reported explicitly.
+
+The example also accepts alternative CSV paths and can write the result as
+Parquet:
+
+```bash
+cargo run --release -- --output summary.parquet
+```
+
+Its query lives in `src/lib.rs`, separate from command-line and file-output
+code in `src/main.rs`. Unit tests can therefore construct small DataFrames in
+memory and verify the join, null handling, and aggregates without temporary
+files. Because this design uses `Result`, `?`, a library target, and a CLI,
+consider returning to the example after Modules 8 and 9.
+
 ## Suggested Hands-On Work
 
 Use this sequence as a practical lab.
@@ -685,6 +741,10 @@ Use this sequence as a practical lab.
     `source-code/structural-matching`. Identify which assumptions are expressed
     by the match patterns.
 
+16. As an optional extended exercise after Modules 8 and 9, run
+    `source-code/polars-data-analysis`, inspect its optimized query plan, and
+    explain which input rows the join and null filter exclude.
+
 ## Discussion Points
 
 This module is a good place to emphasize:
@@ -705,6 +765,10 @@ This module is a good place to emphasize:
 - Convert external timestamps into date/time values near the input boundary.
 - Structural matches can make parser assumptions visible at the point where
   text is classified.
+- DataFrame expressions extend the pipeline style to joins, derived columns,
+  and grouped operations on structured tabular data.
+- Lazy execution gives a query engine an opportunity to optimize the complete
+  pipeline before reading and computing results.
 
 ## Connection To Later Modules
 

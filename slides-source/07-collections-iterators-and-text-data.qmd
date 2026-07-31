@@ -652,6 +652,51 @@ preparation.
 This is the design summary for the module.
 :::
 
+## Extended Example: Polars
+
+```{.bash}
+cd source-code/polars-data-analysis
+cargo run --release -- --show-plan
+```
+
+- Lazy CSV scans
+- Join metadata and measurements
+- Filter missing temperatures
+- Derive columns and compute grouped summaries
+- Optional Parquet output
+
+::: notes
+Present this as optional extended material, not another numbered module. The
+example mirrors a patient-data workflow from the Python data-science training.
+Its use of `Result`, `?`, and separate library and binary targets makes it most
+appropriate to revisit after Modules 8 and 9.
+Build the release binary before the session because the initial Polars compile
+is substantial.
+:::
+
+## Iterator Pipelines To Column Expressions
+
+```rust
+measurements
+    .inner_join(metadata, col("patient"), col("patient"))
+    .filter(col("temperature").is_not_null())
+    .with_columns([/* derived expressions */])
+    .group_by([col("condition"), col("gender")])
+    .agg([/* summary expressions */])
+```
+
+- Operations describe whole columns
+- `collect()` executes the optimized plan
+- Join and null rules are data-quality decisions
+
+::: notes
+Connect lazy DataFrame expressions to the iterator pipelines participants have
+just learned. Stress that patient 4 has measurements but no metadata and is
+therefore removed by the inner join. The query is easy to write; deciding and
+reporting whether that exclusion is scientifically valid remains the analyst's
+responsibility.
+:::
+
 ## Hands-On Sequence
 
 1. Run `source-code/iterators`
@@ -667,6 +712,7 @@ This is the design summary for the module.
 11. Remove a field and inspect the parse error
 12. Run `source-code/structural-matching`
 13. Compare the two parser implementations
+14. Optional after Modules 8 and 9: inspect the Polars query plan
 
 ::: notes
 Use this as the lab checklist. Keep iterator changes readable.

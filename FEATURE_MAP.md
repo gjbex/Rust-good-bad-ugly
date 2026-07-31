@@ -11,10 +11,10 @@ several places when they combine multiple ideas.
 | Minimal Rust binary | `source-code/hello-world/src/main.rs` |
 | Cargo project layout | `source-code/hello-world/` |
 | Building and running with Cargo | `source-code/hello-world/README.md` |
-| External crates in `Cargo.toml` | `source-code/hello-clap/Cargo.toml`, `source-code/complex-numbers/Cargo.toml`, `source-code/units/Cargo.toml`, `source-code/random-numbers/Cargo.toml`, `source-code/smart-pointers/Cargo.toml`, `source-code/strings/Cargo.toml`, `source-code/structural-matching/Cargo.toml`, `source-code/heat-diffusion/naive/Cargo.toml`, `source-code/heat-diffusion/ndarray-features/Cargo.toml`, `source-code/heat-diffusion/configurable/Cargo.toml`, `source-code/svd/Cargo.toml`, `source-code/hdf5-snapshot/Cargo.toml`, `source-code/fftw-ffi/Cargo.toml`, `source-code/fftw-safe/Cargo.toml`, `source-code/julia-set/julia-set-toml-config/Cargo.toml`, `source-code/n-body-simulation/rust/Cargo.toml` |
+| External crates in `Cargo.toml` | `source-code/hello-clap/Cargo.toml`, `source-code/complex-numbers/Cargo.toml`, `source-code/units/Cargo.toml`, `source-code/random-numbers/Cargo.toml`, `source-code/smart-pointers/Cargo.toml`, `source-code/strings/Cargo.toml`, `source-code/structural-matching/Cargo.toml`, `source-code/polars-data-analysis/Cargo.toml`, `source-code/heat-diffusion/naive/Cargo.toml`, `source-code/heat-diffusion/ndarray-features/Cargo.toml`, `source-code/heat-diffusion/configurable/Cargo.toml`, `source-code/svd/Cargo.toml`, `source-code/hdf5-snapshot/Cargo.toml`, `source-code/fftw-ffi/Cargo.toml`, `source-code/fftw-safe/Cargo.toml`, `source-code/julia-set/julia-set-toml-config/Cargo.toml`, `source-code/n-body-simulation/rust/Cargo.toml` |
 | Reproducible dependency lockfiles | `source-code/*/Cargo.lock`, `source-code/heat-diffusion/*/Cargo.lock`, `source-code/julia-set/*/Cargo.lock`, `source-code/n-body-simulation/rust/Cargo.lock` |
 | Multiple binaries in one package | `source-code/hashmap-hashset/src/generate-data.rs`, `source-code/hashmap-hashset/src/count-nucleotides.rs`, `source-code/hashmap-hashset/src/read-errors.rs` |
-| Shared package code in `lib.rs` | `source-code/smart-pointers/src/lib.rs`, `source-code/hashmap-hashset/src/lib.rs`, `source-code/hdf5-snapshot/src/lib.rs`, `source-code/fftw-ffi/src/lib.rs` |
+| Shared package code in `lib.rs` | `source-code/smart-pointers/src/lib.rs`, `source-code/hashmap-hashset/src/lib.rs`, `source-code/hdf5-snapshot/src/lib.rs`, `source-code/polars-data-analysis/src/lib.rs`, `source-code/fftw-ffi/src/lib.rs` |
 | Release builds and benchmarking context | `source-code/julia-set/benchmark.sh` |
 | Unit tests protecting a numerical refactoring | `source-code/heat-diffusion/naive/src/heat_diffusion.rs`, `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs`, `source-code/heat-diffusion/configurable/src/heat_diffusion.rs` |
 | Tolerance-based numerical reconstruction test | `source-code/svd/src/main.rs` |
@@ -24,13 +24,13 @@ several places when they combine multiple ideas.
 
 | Feature | Where to look |
 |---|---|
-| `clap::Parser` derive | `source-code/hello-clap/src/main.rs`, `source-code/units/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/heat-diffusion/naive/src/main.rs`, `source-code/heat-diffusion/ndarray-features/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/hdf5-snapshot/src/main.rs`, `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
-| Typed command-line argument struct | `source-code/hello-clap/src/main.rs`, `source-code/units/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/heat-diffusion/naive/src/main.rs`, `source-code/heat-diffusion/ndarray-features/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/hdf5-snapshot/src/main.rs`, `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
+| `clap::Parser` derive | `source-code/hello-clap/src/main.rs`, `source-code/units/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/polars-data-analysis/src/main.rs`, `source-code/heat-diffusion/naive/src/main.rs`, `source-code/heat-diffusion/ndarray-features/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/hdf5-snapshot/src/main.rs`, `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
+| Typed command-line argument struct | `source-code/hello-clap/src/main.rs`, `source-code/units/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/polars-data-analysis/src/main.rs`, `source-code/heat-diffusion/naive/src/main.rs`, `source-code/heat-diffusion/ndarray-features/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/hdf5-snapshot/src/main.rs`, `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
 | Argument defaults | `source-code/numerical-function/src/main.rs`, `source-code/enum-match/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/hdf5-snapshot/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
 | Restricted argument values with `ValueEnum` | `source-code/enum-match/src/main.rs`, `source-code/random-numbers/src/main.rs`, `source-code/user-defined-trait/src/main.rs` |
-| File path arguments | `source-code/iterators/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/hdf5-snapshot/src/main.rs`, `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
+| File path arguments | `source-code/iterators/src/main.rs`, `source-code/polars-data-analysis/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/hdf5-snapshot/src/main.rs`, `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
 | Numeric parameters for reproducible runs | `source-code/random-numbers/src/main.rs`, `source-code/julia-set/julia-set-baseline/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
-| Optional output file arguments | `source-code/hdf5-snapshot/src/main.rs`, `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
+| Optional output file arguments | `source-code/hdf5-snapshot/src/main.rs`, `source-code/polars-data-analysis/src/main.rs`, `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
 
 ## Scalar Types And Arithmetic
 
@@ -163,6 +163,19 @@ several places when they combine multiple ideas.
 | Splitting and trimming text fields | `source-code/strings/src/main.rs`, `source-code/structural-matching/src/main.rs` |
 | Parsing numeric values from strings | `source-code/strings/src/main.rs`, `source-code/structural-matching/src/main.rs` |
 
+## DataFrames And Columnar Analysis
+
+| Feature | Where to look |
+|---|---|
+| Lazy CSV scans | `source-code/polars-data-analysis/src/lib.rs` |
+| Selecting an input schema | `source-code/polars-data-analysis/src/lib.rs` |
+| DataFrame inner join | `source-code/polars-data-analysis/src/lib.rs` |
+| Null filtering with expressions | `source-code/polars-data-analysis/src/lib.rs` |
+| Derived DataFrame columns | `source-code/polars-data-analysis/src/lib.rs` |
+| Grouped aggregations | `source-code/polars-data-analysis/src/lib.rs` |
+| Optimized lazy query plan | `source-code/polars-data-analysis/src/main.rs` |
+| In-memory DataFrame unit tests | `source-code/polars-data-analysis/src/lib.rs` |
+
 ## Multidimensional Arrays, Stencils, And Linear Algebra
 
 | Feature | Where to look |
@@ -194,11 +207,11 @@ several places when they combine multiple ideas.
 | Feature | Where to look |
 |---|---|
 | `Option` for possibly absent values | `source-code/error-handling/src/matrix.rs`, `source-code/generic-structs/src/matrix.rs` |
-| `Result` for fallible operations | `source-code/error-handling/src/matrix.rs`, `source-code/iterators/src/main.rs`, `source-code/svd/src/main.rs`, `source-code/hdf5-snapshot/src/lib.rs`, `source-code/fftw-ffi/src/real_fft.rs`, `source-code/fftw-safe/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
+| `Result` for fallible operations | `source-code/error-handling/src/matrix.rs`, `source-code/iterators/src/main.rs`, `source-code/polars-data-analysis/src/lib.rs`, `source-code/svd/src/main.rs`, `source-code/hdf5-snapshot/src/lib.rs`, `source-code/fftw-ffi/src/real_fft.rs`, `source-code/fftw-safe/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
 | Converting `Option` to `Result` with `ok_or_else` | `source-code/error-handling/src/matrix.rs` |
-| Propagating errors with `?` | `source-code/error-handling/src/matrix.rs`, `source-code/iterators/src/main.rs`, `source-code/svd/src/main.rs`, `source-code/hdf5-snapshot/src/lib.rs`, `source-code/hdf5-snapshot/src/main.rs`, `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs` |
+| Propagating errors with `?` | `source-code/error-handling/src/matrix.rs`, `source-code/iterators/src/main.rs`, `source-code/polars-data-analysis/src/lib.rs`, `source-code/polars-data-analysis/src/main.rs`, `source-code/svd/src/main.rs`, `source-code/hdf5-snapshot/src/lib.rs`, `source-code/hdf5-snapshot/src/main.rs`, `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs` |
 | Handling errors at the call site | `source-code/error-handling/src/main.rs` |
-| Returning boxed dynamic errors from `main` | `source-code/iterators/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/hdf5-snapshot/src/main.rs`, `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
+| Returning boxed dynamic errors from `main` | `source-code/iterators/src/main.rs`, `source-code/polars-data-analysis/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/hdf5-snapshot/src/main.rs`, `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
 | Validating numerical parameters with `Result` | `source-code/heat-diffusion/naive/src/heat_diffusion.rs`, `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs`, `source-code/heat-diffusion/configurable/src/config.rs` |
 | Custom error enum implementing `Display` and `Error` | `source-code/fftw-ffi/src/real_fft.rs` |
 
@@ -231,7 +244,8 @@ several places when they combine multiple ideas.
 | Buffered output with `BufWriter` | `source-code/hashmap-hashset/src/generate-data.rs`, `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs` |
 | Byte iterators over input streams | `source-code/hashmap-hashset/src/count-nucleotides.rs` |
 | Line iterators over buffered input | `source-code/strings/src/main.rs`, `source-code/structural-matching/src/main.rs` |
-| CSV input | `source-code/iterators/src/main.rs`, `source-code/iterators/data.txt` |
+| CSV input | `source-code/iterators/src/main.rs`, `source-code/iterators/data.txt`, `source-code/polars-data-analysis/data/` |
+| Lazy CSV input with Polars | `source-code/polars-data-analysis/src/lib.rs` |
 | `serde::Deserialize` derive | `source-code/iterators/src/main.rs`, `source-code/smart-pointers/src/tree.rs`, `source-code/heat-diffusion/configurable/src/config.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
 | Deserializing rows into a struct | `source-code/iterators/src/main.rs` |
 | `serde::Serialize` derive | `source-code/smart-pointers/src/tree.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
@@ -252,6 +266,7 @@ several places when they combine multiple ideas.
 | HDF5 chunking and gzip compression | `source-code/hdf5-snapshot/src/lib.rs` |
 | HDF5 hyperslab selection | `source-code/hdf5-snapshot/src/lib.rs` |
 | HDF5 array and metadata round-trip test | `source-code/hdf5-snapshot/src/lib.rs` |
+| Writing Parquet output | `source-code/polars-data-analysis/src/main.rs` |
 
 ## Randomness And Reproducibility
 
@@ -288,6 +303,7 @@ several places when they combine multiple ideas.
 | Symmetry and hand-calculated stencil tests | `source-code/heat-diffusion/naive/src/heat_diffusion.rs`, `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs`, `source-code/heat-diffusion/configurable/src/heat_diffusion.rs` |
 | Configuration-driven heat-diffusion runs | `source-code/heat-diffusion/configurable/` |
 | Alternative uniform and Gaussian initial conditions | `source-code/heat-diffusion/configurable/src/config.rs`, `source-code/heat-diffusion/configurable/src/heat_diffusion.rs` |
+| Grouped patient-data analysis with Polars | `source-code/polars-data-analysis/` |
 | Gaussian temperature snapshot stored in HDF5 | `source-code/hdf5-snapshot/` |
 | FFTW real-to-complex transform through FFI | `source-code/fftw-ffi/`, `source-code/fftw-safe/` |
 | Spectral-peak and normalized round-trip tests | `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs` |
