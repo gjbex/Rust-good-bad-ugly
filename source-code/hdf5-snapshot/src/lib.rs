@@ -155,6 +155,11 @@ pub fn inspect_snapshot(path: &Path) -> Result<SnapshotInfo> {
             )));
         }
     };
+    if rows == 0 || columns == 0 {
+        return Err(Error::Internal(format!(
+            "temperature dataset must be non-empty, found shape {shape:?}"
+        )));
+    }
 
     let window_rows = rows.min(3);
     let window_columns = columns.min(3);
