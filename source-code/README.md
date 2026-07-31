@@ -69,6 +69,10 @@ prevent or make explicit in safe code.
 1. `structural-matching`: variant of `strings` that illustrates structural
    matching by pattern matching on `split_once` results when parsing
    `key: value` record fields.
+1. `polars-data-analysis`: an extended tabular-data example that uses lazy
+   Polars queries to join patient metadata and measurements, handle missing
+   values, derive columns, compute grouped statistics, inspect the optimized
+   query plan, and optionally write Parquet output.
 1. `heat-diffusion`: a two-dimensional stencil example with naive,
    `ndarray`-oriented, and TOML-configured implementations. It illustrates
    `Array2`, slicing, mutable views, `Zip`, double buffering, broadcasting,

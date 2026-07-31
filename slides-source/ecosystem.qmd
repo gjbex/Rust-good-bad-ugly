@@ -86,10 +86,13 @@ matches the scientific problem.
 
 - Lazy queries can optimize larger analysis pipelines
 - Good fit for structured tabular data and columnar formats
+- Extended example: `source-code/polars-data-analysis`
 
 ::: notes
 Mention that Polars is a Rust project with APIs in other languages as well.
 For many teams, Rust may be the engine even when analysts use Python or R.
+The extended example uses the Rust API for the same style of patient-data
+analysis that learners may recognize from a Python DataFrame workflow.
 :::
 
 ## Visualization
