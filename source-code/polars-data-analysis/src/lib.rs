@@ -65,7 +65,7 @@ mod tests {
         assert_eq!(summary.column("patients")?.u32()?.get(0), Some(2));
         assert_eq!(summary.column("n_obs")?.u32()?.get(0), Some(3));
         assert_eq!(summary.column("mean_temp")?.f64()?.get(0), Some(38.0));
-        assert_eq!(summary.column("fever_n")?.i32()?.get(0), Some(2));
+        assert_eq!(summary.column("fever_n")?.u32()?.get(0), Some(2));
 
         Ok(())
     }
