@@ -639,9 +639,10 @@ to a group or dataset without encoding it into a filename or a separate text
 file. The temperature dataset is chunked and compressed:
 
 ```rust
+let (rows, columns) = snapshot.temperature.dim();
 let temperature_dataset = group
     .new_dataset_builder()
-    .chunk((16, 16))
+    .chunk((rows.min(16), columns.min(16)))
     .deflate(4)
     .with_data(snapshot.temperature.view())
     .create("temperature")?;
