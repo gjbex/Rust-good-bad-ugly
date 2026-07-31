@@ -131,6 +131,8 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#comparing-the-reconstruction">Comparing The Reconstruction</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#extended-example-persisting-arrays-with-hdf5">Extended Example: Persisting Arrays With HDF5</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#hands-on-refactoring">Hands-On Refactoring</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#summary">Summary</a>
@@ -577,6 +579,60 @@ cargo test</code></pre>
 <p>Both errors should be close to machine precision. Their exact final digits can
 depend on the linear-algebra backend, so the test checks a tolerance rather
 than a printed reference value.</p>
+<h2 id="extended-example-persisting-arrays-with-hdf5">Extended Example: Persisting Arrays With HDF5<a class="headerlink" href="#extended-example-persisting-arrays-with-hdf5" title="Permanent link">&para;</a></h2>
+<p>The preceding examples keep arrays in memory or print small fields to the
+terminal. Scientific applications usually need a richer persistent format
+that preserves array shapes and metadata and supports reading subsets of a
+large dataset. The optional <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/hdf5-snapshot"><code>source-code/hdf5-snapshot</code></a> example illustrates
+that transition with HDF5.</p>
+<p>The Cargo dependency renames the maintained <code>hdf5-metno</code> package to the short
+crate name used in the source:</p>
+<pre class="highlight"><code class="language-toml">hdf5 = { package = "hdf5-metno", version = "0.14.0" }
+ndarray = "0.17.2"</code></pre>
+<p>The example creates a Gaussian temperature field and writes this logical
+structure:</p>
+<pre class="highlight"><code class="language-text">/snapshot
+  @description
+  @time_seconds
+  @step
+  x                 one-dimensional coordinates, units = "m"
+  y                 one-dimensional coordinates, units = "m"
+  temperature       two-dimensional field, units and valid range</code></pre>
+<p>HDF5 datasets retain their element type and shape. Attributes attach context
+to a group or dataset without encoding it into a filename or a separate text
+file. The temperature dataset is chunked and compressed:</p>
+<pre class="highlight"><code class="language-rust">let (rows, columns) = snapshot.temperature.dim();
+let temperature_dataset = group
+    .new_dataset_builder()
+    .chunk((rows.min(16), columns.min(16)))
+    .deflate(4)
+    .with_data(snapshot.temperature.view())
+    .create("temperature")?;</code></pre>
+<p>Chunking divides the logical array into independently stored blocks. It is
+required for compression and affects the cost of reading array subsets, so a
+chunk shape should reflect expected access patterns rather than being chosen
+arbitrarily.</p>
+<p>The reader demonstrates an HDF5 hyperslab by loading only the central 3-by-3
+selection into an <code>Array2</code>:</p>
+<pre class="highlight"><code class="language-rust">let center = dataset.read_slice_2d(s![
+    row_start..row_start + 3,
+    column_start..column_start + 3
+])?;</code></pre>
+<p>The minimum and maximum are computed while the field is still in memory and
+stored as scalar attributes. The inspection path can therefore report the
+range without rereading the complete field. Keeping such summary metadata
+consistent with the dataset becomes part of the writer's responsibility.</p>
+<p>Run the example and inspect the resulting file with language-independent HDF5
+tools:</p>
+<pre class="highlight"><code class="language-bash">cd source-code/hdf5-snapshot
+cargo run --release
+h5ls -r temperature-snapshot.h5
+h5dump -pH temperature-snapshot.h5</code></pre>
+<p>The high-level crate keeps native handles and raw pointers out of the
+application code, but deployment still depends on a compatible HDF5 library.
+This makes the example a useful bridge to Module 15: a safe Rust API does not
+remove the need to understand system packages, library discovery, cluster
+modules, containers, and CI environments.</p>
 <h2 id="hands-on-refactoring">Hands-On Refactoring<a class="headerlink" href="#hands-on-refactoring" title="Permanent link">&para;</a></h2>
 <ol>
 <li>Add a unit test to one implementation before changing it.</li>
@@ -590,6 +646,9 @@ than a printed reference value.</p>
 <li>Change <code>sigma</code> and predict how much of the grid the Gaussian occupies.</li>
 <li>Draw the compact SVD shapes for the 4-by-3 matrix in <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/svd"><code>source-code/svd</code></a>.</li>
 <li>Change one matrix element, then rerun the SVD reconstruction test.</li>
+<li>Run <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/hdf5-snapshot"><code>source-code/hdf5-snapshot</code></a> and identify its groups, datasets, and
+    attributes with <code>h5ls</code> and <code>h5dump</code>.</li>
+<li>Change the HDF5 chunk shape and explain which access pattern it favors.</li>
 </ol>
 <h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
 <ul>
@@ -605,6 +664,8 @@ than a printed reference value.</p>
 <li><code>ndarray-linalg</code> extends arrays with OpenBLAS-backed factorizations.</li>
 <li>A compact SVD reconstructs an array with two matrix multiplications.</li>
 <li>Numerical reconstruction checks require an explicit tolerance.</li>
+<li>HDF5 stores typed multidimensional datasets together with metadata.</li>
+<li>Chunking enables compression and efficient subset-oriented I/O.</li>
 <li>Unit tests and cross-project output comparison support numerical
   refactoring.</li>
 </ul>

@@ -478,8 +478,8 @@ ecosystem:</p>
 </tr>
 <tr>
 <td>HDF5</td>
-<td><code>hdf5-sys</code></td>
-<td><code>hdf5</code></td>
+<td><code>hdf5-metno-sys</code></td>
+<td><code>hdf5-metno</code></td>
 <td>Files, groups, datasets, and <code>ndarray</code> I/O</td>
 </tr>
 <tr>
@@ -514,6 +514,11 @@ their Fortran APIs and expose <code>unsafe</code> numerical calls. The
 <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/svd"><code>source-code/svd</code></a> example instead uses <code>ndarray-linalg</code>, which provides
 array-oriented decomposition methods while delegating to LAPACK and OpenBLAS
 below that interface.</p>
+<p>The optional <a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/hdf5-snapshot"><code>source-code/hdf5-snapshot</code></a> example uses the maintained
+<code>hdf5-metno</code> wrapper and renames it to <code>hdf5</code> in <code>Cargo.toml</code>, keeping concise
+<code>hdf5::...</code> paths in application code. It demonstrates another reason to start
+with a high-level wrapper: the application can work with files, datasets,
+attributes, and <code>ndarray</code> values without owning raw HDF5 handles.</p>
 <p>Before choosing a wrapper, check its supported native-library versions,
 feature coverage, thread-safety model, error handling, maintenance status, and
 system-linking options. Dropping to the corresponding <code>-sys</code> crate may still
