@@ -213,6 +213,7 @@ several places when they combine multiple ideas.
 | Handling errors at the call site | `source-code/error-handling/src/main.rs` |
 | Returning boxed dynamic errors from `main` | `source-code/iterators/src/main.rs`, `source-code/polars-data-analysis/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/hdf5-snapshot/src/main.rs`, `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
 | Validating numerical parameters with `Result` | `source-code/heat-diffusion/naive/src/heat_diffusion.rs`, `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs`, `source-code/heat-diffusion/configurable/src/config.rs` |
+| Validating application arguments with `Result` | `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs` |
 | Custom error enum implementing `Display` and `Error` | `source-code/fftw-ffi/src/real_fft.rs` |
 
 ## Native Library Interoperability And Unsafe
