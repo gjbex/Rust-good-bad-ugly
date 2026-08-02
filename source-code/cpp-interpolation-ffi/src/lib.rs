@@ -109,6 +109,7 @@ impl LinearInterpolator {
                 minimum: self.minimum,
                 maximum: self.maximum,
             }),
+            raw::UNKNOWN_ERROR => Err(InterpolationError::UnknownError),
             other => Err(InterpolationError::NativeContractViolation(other)),
         }
     }
