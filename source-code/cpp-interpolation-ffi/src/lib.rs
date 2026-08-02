@@ -45,6 +45,10 @@ impl fmt::Display for InterpolationError {
                 "query coordinate {query} lies outside [{minimum}, {maximum}]"
             ),
             Self::AllocationFailed => write!(formatter, "C++ could not allocate the interpolator"),
+            Self::UnknownError => write!(
+                formatter,
+                "C++ interpolation failed with an unknown error"
+            ),
             Self::NativeContractViolation(status) => {
                 write!(
                     formatter,
