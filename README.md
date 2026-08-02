@@ -19,6 +19,8 @@ of what Rust programming is like.
 
 1. `source-code`: source code for the training session.
 1. `learning-modules`: Markdown learning modules, configured as an MkDocs site.
+1. `TRAINING_PROGRAM.md`: schedules for the four-hour introduction and the
+   twelve-hour full program.
 1. `docs/README.md`: Jekyll landing page source for the published GitHub Pages
    site.
 1. `mkdocs.yml`: MkDocs configuration for building the learning-module site.
