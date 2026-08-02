@@ -7,7 +7,7 @@ pub const NON_FINITE_VALUE: c_int = 3;
 pub const NON_INCREASING_COORDINATES: c_int = 4;
 pub const OUT_OF_RANGE: c_int = 5;
 pub const ALLOCATION_FAILED: c_int = 6;
-
+pub const UNKNOWN_ERROR: c_int = 7;
 #[repr(C)]
 pub struct InterpolationHandle {
     _private: [u8; 0],
