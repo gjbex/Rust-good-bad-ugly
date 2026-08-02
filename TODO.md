@@ -1,11 +1,10 @@
 # Outstanding Curriculum And Consistency Work
 
-Baseline verification on 2026-07-29 confirmed that the complete training-site
-build passed, inline `source-code/...` references pointed to existing paths,
-and the generated learning modules and slides were consistent with their
-sources. The Polars and HDF5 examples were merged after that verification, on
-2026-07-31, so the complete cross-surface build should be rerun before this
-baseline date is advanced.
+Verification on 2026-07-31 confirmed that temporary-output builds of the
+complete learning-module site and slide deck passed, including the Polars,
+HDF5, and C++ FFI additions. Inline `source-code/...` references pointed to
+existing paths, and generated publishing assets under `docs/` were left
+unchanged.
 
 The P1 teaching-surface fixes have also been verified: the `enum-match`
 snippets match the working source, and the documented polynomial command
@@ -29,6 +28,11 @@ ownership, and `unsafe` machinery removed by a safe crate directly visible.
 The local wrapper also demonstrates library-quality error handling through a
 public `FftError` enum, boundary validation, `Result`-based APIs, error
 propagation with `?`, and tests for failure cases.
+The `source-code/cpp-interpolation-ffi` example now introduces Module 15 with
+the complete binding workflow for a home-grown C++ library: Cargo compiles the
+native sources, a stable C facade exposes an opaque handle and status-code
+contract, handwritten raw declarations mirror that facade, and a safe Rust
+type owns cleanup through `Drop`.
 
 Two optional extended examples now broaden the scientific-data coverage
 without adding new learning modules. `source-code/polars-data-analysis` uses a
@@ -81,26 +85,6 @@ The following work is still outstanding.
   - Use Criterion only where a focused microbenchmark is appropriate.
 
 ## Secondary Curriculum Gaps
-
-- [ ] Add a home-grown C++ FFI companion to Module 15.
-  - Create a small `source-code/cpp-interpolation-ffi` example around a
-    one-dimensional C++ interpolator for which no `-sys` crate exists.
-  - Put a stable `extern "C"` façade around the C++ class, represent the class
-    as an opaque handle, and pass numerical arrays as pointer-length pairs.
-  - Compile and link the native source from `build.rs` with the `cc` crate.
-  - Write the small raw Rust declarations by hand in an `unsafe extern "C"`
-    block, then hide them behind an owning safe Rust type that releases the
-    native handle through `Drop`.
-  - Convert C++ exceptions and validation failures to status codes or another
-    C-compatible error contract; never allow exceptions to cross the FFI
-    boundary.
-  - Contrast the complete binding and build workflow with `fftw-sys`, where a
-    `-sys` crate already supplies the raw declarations and system-library link
-    selection.
-  - Keep `bindgen` as an optional follow-up exercise because its `libclang`
-    dependency can make the core live demonstration less portable.
-  - Integrate the comparison into Module 15, its slides, the source index, and
-    `FEATURE_MAP.md`, and test ownership cleanup and numerical behavior.
 
 - [ ] Improve application-level error reporting in scientific file examples.
   - Add operation and path context to file I/O failures in an existing example
