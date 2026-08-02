@@ -19,6 +19,7 @@ pub enum InterpolationError {
     AllocationFailed,
     UnknownError,
     NativeContractViolation(i32),
+}
 
 impl fmt::Display for InterpolationError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
