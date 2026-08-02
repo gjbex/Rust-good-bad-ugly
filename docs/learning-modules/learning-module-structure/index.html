@@ -525,11 +525,15 @@ multidimensional-array workflow.</p>
 <h2 id="module-15-native-library-interoperability">Module 15: Native Library Interoperability<a class="headerlink" href="#module-15-native-library-interoperability" title="Permanent link">&para;</a></h2>
 <p>Primary examples:</p>
 <ul>
+<li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/cpp-interpolation-ffi"><code>source-code/cpp-interpolation-ffi</code></a></li>
 <li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/fftw-ffi"><code>source-code/fftw-ffi</code></a></li>
 <li><a href="https://github.com/gjbex/Rust-good-bad-ugly/tree/main/source-code/fftw-safe"><code>source-code/fftw-safe</code></a></li>
 </ul>
 <p>Topics:</p>
 <ul>
+<li>Complete binding stack for a home-grown C++ library with no <code>-sys</code> crate.</li>
+<li>Stable C facade around a C++ class with an opaque handle and status codes.</li>
+<li>Handwritten raw Rust declarations and native compilation from <code>build.rs</code>.</li>
 <li>Raw C bindings through a <code>-sys</code> crate.</li>
 <li>Checked conversion between Rust and C integer types.</li>
 <li>Raw pointers, <code>NonNull</code>, and native aligned allocation.</li>
@@ -548,13 +552,12 @@ multidimensional-array workflow.</p>
 <li>Linking against a system-provided HPC library.</li>
 </ul>
 <p>Goal:</p>
-<p>Participants should be able to identify the obligations transferred by a C
-API, encode them in an owning Rust wrapper, keep <code>unsafe</code> local, and test both
-the boundary contract and the scientific result. They should be able to decide
-when an existing safe wrapper is preferable while retaining responsibility for
-normalization and scientific validation. They should also be able to export a
-precisely defined derived quantity without coupling visualization to the FFI
-layer.</p>
+<p>Participants should be able to build a small complete binding when an in-house
+C++ library has no existing Rust crate, then recognize which layers a <code>-sys</code>
+crate and a high-level wrapper supply. They should be able to encode native API
+obligations in an owning Rust wrapper, keep <code>unsafe</code> local, and test both the
+boundary contract and the scientific result while retaining responsibility for
+normalization, output semantics, and scientific validation.</p>
 <p>Related module text:</p>
 <ul>
 <li><code>learning-modules/native-library-interoperability.md</code></li>

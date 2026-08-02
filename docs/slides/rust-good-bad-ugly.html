@@ -406,7 +406,7 @@ Geert Jan Bex
 <li>Native Library Interoperability</li>
 </ol>
 <aside class="notes">
-<p>These modules make the scientific-computing context explicit: reproducibility, parallelism, structured output, diagnostics, visualization, and multidimensional arrays. The final module connects Rust to an established HPC library.</p>
+<p>These modules make the scientific-computing context explicit: reproducibility, parallelism, structured output, diagnostics, visualization, and multidimensional arrays. The final module starts with a home-grown C++ library with no Rust bindings, then progresses through raw and safe wrappers for an established HPC library.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -9964,7 +9964,7 @@ k = min(m, n)</code></pre>
 <section id="module-15-native-library-interoperability" class="title-slide slide level1 center">
 <h1>Module 15: Native Library Interoperability</h1>
 <aside class="notes">
-<p>This module shows how to reuse a mature HPC library without exposing its raw pointer API to the rest of the application. Keep the focus on boundary invariants, not on Fourier-transform theory.</p>
+<p>This module starts with a complete binding for a small home-grown C++ library, then scales the same ownership and error-handling pattern to FFTW. Keep the focus on boundary invariants, not on interpolation or Fourier-transform theory.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -9980,16 +9980,192 @@ k = min(m, n)</code></pre>
 <section id="module-arc-14" class="slide level2">
 <h2>Module Arc</h2>
 <ul>
-<li>Start with a signal whose spectrum is predictable</li>
-<li>Identify what the C API cannot express to Rust</li>
+<li>Build a complete binding for a small C++ library</li>
+<li>Give the C++ class a stable C ABI</li>
+<li>Recover ownership and errors in a safe Rust type</li>
+<li>Start FFTW from the declarations supplied by <code>fftw-sys</code></li>
 <li>Own native buffers and plans with Rust types</li>
 <li>Concentrate <code>unsafe</code> behind slice-based methods</li>
 <li>Compare the local wrapper with the high-level <code>fftw</code> crate</li>
-<li>Export optional visualization data through typed CLI paths</li>
-<li>Validate both boundary failures and scientific behavior</li>
+<li>Validate boundary failures and scientific behavior</li>
 </ul>
 <aside class="notes">
-<p>Connect this to the OpenBLAS-backed SVD example: there learners consumed a safe wrapper. Here they first build one around FFTW’s raw bindings, then replace that boundary code with an existing safe crate.</p>
+<p>The progression is deliberate: no bindings, raw <code>-sys</code> bindings, then a high-level wrapper. Connect the final stage to the OpenBLAS-backed SVD example, where learners consumed a safe wrapper from the start.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="start-with-no-binding-crate" class="slide level2">
+<h2>Start With No Binding Crate</h2>
+<p><code>source-code/cpp-interpolation-ffi</code></p>
+<pre class="text"><code>safe Rust API
+      |
+raw Rust declarations
+      |
+stable extern "C" facade
+      |
+C++ LinearInterpolator</code></pre>
+<ul>
+<li>Home-grown C++ source is part of the project</li>
+<li>No <code>-sys</code> crate supplies declarations or linking</li>
+<li>The project owns every boundary layer</li>
+</ul>
+<aside class="notes">
+<p>This small example exposes the complete vertical path without FFTW’s aligned buffers, dependent plans, concurrency rules, and spectral conventions.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="give-the-c-class-a-c-abi" class="slide level2">
+<h2>Give The C++ Class A C ABI</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb305"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb305-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">typedef</span> <span class="kw">struct</span> interpolation_handle interpolation_handle<span class="op">;</span></span>
+<span id="cb305-2"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb305-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> interpolation_create<span class="op">(</span></span>
+<span id="cb305-4"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="dt">const</span> <span class="dt">double</span><span class="op">*</span> x<span class="op">,</span> <span class="dt">size_t</span> x_len<span class="op">,</span></span>
+<span id="cb305-5"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="dt">const</span> <span class="dt">double</span><span class="op">*</span> y<span class="op">,</span> <span class="dt">size_t</span> y_len<span class="op">,</span></span>
+<span id="cb305-6"><a href="" aria-hidden="true" tabindex="-1"></a>    interpolation_handle<span class="op">**</span> output</span>
+<span id="cb305-7"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">);</span></span>
+<span id="cb305-8"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb305-9"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> interpolation_evaluate<span class="op">(</span></span>
+<span id="cb305-10"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="dt">const</span> interpolation_handle<span class="op">*</span> handle<span class="op">,</span></span>
+<span id="cb305-11"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="dt">double</span> x<span class="op">,</span> <span class="dt">double</span><span class="op">*</span> output</span>
+<span id="cb305-12"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">);</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Opaque handle hides the C++ class layout</li>
+<li>Pointer-length pairs describe borrowed arrays</li>
+<li>Status codes cross the ABI; exceptions do not</li>
+</ul>
+<aside class="notes">
+<p>The potentially throwing entry points catch C++ exceptions. Construction copies the arrays, so the resulting object does not retain pointers into Rust slices.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="build-and-declare-the-boundary" class="slide level2">
+<h2>Build And Declare The Boundary</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb306"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb306-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="co">// build.rs</span></span>
+<span id="cb306-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="pp">cc::Build::</span>new()</span>
+<span id="cb306-3"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>cpp(<span class="cn">true</span>)</span>
+<span id="cb306-4"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>std(<span class="st">"c++17"</span>)</span>
+<span id="cb306-5"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>file(<span class="st">"native/interpolator.cpp"</span>)</span>
+<span id="cb306-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>file(<span class="st">"native/interpolator_c.cpp"</span>)</span>
+<span id="cb306-7"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>compile(<span class="st">"interpolation"</span>)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb307"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb307-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">unsafe</span> <span class="kw">extern</span> <span class="st">"C"</span> <span class="op">{</span></span>
+<span id="cb307-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> interpolation_destroy(</span>
+<span id="cb307-3"><a href="" aria-hidden="true" tabindex="-1"></a>        handle<span class="op">:</span> <span class="op">*</span><span class="kw">mut</span> InterpolationHandle<span class="op">,</span></span>
+<span id="cb307-4"><a href="" aria-hidden="true" tabindex="-1"></a>    )<span class="op">;</span></span>
+<span id="cb307-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>The cc crate selects the native compiler and emits Cargo link instructions. The handwritten declaration is manageable because the C API is deliberately small; discuss bindgen as the scalable alternative for larger headers.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="recover-rust-ownership-and-errors" class="slide level2">
+<h2>Recover Rust Ownership And Errors</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb308"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb308-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">struct</span> LinearInterpolator <span class="op">{</span></span>
+<span id="cb308-2"><a href="" aria-hidden="true" tabindex="-1"></a>    handle<span class="op">:</span> NonNull<span class="op">&lt;</span>InterpolationHandle<span class="op">&gt;,</span></span>
+<span id="cb308-3"><a href="" aria-hidden="true" tabindex="-1"></a>    minimum<span class="op">:</span> <span class="dt">f64</span><span class="op">,</span></span>
+<span id="cb308-4"><a href="" aria-hidden="true" tabindex="-1"></a>    maximum<span class="op">:</span> <span class="dt">f64</span><span class="op">,</span></span>
+<span id="cb308-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb308-6"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb308-7"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">impl</span> <span class="bu">Drop</span> <span class="cf">for</span> LinearInterpolator <span class="op">{</span></span>
+<span id="cb308-8"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> drop(<span class="op">&amp;</span><span class="kw">mut</span> <span class="kw">self</span>) <span class="op">{</span></span>
+<span id="cb308-9"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="kw">unsafe</span> <span class="op">{</span></span>
+<span id="cb308-10"><a href="" aria-hidden="true" tabindex="-1"></a>            interpolation_destroy(<span class="kw">self</span><span class="op">.</span>handle<span class="op">.</span>as_ptr())</span>
+<span id="cb308-11"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="op">};</span></span>
+<span id="cb308-12"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb308-13"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Safe methods accept slices and return <code>Result</code></li>
+<li>Status codes become <code>InterpolationError</code> variants</li>
+<li><code>Drop</code> releases the C++ object exactly once</li>
+</ul>
+<aside class="notes">
+<p>Trace ownership upward: C++ allocation, opaque C handle, non-null pointer, and owning Rust value. Unsafe stays in the raw call and cleanup implementation.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="terminal-c-interpolation-ffi" class="slide level2">
+<h2>Terminal: C++ Interpolation FFI</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb309"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb309-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> source-code/cpp-interpolation-ffi</span>
+<span id="cb309-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run <span class="at">--</span> <span class="at">--query</span> 1.5</span>
+<span id="cb309-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run <span class="at">--</span> <span class="at">--query</span> 5.0</span>
+<span id="cb309-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> test</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>Interpolated value at x = 1.5: 2.5</code></pre>
+<ul>
+<li>Included C++ source; no native package installation</li>
+<li>Boundary and numerical tests</li>
+<li>Out-of-range query returns a nonzero exit</li>
+</ul>
+<aside class="notes">
+<p>Use the failing query to trace one status code from C++ through the C facade into the Rust error enum. A C++ compiler is the only native prerequisite.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="scale-the-pattern-up-to-fftw" class="slide level2">
+<h2>Scale The Pattern Up To FFTW</h2>
+<pre class="text"><code>Home-grown C++       project supplies every layer
+FFTW through -sys    crate supplies declarations and linking
+FFTW safe crate      crate also supplies ownership and safe calls</code></pre>
+<ul>
+<li>FFTW adds aligned native buffers</li>
+<li>Plans retain buffer addresses</li>
+<li>Planner operations have concurrency rules</li>
+<li>Correct execution still needs a scientific contract</li>
+</ul>
+<aside class="notes">
+<p>The next example begins one layer higher, but its native invariants are more demanding. Keep asking which layer establishes each pointer, lifetime, and cleanup guarantee.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -10055,15 +10231,15 @@ libfftw3.so</code></pre>
 </section>
 <section id="terminal-native-dependency" class="slide level2">
 <h2>Terminal: Native Dependency</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb306"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb306-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt install libfftw3-dev</span>
-<span id="cb306-2"><a href="" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb306-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> source-code/fftw-ffi</span>
-<span id="cb306-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb307"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb307-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">fftw-sys</span> <span class="op">=</span> <span class="op">{</span></span>
-<span id="cb307-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">    </span><span class="dt">version</span><span class="op"> =</span> <span class="st">"0.8.0"</span><span class="op">,</span></span>
-<span id="cb307-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">    </span><span class="dt">default-features</span><span class="op"> =</span> <span class="cn">false</span><span class="op">,</span></span>
-<span id="cb307-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">    </span><span class="dt">features</span><span class="op"> =</span> <span class="op">[</span><span class="st">"system"</span><span class="op">]</span></span>
-<span id="cb307-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb314"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb314-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt install libfftw3-dev</span>
+<span id="cb314-2"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb314-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> source-code/fftw-ffi</span>
+<span id="cb314-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb315"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb315-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">fftw-sys</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb315-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">    </span><span class="dt">version</span><span class="op"> =</span> <span class="st">"0.8.0"</span><span class="op">,</span></span>
+<span id="cb315-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">    </span><span class="dt">default-features</span><span class="op"> =</span> <span class="cn">false</span><span class="op">,</span></span>
+<span id="cb315-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">    </span><span class="dt">features</span><span class="op"> =</span> <span class="op">[</span><span class="st">"system"</span><span class="op">]</span></span>
+<span id="cb315-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>On an HPC system, replace the package-manager command with the site’s FFTW module and compiler environment. Point out that the system choice is explicit.</p>
 <style type="text/css">
@@ -10104,12 +10280,12 @@ libfftw3.so</code></pre>
 </section>
 <section id="validate-before-ffi" class="slide level2">
 <h2>Validate Before FFI</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb308"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb308-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> length <span class="op">==</span> <span class="dv">0</span> <span class="op">{</span></span>
-<span id="cb308-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="cn">Err</span>(<span class="pp">FftError::</span>EmptyInput)<span class="op">;</span></span>
-<span id="cb308-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb308-4"><a href="" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb308-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> ffi_length <span class="op">=</span> <span class="dt">i32</span><span class="pp">::</span>try_from(length)</span>
-<span id="cb308-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>map_err(<span class="op">|</span>_<span class="op">|</span> <span class="pp">FftError::</span>LengthTooLarge(length))<span class="op">?;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb316"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb316-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> length <span class="op">==</span> <span class="dv">0</span> <span class="op">{</span></span>
+<span id="cb316-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="cn">Err</span>(<span class="pp">FftError::</span>EmptyInput)<span class="op">;</span></span>
+<span id="cb316-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb316-4"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb316-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> ffi_length <span class="op">=</span> <span class="dt">i32</span><span class="pp">::</span>try_from(length)</span>
+<span id="cb316-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>map_err(<span class="op">|</span>_<span class="op">|</span> <span class="pp">FftError::</span>LengthTooLarge(length))<span class="op">?;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li>Rust API: <code>usize</code></li>
 <li>C API: <code>int</code></li>
@@ -10131,10 +10307,10 @@ libfftw3.so</code></pre>
 </section>
 <section id="own-aligned-memory" class="slide level2">
 <h2>Own Aligned Memory</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb309"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb309-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> FftwBuffer<span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="op">{</span></span>
-<span id="cb309-2"><a href="" aria-hidden="true" tabindex="-1"></a>    pointer<span class="op">:</span> NonNull<span class="op">&lt;</span>T<span class="op">&gt;,</span></span>
-<span id="cb309-3"><a href="" aria-hidden="true" tabindex="-1"></a>    length<span class="op">:</span> <span class="dt">usize</span><span class="op">,</span></span>
-<span id="cb309-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb317"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb317-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> FftwBuffer<span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb317-2"><a href="" aria-hidden="true" tabindex="-1"></a>    pointer<span class="op">:</span> NonNull<span class="op">&lt;</span>T<span class="op">&gt;,</span></span>
+<span id="cb317-3"><a href="" aria-hidden="true" tabindex="-1"></a>    length<span class="op">:</span> <span class="dt">usize</span><span class="op">,</span></span>
+<span id="cb317-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li>FFTW performs the allocation</li>
 <li><code>NonNull</code> records successful construction</li>
@@ -10157,13 +10333,13 @@ libfftw3.so</code></pre>
 </section>
 <section id="release-with-drop" class="slide level2">
 <h2>Release With <code>Drop</code></h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb310"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb310-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">impl</span><span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="bu">Drop</span> <span class="cf">for</span> FftwBuffer<span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="op">{</span></span>
-<span id="cb310-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> drop(<span class="op">&amp;</span><span class="kw">mut</span> <span class="kw">self</span>) <span class="op">{</span></span>
-<span id="cb310-3"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="kw">unsafe</span> <span class="op">{</span></span>
-<span id="cb310-4"><a href="" aria-hidden="true" tabindex="-1"></a>            fftw_free(<span class="kw">self</span><span class="op">.</span>pointer<span class="op">.</span>as_ptr()<span class="op">.</span>cast())<span class="op">;</span></span>
-<span id="cb310-5"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
-<span id="cb310-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
-<span id="cb310-7"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb318"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb318-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">impl</span><span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="bu">Drop</span> <span class="cf">for</span> FftwBuffer<span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb318-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> drop(<span class="op">&amp;</span><span class="kw">mut</span> <span class="kw">self</span>) <span class="op">{</span></span>
+<span id="cb318-3"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="kw">unsafe</span> <span class="op">{</span></span>
+<span id="cb318-4"><a href="" aria-hidden="true" tabindex="-1"></a>            fftw_free(<span class="kw">self</span><span class="op">.</span>pointer<span class="op">.</span>as_ptr()<span class="op">.</span>cast())<span class="op">;</span></span>
+<span id="cb318-5"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb318-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb318-7"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li>FFTW allocation pairs with FFTW deallocation</li>
 <li>Early <code>?</code> returns still clean up constructed values</li>
@@ -10185,14 +10361,14 @@ libfftw3.so</code></pre>
 </section>
 <section id="drop-order-is-an-invariant" class="slide level2">
 <h2>Drop Order Is An Invariant</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb311"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb311-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">struct</span> RealFft <span class="op">{</span></span>
-<span id="cb311-2"><a href="" aria-hidden="true" tabindex="-1"></a>    length<span class="op">:</span> <span class="dt">usize</span><span class="op">,</span></span>
-<span id="cb311-3"><a href="" aria-hidden="true" tabindex="-1"></a>    spectrum_length<span class="op">:</span> <span class="dt">usize</span><span class="op">,</span></span>
-<span id="cb311-4"><a href="" aria-hidden="true" tabindex="-1"></a>    forward_plan<span class="op">:</span> FftwPlan<span class="op">,</span></span>
-<span id="cb311-5"><a href="" aria-hidden="true" tabindex="-1"></a>    inverse_plan<span class="op">:</span> FftwPlan<span class="op">,</span></span>
-<span id="cb311-6"><a href="" aria-hidden="true" tabindex="-1"></a>    real_buffer<span class="op">:</span> FftwBuffer<span class="op">&lt;</span><span class="dt">f64</span><span class="op">&gt;,</span></span>
-<span id="cb311-7"><a href="" aria-hidden="true" tabindex="-1"></a>    complex_buffer<span class="op">:</span> FftwBuffer<span class="op">&lt;</span>Complex64<span class="op">&gt;,</span></span>
-<span id="cb311-8"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb319"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb319-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">struct</span> RealFft <span class="op">{</span></span>
+<span id="cb319-2"><a href="" aria-hidden="true" tabindex="-1"></a>    length<span class="op">:</span> <span class="dt">usize</span><span class="op">,</span></span>
+<span id="cb319-3"><a href="" aria-hidden="true" tabindex="-1"></a>    spectrum_length<span class="op">:</span> <span class="dt">usize</span><span class="op">,</span></span>
+<span id="cb319-4"><a href="" aria-hidden="true" tabindex="-1"></a>    forward_plan<span class="op">:</span> FftwPlan<span class="op">,</span></span>
+<span id="cb319-5"><a href="" aria-hidden="true" tabindex="-1"></a>    inverse_plan<span class="op">:</span> FftwPlan<span class="op">,</span></span>
+<span id="cb319-6"><a href="" aria-hidden="true" tabindex="-1"></a>    real_buffer<span class="op">:</span> FftwBuffer<span class="op">&lt;</span><span class="dt">f64</span><span class="op">&gt;,</span></span>
+<span id="cb319-7"><a href="" aria-hidden="true" tabindex="-1"></a>    complex_buffer<span class="op">:</span> FftwBuffer<span class="op">&lt;</span>Complex64<span class="op">&gt;,</span></span>
+<span id="cb319-8"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li>Plans retain buffer addresses</li>
 <li>Fields drop in declaration order</li>
@@ -10214,13 +10390,13 @@ libfftw3.so</code></pre>
 </section>
 <section id="preserve-native-concurrency-rules" class="slide level2">
 <h2>Preserve Native Concurrency Rules</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb312"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb312-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">static</span> FFTW_PLANNER_LOCK<span class="op">:</span> Mutex<span class="op">&lt;</span>()<span class="op">&gt;</span> <span class="op">=</span> <span class="pp">Mutex::</span>new(())<span class="op">;</span></span>
-<span id="cb312-2"><a href="" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb312-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> lock_planner() <span class="op">-&gt;</span> MutexGuard<span class="op">&lt;</span><span class="ot">'static</span><span class="op">,</span> ()<span class="op">&gt;</span> <span class="op">{</span></span>
-<span id="cb312-4"><a href="" aria-hidden="true" tabindex="-1"></a>    FFTW_PLANNER_LOCK</span>
-<span id="cb312-5"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span>lock()</span>
-<span id="cb312-6"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span>unwrap_or_else(<span class="pp">PoisonError::</span>into_inner)</span>
-<span id="cb312-7"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb320"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb320-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">static</span> FFTW_PLANNER_LOCK<span class="op">:</span> Mutex<span class="op">&lt;</span>()<span class="op">&gt;</span> <span class="op">=</span> <span class="pp">Mutex::</span>new(())<span class="op">;</span></span>
+<span id="cb320-2"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb320-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> lock_planner() <span class="op">-&gt;</span> MutexGuard<span class="op">&lt;</span><span class="ot">'static</span><span class="op">,</span> ()<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb320-4"><a href="" aria-hidden="true" tabindex="-1"></a>    FFTW_PLANNER_LOCK</span>
+<span id="cb320-5"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span>lock()</span>
+<span id="cb320-6"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span>unwrap_or_else(<span class="pp">PoisonError::</span>into_inner)</span>
+<span id="cb320-7"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li>Plan creation and destruction are serialized</li>
 <li>Independent plan execution remains unlocked</li>
@@ -10245,7 +10421,7 @@ libfftw3.so</code></pre>
 complex output:  floor(n / 2) + 1
 
 n = 64  -&gt;  33 complex values</code></pre>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb314"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb314-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> spectrum_length <span class="op">=</span> length <span class="op">/</span> <span class="dv">2</span> <span class="op">+</span> <span class="dv">1</span><span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb322"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb322-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> spectrum_length <span class="op">=</span> length <span class="op">/</span> <span class="dv">2</span> <span class="op">+</span> <span class="dv">1</span><span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li>Real input has a conjugate-symmetric spectrum</li>
 <li>FFTW returns only the non-redundant half</li>
@@ -10292,14 +10468,14 @@ c[k] = 2  otherwise</code></pre>
 </section>
 <section id="normalize-the-inverse" class="slide level2">
 <h2>Normalize The Inverse</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb317"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb317-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> normalization <span class="op">=</span> <span class="kw">self</span><span class="op">.</span>length <span class="kw">as</span> <span class="dt">f64</span><span class="op">;</span></span>
-<span id="cb317-2"><a href="" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb317-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> reconstructed <span class="op">=</span> <span class="kw">self</span></span>
-<span id="cb317-4"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>real_buffer</span>
-<span id="cb317-5"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>as_slice()</span>
-<span id="cb317-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>iter()</span>
-<span id="cb317-7"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>map(<span class="op">|</span>value<span class="op">|</span> value <span class="op">/</span> normalization)</span>
-<span id="cb317-8"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>collect()<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb325"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb325-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> normalization <span class="op">=</span> <span class="kw">self</span><span class="op">.</span>length <span class="kw">as</span> <span class="dt">f64</span><span class="op">;</span></span>
+<span id="cb325-2"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb325-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> reconstructed <span class="op">=</span> <span class="kw">self</span></span>
+<span id="cb325-4"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>real_buffer</span>
+<span id="cb325-5"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>as_slice()</span>
+<span id="cb325-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>iter()</span>
+<span id="cb325-7"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>map(<span class="op">|</span>value<span class="op">|</span> value <span class="op">/</span> normalization)</span>
+<span id="cb325-8"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span>collect()<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li>FFTW’s inverse is unnormalized</li>
 <li>The inverse may overwrite its complex input</li>
@@ -10321,10 +10497,10 @@ c[k] = 2  otherwise</code></pre>
 </section>
 <section id="the-public-api-is-safe" class="slide level2">
 <h2>The Public API Is Safe</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb318"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb318-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> <span class="kw">mut</span> transform <span class="op">=</span> <span class="pp">RealFft::</span>new(signal<span class="op">.</span>len())<span class="op">?;</span></span>
-<span id="cb318-2"><a href="" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb318-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> spectrum <span class="op">=</span> transform<span class="op">.</span>forward(<span class="op">&amp;</span>signal)<span class="op">?;</span></span>
-<span id="cb318-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> reconstructed <span class="op">=</span> transform<span class="op">.</span>inverse(<span class="op">&amp;</span>spectrum)<span class="op">?;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb326"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb326-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> <span class="kw">mut</span> transform <span class="op">=</span> <span class="pp">RealFft::</span>new(signal<span class="op">.</span>len())<span class="op">?;</span></span>
+<span id="cb326-2"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb326-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> spectrum <span class="op">=</span> transform<span class="op">.</span>forward(<span class="op">&amp;</span>signal)<span class="op">?;</span></span>
+<span id="cb326-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> reconstructed <span class="op">=</span> transform<span class="op">.</span>inverse(<span class="op">&amp;</span>spectrum)<span class="op">?;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li>No public raw pointers</li>
 <li>No returned borrow into reusable FFTW storage</li>
@@ -10347,20 +10523,20 @@ c[k] = 2  otherwise</code></pre>
 </section>
 <section id="use-the-existing-fftw-crate" class="slide level2">
 <h2>Use The Existing <code>fftw</code> Crate</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb319"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb319-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">fftw</span> <span class="op">=</span> <span class="op">{</span></span>
-<span id="cb319-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">    </span><span class="dt">version</span><span class="op"> =</span> <span class="st">"0.8.0"</span><span class="op">,</span></span>
-<span id="cb319-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">    </span><span class="dt">default-features</span><span class="op"> =</span> <span class="cn">false</span><span class="op">,</span></span>
-<span id="cb319-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">    </span><span class="dt">features</span><span class="op"> =</span> <span class="op">[</span><span class="st">"system"</span><span class="op">]</span></span>
-<span id="cb319-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb320"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb320-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> <span class="kw">mut</span> input <span class="op">=</span> <span class="pp">AlignedVec::</span>new(length)<span class="op">;</span></span>
-<span id="cb320-2"><a href="" aria-hidden="true" tabindex="-1"></a>input<span class="op">.</span>copy_from_slice(signal)<span class="op">;</span></span>
-<span id="cb320-3"><a href="" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb320-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> <span class="kw">mut</span> spectrum <span class="op">=</span> <span class="pp">AlignedVec::</span>new(length <span class="op">/</span> <span class="dv">2</span> <span class="op">+</span> <span class="dv">1</span>)<span class="op">;</span></span>
-<span id="cb320-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> <span class="kw">mut</span> plan <span class="op">=</span> <span class="pp">R2CPlan64::</span>aligned(</span>
-<span id="cb320-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">&amp;</span>[length]<span class="op">,</span></span>
-<span id="cb320-7"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="pp">Flag::</span>ESTIMATE<span class="op">,</span></span>
-<span id="cb320-8"><a href="" aria-hidden="true" tabindex="-1"></a>)<span class="op">?;</span></span>
-<span id="cb320-9"><a href="" aria-hidden="true" tabindex="-1"></a>plan<span class="op">.</span>r2c(<span class="op">&amp;</span><span class="kw">mut</span> input<span class="op">,</span> <span class="op">&amp;</span><span class="kw">mut</span> spectrum)<span class="op">?;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb327"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb327-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">fftw</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb327-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">    </span><span class="dt">version</span><span class="op"> =</span> <span class="st">"0.8.0"</span><span class="op">,</span></span>
+<span id="cb327-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">    </span><span class="dt">default-features</span><span class="op"> =</span> <span class="cn">false</span><span class="op">,</span></span>
+<span id="cb327-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">    </span><span class="dt">features</span><span class="op"> =</span> <span class="op">[</span><span class="st">"system"</span><span class="op">]</span></span>
+<span id="cb327-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb328"><pre class="sourceCode rust code-with-copy"><code class="sourceCode rust"><span id="cb328-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> <span class="kw">mut</span> input <span class="op">=</span> <span class="pp">AlignedVec::</span>new(length)<span class="op">;</span></span>
+<span id="cb328-2"><a href="" aria-hidden="true" tabindex="-1"></a>input<span class="op">.</span>copy_from_slice(signal)<span class="op">;</span></span>
+<span id="cb328-3"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb328-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> <span class="kw">mut</span> spectrum <span class="op">=</span> <span class="pp">AlignedVec::</span>new(length <span class="op">/</span> <span class="dv">2</span> <span class="op">+</span> <span class="dv">1</span>)<span class="op">;</span></span>
+<span id="cb328-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> <span class="kw">mut</span> plan <span class="op">=</span> <span class="pp">R2CPlan64::</span>aligned(</span>
+<span id="cb328-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="op">&amp;</span>[length]<span class="op">,</span></span>
+<span id="cb328-7"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="pp">Flag::</span>ESTIMATE<span class="op">,</span></span>
+<span id="cb328-8"><a href="" aria-hidden="true" tabindex="-1"></a>)<span class="op">?;</span></span>
+<span id="cb328-9"><a href="" aria-hidden="true" tabindex="-1"></a>plan<span class="op">.</span>r2c(<span class="op">&amp;</span><span class="kw">mut</span> input<span class="op">,</span> <span class="op">&amp;</span><span class="kw">mut</span> spectrum)<span class="op">?;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>The safe crate still uses fftw-sys internally. It moves responsibility for aligned allocation, plan ownership, raw calls, and native errors out of the application.</p>
 <style type="text/css">
@@ -10497,9 +10673,9 @@ c[k] = 2  otherwise</code></pre>
 </section>
 <section id="optional-visualization-output" class="slide level2">
 <h2>Optional Visualization Output</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb321"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb321-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run <span class="at">--</span> <span class="dt">\</span></span>
-<span id="cb321-2"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--signal-output</span> signal.csv <span class="dt">\</span></span>
-<span id="cb321-3"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--spectrum-output</span> power-spectrum.csv</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb329"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb329-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run <span class="at">--</span> <span class="dt">\</span></span>
+<span id="cb329-2"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--signal-output</span> signal.csv <span class="dt">\</span></span>
+<span id="cb329-3"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--spectrum-output</span> power-spectrum.csv</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <pre class="text"><code>signal.csv
 sample,value
 
@@ -10527,13 +10703,13 @@ frequency_bin,power</code></pre>
 </section>
 <section id="plot-both-results" class="slide level2">
 <h2>Plot Both Results</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb323"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb323-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> <span class="at">-m</span> pip install matplotlib</span>
-<span id="cb323-2"><a href="" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb323-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">./visualize-signal-and-spectrum.py</span> <span class="dt">\</span></span>
-<span id="cb323-4"><a href="" aria-hidden="true" tabindex="-1"></a>  signal.csv power-spectrum.csv</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb324"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb324-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">./visualize-signal-and-spectrum.py</span> <span class="dt">\</span></span>
-<span id="cb324-2"><a href="" aria-hidden="true" tabindex="-1"></a>  signal.csv power-spectrum.csv <span class="dt">\</span></span>
-<span id="cb324-3"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--output</span> signal-and-spectrum.png</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb331"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb331-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> <span class="at">-m</span> pip install matplotlib</span>
+<span id="cb331-2"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb331-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">./visualize-signal-and-spectrum.py</span> <span class="dt">\</span></span>
+<span id="cb331-4"><a href="" aria-hidden="true" tabindex="-1"></a>  signal.csv power-spectrum.csv</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb332"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb332-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">./visualize-signal-and-spectrum.py</span> <span class="dt">\</span></span>
+<span id="cb332-2"><a href="" aria-hidden="true" tabindex="-1"></a>  signal.csv power-spectrum.csv <span class="dt">\</span></span>
+<span id="cb332-3"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--output</span> signal-and-spectrum.png</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li>Signal: sample index against value</li>
 <li>Spectrum: frequency-bin index against mean-square power</li>
@@ -10564,11 +10740,11 @@ frequency_bin,power</code></pre>
 <li>Check CSV headers and formatting</li>
 <li>Reject one path for both outputs</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb325"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb325-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> source-code/fftw-ffi</span>
-<span id="cb325-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> test</span>
-<span id="cb325-3"><a href="" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb325-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> ../fftw-safe</span>
-<span id="cb325-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> test</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb333"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb333-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> source-code/fftw-ffi</span>
+<span id="cb333-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> test</span>
+<span id="cb333-3"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb333-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> ../fftw-safe</span>
+<span id="cb333-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> test</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Boundary tests protect the local raw wrapper’s memory assumptions. Both implementations retain tests for the scientific meaning and output contract.</p>
 <style type="text/css">
@@ -10585,9 +10761,9 @@ frequency_bin,power</code></pre>
 </section>
 <section id="terminal-inspect-the-link" class="slide level2">
 <h2>Terminal: Inspect The Link</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb326"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb326-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> source-code/fftw-ffi</span>
-<span id="cb326-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run</span>
-<span id="cb326-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">ldd</span> target/debug/fftw-ffi <span class="kw">|</span> <span class="fu">grep</span> fftw</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb334"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb334-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> source-code/fftw-ffi</span>
+<span id="cb334-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run</span>
+<span id="cb334-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">ldd</span> target/debug/fftw-ffi <span class="kw">|</span> <span class="fu">grep</span> fftw</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <pre class="text"><code>Dominant frequency bins: [3, 7]
 Maximum round-trip error: 4.441e-16
 RMS round-trip error: 1.640e-16</code></pre>
@@ -10608,16 +10784,16 @@ RMS round-trip error: 1.640e-16</code></pre>
 <section id="exercises" class="slide level2">
 <h2>Exercises</h2>
 <ol type="1">
-<li>Change one frequency and predict the detected bins</li>
+<li>Trace a query through all four <code>cpp-interpolation-ffi</code> layers</li>
+<li>Add a safe batch-interpolation method</li>
+<li>Trigger an FFTW <code>LengthMismatch</code> before the native call</li>
+<li>Trace FFTW cleanup after partial construction</li>
 <li>Remove inverse normalization and explain the scale</li>
-<li>Trigger a <code>LengthMismatch</code> before the native call</li>
-<li>Trace cleanup after partial construction</li>
-<li>Add a safe <code>len</code> method without exposing buffers</li>
 <li>Compare the code owned by <code>fftw-ffi</code> and <code>fftw-safe</code></li>
-<li>Change both signals and compare their CSV output</li>
+<li>Change both FFTW signals and compare their CSV output</li>
 </ol>
 <aside class="notes">
-<p>For a short session, choose either the normalization edit or the boundary error. Use the implementation comparison to discuss when a dependency removes enough maintenance burden to justify its abstraction.</p>
+<p>For a short session, trace the C++ query and then choose either the FFTW normalization edit or boundary error. Use the implementation comparison to discuss when a dependency removes enough maintenance burden to justify its abstraction.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -10633,6 +10809,8 @@ RMS round-trip error: 1.640e-16</code></pre>
 <section id="module-takeaways-1" class="slide level2">
 <h2>Module Takeaways</h2>
 <ul>
+<li>Use a C facade when wrapping a C++ API directly</li>
+<li>Compile included native sources from <code>build.rs</code></li>
 <li>FFI transfers obligations that types must recover</li>
 <li>Validate dimensions and conversions before native calls</li>
 <li>Own native memory and handles with RAII types</li>
