@@ -28,8 +28,8 @@ ownership, and `unsafe` machinery removed by a safe crate directly visible.
 The local wrapper also demonstrates library-quality error handling through a
 public `FftError` enum, boundary validation, `Result`-based APIs, error
 propagation with `?`, and tests for failure cases.
-The optional `source-code/cpp-interpolation-ffi` companion now demonstrates the
-complete binding workflow for a home-grown C++ library: Cargo compiles the
+The `source-code/cpp-interpolation-ffi` example now introduces Module 15 with
+the complete binding workflow for a home-grown C++ library: Cargo compiles the
 native sources, a stable C facade exposes an opaque handle and status-code
 contract, handwritten raw declarations mirror that facade, and a safe Rust
 type owns cleanup through `Drop`.

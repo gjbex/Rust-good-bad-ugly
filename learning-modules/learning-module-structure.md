@@ -429,20 +429,20 @@ Optional extended example:
 
 Primary examples:
 
+- `source-code/cpp-interpolation-ffi`
 - `source-code/fftw-ffi`
 - `source-code/fftw-safe`
-- `source-code/cpp-interpolation-ffi`
 
 Topics:
 
+- Complete binding stack for a home-grown C++ library with no `-sys` crate.
+- Stable C facade around a C++ class with an opaque handle and status codes.
+- Handwritten raw Rust declarations and native compilation from `build.rs`.
 - Raw C bindings through a `-sys` crate.
 - Checked conversion between Rust and C integer types.
 - Raw pointers, `NonNull`, and native aligned allocation.
 - Safe slice-based APIs around a small `unsafe` implementation.
 - Comparison with an existing high-level crate built on the same `-sys` layer.
-- Complete binding stack for a home-grown C++ library with no `-sys` crate.
-- Stable C facade around a C++ class with an opaque handle and status codes.
-- Handwritten raw Rust declarations and native compilation from `build.rs`.
 - Survey of scientific `-sys` crates and their wrapper crates.
 - Safe aligned buffers and owning FFTW plan types from the `fftw` crate.
 - RAII cleanup of native allocations and opaque handles with `Drop`.
@@ -457,14 +457,12 @@ Topics:
 
 Goal:
 
-Participants should be able to identify the obligations transferred by a C
-API, encode them in an owning Rust wrapper, keep `unsafe` local, and test both
-the boundary contract and the scientific result. They should be able to decide
-when an existing safe wrapper is preferable while retaining responsibility for
-normalization and scientific validation. They should also be able to export a
-precisely defined derived quantity without coupling visualization to the FFI
-layer, and build a small complete binding when an in-house C++ library has no
-existing Rust crate.
+Participants should be able to build a small complete binding when an in-house
+C++ library has no existing Rust crate, then recognize which layers a `-sys`
+crate and a high-level wrapper supply. They should be able to encode native API
+obligations in an owning Rust wrapper, keep `unsafe` local, and test both the
+boundary contract and the scientific result while retaining responsibility for
+normalization, output semantics, and scientific validation.
 
 Related module text:
 
