@@ -13,6 +13,7 @@ invariants, not on Fourier-transform theory.
 - Own native buffers and plans with Rust types
 - Concentrate `unsafe` behind slice-based methods
 - Compare the local wrapper with the high-level `fftw` crate
+- Build the full binding stack for a home-grown C++ library
 - Export optional visualization data through typed CLI paths
 - Validate both boundary failures and scientific behavior
 
@@ -334,6 +335,131 @@ files. The raw version teaches how safety is established; the high-level
 version shows what application code should normally prefer when the API fits.
 :::
 
+## When No Binding Crate Exists
+
+`source-code/cpp-interpolation-ffi`
+
+```text
+safe Rust API
+      |
+raw Rust declarations
+      |
+stable extern "C" facade
+      |
+C++ LinearInterpolator
+```
+
+- Home-grown C++ source is part of the project
+- No `-sys` crate supplies declarations or linking
+- The project owns every boundary layer
+
+::: notes
+This is the practical motivation for writing a complete binding. FFTW is still
+the richer scientific example, but normal applications should use its existing
+safe crate. The interpolation project models the common in-house-library case.
+:::
+
+## Give The C++ Class A C ABI
+
+```c
+typedef struct interpolation_handle interpolation_handle;
+
+int interpolation_create(
+    const double* x, size_t x_len,
+    const double* y, size_t y_len,
+    interpolation_handle** output
+);
+
+int interpolation_evaluate(
+    const interpolation_handle* handle,
+    double x, double* output
+);
+```
+
+- Opaque handle hides the C++ class layout
+- Pointer-length pairs describe borrowed arrays
+- Status codes cross the ABI; exceptions do not
+
+::: notes
+The C facade catches every C++ exception. Construction copies the arrays, so
+the resulting object does not retain pointers into Rust slices.
+:::
+
+## Build And Declare The Boundary
+
+```rust
+// build.rs
+cc::Build::new()
+    .cpp(true)
+    .std("c++17")
+    .file("native/interpolator.cpp")
+    .file("native/interpolator_c.cpp")
+    .compile("interpolation");
+```
+
+```rust
+unsafe extern "C" {
+    fn interpolation_destroy(
+        handle: *mut InterpolationHandle,
+    );
+}
+```
+
+::: notes
+The cc crate selects the native compiler and emits Cargo link instructions.
+The handwritten declaration is manageable because the C API is deliberately
+small; discuss bindgen as the scalable alternative for larger headers.
+:::
+
+## Recover Rust Ownership And Errors
+
+```rust
+pub struct LinearInterpolator {
+    handle: NonNull<InterpolationHandle>,
+    minimum: f64,
+    maximum: f64,
+}
+
+impl Drop for LinearInterpolator {
+    fn drop(&mut self) {
+        unsafe {
+            interpolation_destroy(self.handle.as_ptr())
+        };
+    }
+}
+```
+
+- Safe methods accept slices and return `Result`
+- Status codes become `InterpolationError` variants
+- `Drop` releases the C++ object exactly once
+
+::: notes
+Trace ownership upward: C++ allocation, opaque C handle, non-null pointer, and
+owning Rust value. Unsafe stays in the raw call and cleanup implementation.
+:::
+
+## Terminal: C++ Interpolation FFI
+
+```{.bash}
+cd source-code/cpp-interpolation-ffi
+cargo run -- --query 1.5
+cargo run -- --query 5.0
+cargo test
+```
+
+```text
+Interpolated value at x = 1.5: 2.5
+```
+
+- Included C++ source; no native package installation
+- Boundary and numerical tests
+- Out-of-range query returns a nonzero exit
+
+::: notes
+Use the failing query to trace one status code from C++ through the C facade
+into the Rust error enum. A C++ compiler is the only native prerequisite.
+:::
+
 ## Scientific `-sys` And Wrapper Crates
 
 | Native library | Raw bindings | Wrapper |
@@ -459,6 +585,7 @@ the stable checks. Use the final command on Linux to confirm system linking.
 5. Add a safe `len` method without exposing buffers
 6. Compare the code owned by `fftw-ffi` and `fftw-safe`
 7. Change both signals and compare their CSV output
+8. Trace a query through all four `cpp-interpolation-ffi` layers
 
 ::: notes
 For a short session, choose either the normalization edit or the boundary
@@ -474,6 +601,8 @@ enough maintenance burden to justify its abstraction.
 - Keep `unsafe` small and state its invariants
 - Preserve lifetime and concurrency rules in the wrapper
 - Prefer a maintained safe crate when it exposes the required native features
+- Use a C facade when wrapping a C++ API directly
+- Compile included native sources from `build.rs`
 - Define spectral normalization before exporting results
 - Keep optional visualization output outside the FFI wrapper
 - Preserve units honestly in the plotting helper

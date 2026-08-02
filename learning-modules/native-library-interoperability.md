@@ -3,13 +3,17 @@
 Scientific Rust programs rarely start in isolation. They often need mature C
 or Fortran libraries that already implement validated algorithms and are
 installed on HPC systems. This module wraps FFTW's C API in a small safe Rust
-interface, then compares that local wrapper with the existing high-level
-`fftw` crate.
+interface, compares that local wrapper with the existing high-level `fftw`
+crate, and then follows the complete binding path for a home-grown C++ library.
 
 The two complete implementations are:
 
 - `source-code/fftw-ffi`, which builds a wrapper directly on `fftw-sys`;
 - `source-code/fftw-safe`, which performs the same workflow with `fftw`.
+
+The optional `source-code/cpp-interpolation-ffi` companion starts one layer
+lower: no raw binding crate exists, so the project also supplies the C facade,
+handwritten Rust declarations, and native build.
 
 ## Learning Objectives
 
@@ -24,6 +28,8 @@ By the end of this module, you should be able to:
 - translate native failures and boundary violations into Rust errors;
 - decide when to use an existing safe crate instead of maintaining a local FFI
   wrapper;
+- expose a C++ class through a stable C ABI and opaque handle;
+- compile included native sources from `build.rs`;
 - expose optional output files through typed `clap` arguments;
 - test the scientific behavior of an FFI wrapper with numerical tolerances.
 
@@ -379,6 +385,123 @@ such as `fftw`. Build directly on a `-sys` crate when the safe crate does not
 expose a required feature, when its abstraction is unsuitable, or when the
 wrapper itself is the subject being taught.
 
+## Wrap A Home-Grown C++ Library
+
+The FFTW wrapper makes the safety obligations visible, but applications would
+normally use the existing `fftw` crate. A stronger reason to build the complete
+binding stack is a home-grown library with no Rust bindings. The optional
+`source-code/cpp-interpolation-ffi` example wraps a small C++ linear
+interpolator in four layers:
+
+```text
+safe Rust API       src/lib.rs
+raw Rust bindings   src/raw.rs
+stable C facade     native/interpolator_c.h and native/interpolator_c.cpp
+C++ library         native/interpolator.hpp and native/interpolator.cpp
+```
+
+Rust does not call the C++ class directly. C++ symbol names and class layouts
+are compiler-specific, and C++ exceptions must not unwind into Rust. The
+adapter therefore presents an `extern "C"` interface with an opaque handle:
+
+```c
+typedef struct interpolation_handle interpolation_handle;
+
+int interpolation_create(
+    const double* coordinates,
+    size_t coordinate_count,
+    const double* values,
+    size_t value_count,
+    interpolation_handle** output
+);
+
+int interpolation_evaluate(
+    const interpolation_handle* handle,
+    double coordinate,
+    double* output
+);
+
+void interpolation_destroy(interpolation_handle* handle);
+```
+
+The pointer-length pairs describe borrowed input arrays without committing the
+C ABI to a Rust or C++ container layout. Construction copies the arrays into
+the C++ object, so the object does not borrow the Rust slices after the call.
+Every C entry point catches exceptions and returns a status code. Validation
+failures, out-of-range queries, allocation failure, and unexpected exceptions
+therefore cross the ABI as ordinary integer values.
+
+The project compiles its included C++17 sources from `build.rs`:
+
+```rust
+cc::Build::new()
+    .cpp(true)
+    .std("c++17")
+    .include("native")
+    .file("native/interpolator.cpp")
+    .file("native/interpolator_c.cpp")
+    .compile("interpolation");
+```
+
+The `cc` crate selects the platform compiler and tells Cargo how to link the
+resulting static library and C++ runtime. Unlike FFTW, this example requires a
+C++ compiler but no separately installed native library.
+
+The raw Rust module writes the small declaration set by hand:
+
+```rust
+#[repr(C)]
+pub struct InterpolationHandle {
+    _private: [u8; 0],
+}
+
+unsafe extern "C" {
+    fn interpolation_evaluate(
+        handle: *const InterpolationHandle,
+        coordinate: c_double,
+        output: *mut c_double,
+    ) -> c_int;
+}
+```
+
+These declarations are promises about the C header, not checks against it.
+Handwriting is reasonable for this small stable interface. For a larger or
+frequently changing header, generating declarations with `bindgen` can reduce
+copying errors, at the cost of adding a `libclang` build dependency.
+
+The public Rust type owns a non-null opaque handle and releases it exactly once:
+
+```rust
+pub struct LinearInterpolator {
+    handle: NonNull<raw::InterpolationHandle>,
+    minimum: f64,
+    maximum: f64,
+}
+
+impl Drop for LinearInterpolator {
+    fn drop(&mut self) {
+        unsafe { raw::interpolation_destroy(self.handle.as_ptr()) };
+    }
+}
+```
+
+Its safe constructor and `evaluate` method accept slices and return
+`Result<_, InterpolationError>`. Callers cannot pass null pointers, forget the
+array lengths, leak the C++ object, or allow a C++ exception to cross the FFI
+boundary.
+
+Run the example and its boundary tests:
+
+```bash
+cd source-code/cpp-interpolation-ffi
+cargo run -- --query 1.5
+cargo run -- --query 5.0
+cargo test
+```
+
+The first query produces `2.5`. The second lies outside the tabulated domain
+and demonstrates status-to-error conversion with a nonzero process exit.
+
 ## Other Scientific Binding Layers
 
 The raw-binding and wrapper split appears throughout the scientific Rust
@@ -511,7 +634,7 @@ The safe-crate version repeats the scientific, round-trip, CSV, and CLI
 contract tests. Its dependency owns the raw allocation and plan boundary, so
 the application does not repeat the local wrapper's boundary tests.
 
-Run both implementations:
+Run the FFTW pair and the C++ companion:
 
 ```bash
 cd source-code/fftw-ffi
@@ -520,6 +643,10 @@ cargo test
 
 cd ../fftw-safe
 cargo run
+cargo test
+
+cd ../cpp-interpolation-ffi
+cargo run -- --query 1.5
 cargo test
 ```
 
@@ -548,6 +675,10 @@ checks are the stable contract.
 8. Compare `fftw-ffi` with `fftw-safe`: list which safety obligations disappear
    from the application and which scientific responsibilities remain.
 9. Change the signal in both versions and compare their generated CSV files.
+10. In `cpp-interpolation-ffi`, trace one query through the safe wrapper, raw
+    declaration, C facade, and C++ method.
+11. Add a safe method that evaluates several query coordinates while keeping
+    all pointer and exception handling below the public Rust API.
 
 ## Summary
 
@@ -559,6 +690,9 @@ checks are the stable contract.
 - Small `unsafe` blocks should state the invariants that make each call valid.
 - A suitable high-level crate avoids duplicating native ownership and safety
   machinery in application code.
+- A C facade gives a C++ library a stable ABI based on functions, opaque
+  handles, pointer-length pairs, and status codes.
+- `build.rs` and `cc` can compile included C++ sources as part of a Cargo build.
 - A one-sided spectrum needs explicit normalization and endpoint treatment.
 - Optional output paths keep visualization separate from the core computation.
 - A small plotting helper can consume the numerical CSV contract independently.

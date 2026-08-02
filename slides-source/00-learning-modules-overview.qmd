@@ -96,7 +96,7 @@ tests.
 These modules make the scientific-computing context explicit: reproducibility,
 parallelism, structured output, diagnostics, visualization, and
 multidimensional arrays. The final module connects Rust to an established HPC
-library.
+library and to a home-grown C++ library with no existing Rust bindings.
 :::
 
 ## Example Workflow

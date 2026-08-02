@@ -93,6 +93,11 @@ prevent or make explicit in safe code.
    output through the high-level `fftw` crate, illustrating how an existing
    safe wrapper removes application-owned raw pointers, allocation cleanup,
    and plan-lifetime invariants.
+1. `cpp-interpolation-ffi`: wraps an included C++ linear-interpolation library
+   for which no `-sys` crate exists. It compiles the native sources with
+   `build.rs`, exposes the C++ class through a stable C facade and opaque
+   handle, translates status codes into Rust errors, and owns cleanup with
+   `Drop`.
 
 `julia-set`: Julia set  implementations illustrating diverse aspects of Rust
 programming.

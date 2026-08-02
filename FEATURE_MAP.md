@@ -11,10 +11,11 @@ several places when they combine multiple ideas.
 | Minimal Rust binary | `source-code/hello-world/src/main.rs` |
 | Cargo project layout | `source-code/hello-world/` |
 | Building and running with Cargo | `source-code/hello-world/README.md` |
-| External crates in `Cargo.toml` | `source-code/hello-clap/Cargo.toml`, `source-code/complex-numbers/Cargo.toml`, `source-code/units/Cargo.toml`, `source-code/random-numbers/Cargo.toml`, `source-code/smart-pointers/Cargo.toml`, `source-code/strings/Cargo.toml`, `source-code/structural-matching/Cargo.toml`, `source-code/polars-data-analysis/Cargo.toml`, `source-code/heat-diffusion/naive/Cargo.toml`, `source-code/heat-diffusion/ndarray-features/Cargo.toml`, `source-code/heat-diffusion/configurable/Cargo.toml`, `source-code/svd/Cargo.toml`, `source-code/hdf5-snapshot/Cargo.toml`, `source-code/fftw-ffi/Cargo.toml`, `source-code/fftw-safe/Cargo.toml`, `source-code/julia-set/julia-set-toml-config/Cargo.toml`, `source-code/n-body-simulation/rust/Cargo.toml` |
+| External crates in `Cargo.toml` | `source-code/hello-clap/Cargo.toml`, `source-code/complex-numbers/Cargo.toml`, `source-code/units/Cargo.toml`, `source-code/random-numbers/Cargo.toml`, `source-code/smart-pointers/Cargo.toml`, `source-code/strings/Cargo.toml`, `source-code/structural-matching/Cargo.toml`, `source-code/polars-data-analysis/Cargo.toml`, `source-code/heat-diffusion/naive/Cargo.toml`, `source-code/heat-diffusion/ndarray-features/Cargo.toml`, `source-code/heat-diffusion/configurable/Cargo.toml`, `source-code/svd/Cargo.toml`, `source-code/hdf5-snapshot/Cargo.toml`, `source-code/fftw-ffi/Cargo.toml`, `source-code/fftw-safe/Cargo.toml`, `source-code/cpp-interpolation-ffi/Cargo.toml`, `source-code/julia-set/julia-set-toml-config/Cargo.toml`, `source-code/n-body-simulation/rust/Cargo.toml` |
 | Reproducible dependency lockfiles | `source-code/*/Cargo.lock`, `source-code/heat-diffusion/*/Cargo.lock`, `source-code/julia-set/*/Cargo.lock`, `source-code/n-body-simulation/rust/Cargo.lock` |
 | Multiple binaries in one package | `source-code/hashmap-hashset/src/generate-data.rs`, `source-code/hashmap-hashset/src/count-nucleotides.rs`, `source-code/hashmap-hashset/src/read-errors.rs` |
-| Shared package code in `lib.rs` | `source-code/smart-pointers/src/lib.rs`, `source-code/hashmap-hashset/src/lib.rs`, `source-code/hdf5-snapshot/src/lib.rs`, `source-code/polars-data-analysis/src/lib.rs`, `source-code/fftw-ffi/src/lib.rs` |
+| Shared package code in `lib.rs` | `source-code/smart-pointers/src/lib.rs`, `source-code/hashmap-hashset/src/lib.rs`, `source-code/hdf5-snapshot/src/lib.rs`, `source-code/polars-data-analysis/src/lib.rs`, `source-code/fftw-ffi/src/lib.rs`, `source-code/cpp-interpolation-ffi/src/lib.rs` |
+| Compiling included C++ sources from `build.rs` | `source-code/cpp-interpolation-ffi/build.rs` |
 | Release builds and benchmarking context | `source-code/julia-set/benchmark.sh` |
 | Unit tests protecting a numerical refactoring | `source-code/heat-diffusion/naive/src/heat_diffusion.rs`, `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs`, `source-code/heat-diffusion/configurable/src/heat_diffusion.rs` |
 | Tolerance-based numerical reconstruction test | `source-code/svd/src/main.rs` |
@@ -24,9 +25,9 @@ several places when they combine multiple ideas.
 
 | Feature | Where to look |
 |---|---|
-| `clap::Parser` derive | `source-code/hello-clap/src/main.rs`, `source-code/units/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/polars-data-analysis/src/main.rs`, `source-code/heat-diffusion/naive/src/main.rs`, `source-code/heat-diffusion/ndarray-features/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/hdf5-snapshot/src/main.rs`, `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
-| Typed command-line argument struct | `source-code/hello-clap/src/main.rs`, `source-code/units/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/polars-data-analysis/src/main.rs`, `source-code/heat-diffusion/naive/src/main.rs`, `source-code/heat-diffusion/ndarray-features/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/hdf5-snapshot/src/main.rs`, `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
-| Argument defaults | `source-code/numerical-function/src/main.rs`, `source-code/enum-match/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/hdf5-snapshot/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
+| `clap::Parser` derive | `source-code/hello-clap/src/main.rs`, `source-code/units/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/polars-data-analysis/src/main.rs`, `source-code/heat-diffusion/naive/src/main.rs`, `source-code/heat-diffusion/ndarray-features/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/hdf5-snapshot/src/main.rs`, `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs`, `source-code/cpp-interpolation-ffi/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
+| Typed command-line argument struct | `source-code/hello-clap/src/main.rs`, `source-code/units/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/polars-data-analysis/src/main.rs`, `source-code/heat-diffusion/naive/src/main.rs`, `source-code/heat-diffusion/ndarray-features/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/hdf5-snapshot/src/main.rs`, `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs`, `source-code/cpp-interpolation-ffi/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
+| Argument defaults | `source-code/numerical-function/src/main.rs`, `source-code/enum-match/src/main.rs`, `source-code/smart-pointers/src/main.rs`, `source-code/hdf5-snapshot/src/main.rs`, `source-code/cpp-interpolation-ffi/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
 | Restricted argument values with `ValueEnum` | `source-code/enum-match/src/main.rs`, `source-code/random-numbers/src/main.rs`, `source-code/user-defined-trait/src/main.rs` |
 | File path arguments | `source-code/iterators/src/main.rs`, `source-code/polars-data-analysis/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/hdf5-snapshot/src/main.rs`, `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
 | Numeric parameters for reproducible runs | `source-code/random-numbers/src/main.rs`, `source-code/julia-set/julia-set-baseline/src/main.rs`, `source-code/n-body-simulation/rust/src/main.rs` |
@@ -207,30 +208,36 @@ several places when they combine multiple ideas.
 | Feature | Where to look |
 |---|---|
 | `Option` for possibly absent values | `source-code/error-handling/src/matrix.rs`, `source-code/generic-structs/src/matrix.rs` |
-| `Result` for fallible operations | `source-code/error-handling/src/matrix.rs`, `source-code/iterators/src/main.rs`, `source-code/polars-data-analysis/src/lib.rs`, `source-code/svd/src/main.rs`, `source-code/hdf5-snapshot/src/lib.rs`, `source-code/fftw-ffi/src/real_fft.rs`, `source-code/fftw-safe/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
+| `Result` for fallible operations | `source-code/error-handling/src/matrix.rs`, `source-code/iterators/src/main.rs`, `source-code/polars-data-analysis/src/lib.rs`, `source-code/svd/src/main.rs`, `source-code/hdf5-snapshot/src/lib.rs`, `source-code/fftw-ffi/src/real_fft.rs`, `source-code/fftw-safe/src/main.rs`, `source-code/cpp-interpolation-ffi/src/lib.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
 | Converting `Option` to `Result` with `ok_or_else` | `source-code/error-handling/src/matrix.rs` |
-| Propagating errors with `?` | `source-code/error-handling/src/matrix.rs`, `source-code/iterators/src/main.rs`, `source-code/polars-data-analysis/src/lib.rs`, `source-code/polars-data-analysis/src/main.rs`, `source-code/svd/src/main.rs`, `source-code/hdf5-snapshot/src/lib.rs`, `source-code/hdf5-snapshot/src/main.rs`, `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs` |
+| Propagating errors with `?` | `source-code/error-handling/src/matrix.rs`, `source-code/iterators/src/main.rs`, `source-code/polars-data-analysis/src/lib.rs`, `source-code/polars-data-analysis/src/main.rs`, `source-code/svd/src/main.rs`, `source-code/hdf5-snapshot/src/lib.rs`, `source-code/hdf5-snapshot/src/main.rs`, `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs`, `source-code/cpp-interpolation-ffi/src/main.rs` |
 | Handling errors at the call site | `source-code/error-handling/src/main.rs` |
-| Returning boxed dynamic errors from `main` | `source-code/iterators/src/main.rs`, `source-code/polars-data-analysis/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/hdf5-snapshot/src/main.rs`, `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
+| Returning boxed dynamic errors from `main` | `source-code/iterators/src/main.rs`, `source-code/polars-data-analysis/src/main.rs`, `source-code/heat-diffusion/configurable/src/main.rs`, `source-code/hdf5-snapshot/src/main.rs`, `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs`, `source-code/cpp-interpolation-ffi/src/main.rs`, `source-code/julia-set/julia-set-toml-config/src/main.rs` |
 | Validating numerical parameters with `Result` | `source-code/heat-diffusion/naive/src/heat_diffusion.rs`, `source-code/heat-diffusion/ndarray-features/src/heat_diffusion.rs`, `source-code/heat-diffusion/configurable/src/config.rs` |
 | Validating application arguments with `Result` | `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs` |
-| Custom error enum implementing `Display` and `Error` | `source-code/fftw-ffi/src/real_fft.rs` |
+| Custom error enum implementing `Display` and `Error` | `source-code/fftw-ffi/src/real_fft.rs`, `source-code/cpp-interpolation-ffi/src/lib.rs` |
 
 ## Native Library Interoperability And Unsafe
 
 | Feature | Where to look |
 |---|---|
 | Raw C bindings through a `-sys` crate | `source-code/fftw-ffi/Cargo.toml`, `source-code/fftw-ffi/src/real_fft.rs` |
+| Home-grown C++ library compiled with `cc` | `source-code/cpp-interpolation-ffi/build.rs`, `source-code/cpp-interpolation-ffi/native/` |
+| Stable C facade around a C++ class | `source-code/cpp-interpolation-ffi/native/interpolator_c.h`, `source-code/cpp-interpolation-ffi/native/interpolator_c.cpp` |
+| Handwritten raw Rust declarations | `source-code/cpp-interpolation-ffi/src/raw.rs` |
+| Opaque C handle for a C++ object | `source-code/cpp-interpolation-ffi/native/interpolator_c.h`, `source-code/cpp-interpolation-ffi/src/raw.rs` |
+| Pointer-length pairs for numerical arrays | `source-code/cpp-interpolation-ffi/native/interpolator_c.h`, `source-code/cpp-interpolation-ffi/src/lib.rs` |
+| Converting C++ exceptions and validation failures to status codes | `source-code/cpp-interpolation-ffi/native/interpolator_c.cpp` |
 | System native-library feature selection | `source-code/fftw-ffi/Cargo.toml`, `source-code/fftw-safe/Cargo.toml` |
 | High-level safe crate built on a `-sys` crate | `source-code/hdf5-snapshot/Cargo.toml`, `source-code/hdf5-snapshot/src/lib.rs`, `source-code/fftw-safe/Cargo.toml`, `source-code/fftw-safe/src/main.rs` |
 | Comparing local and ecosystem safe wrappers | `source-code/fftw-ffi/`, `source-code/fftw-safe/` |
 | Safe aligned native buffers with `AlignedVec` | `source-code/fftw-safe/src/main.rs` |
 | Owning real-to-complex and complex-to-real plan types | `source-code/fftw-safe/src/main.rs` |
 | Checked conversion from `usize` to C `int` | `source-code/fftw-ffi/src/real_fft.rs` |
-| Raw pointers isolated behind a safe API | `source-code/fftw-ffi/src/real_fft.rs` |
-| Documented `unsafe` blocks | `source-code/fftw-ffi/src/real_fft.rs` |
+| Raw pointers isolated behind a safe API | `source-code/fftw-ffi/src/real_fft.rs`, `source-code/cpp-interpolation-ffi/src/lib.rs`, `source-code/cpp-interpolation-ffi/src/raw.rs` |
+| Documented `unsafe` blocks | `source-code/fftw-ffi/src/real_fft.rs`, `source-code/cpp-interpolation-ffi/src/lib.rs` |
 | Native aligned allocation with `NonNull` | `source-code/fftw-ffi/src/real_fft.rs` |
-| Native resource cleanup with `Drop` | `source-code/fftw-ffi/src/real_fft.rs` |
+| Native resource cleanup with `Drop` | `source-code/fftw-ffi/src/real_fft.rs`, `source-code/cpp-interpolation-ffi/src/lib.rs` |
 | Field order as a native lifetime invariant | `source-code/fftw-ffi/src/real_fft.rs` |
 | Serializing native planner operations with `Mutex` | `source-code/fftw-ffi/src/real_fft.rs` |
 | Safe slice-based forward and inverse transforms | `source-code/fftw-ffi/src/real_fft.rs`, `source-code/fftw-safe/src/main.rs` |
@@ -311,6 +318,7 @@ several places when they combine multiple ideas.
 | One-sided mean-square power spectrum | `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs` |
 | Parseval-style spectral power test | `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs` |
 | Optional signal and spectrum CSV output | `source-code/fftw-ffi/src/main.rs`, `source-code/fftw-safe/src/main.rs` |
+| Piecewise-linear interpolation through a C++ FFI wrapper | `source-code/cpp-interpolation-ffi/` |
 
 ## Python Visualization Helpers
 

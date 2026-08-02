@@ -431,6 +431,7 @@ Primary examples:
 
 - `source-code/fftw-ffi`
 - `source-code/fftw-safe`
+- `source-code/cpp-interpolation-ffi`
 
 Topics:
 
@@ -439,6 +440,9 @@ Topics:
 - Raw pointers, `NonNull`, and native aligned allocation.
 - Safe slice-based APIs around a small `unsafe` implementation.
 - Comparison with an existing high-level crate built on the same `-sys` layer.
+- Complete binding stack for a home-grown C++ library with no `-sys` crate.
+- Stable C facade around a C++ class with an opaque handle and status codes.
+- Handwritten raw Rust declarations and native compilation from `build.rs`.
 - Survey of scientific `-sys` crates and their wrapper crates.
 - Safe aligned buffers and owning FFTW plan types from the `fftw` crate.
 - RAII cleanup of native allocations and opaque handles with `Drop`.
@@ -459,7 +463,8 @@ the boundary contract and the scientific result. They should be able to decide
 when an existing safe wrapper is preferable while retaining responsibility for
 normalization and scientific validation. They should also be able to export a
 precisely defined derived quantity without coupling visualization to the FFI
-layer.
+layer, and build a small complete binding when an in-house C++ library has no
+existing Rust crate.
 
 Related module text:
 
