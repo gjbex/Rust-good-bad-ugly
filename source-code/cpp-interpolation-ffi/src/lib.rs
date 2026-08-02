@@ -45,10 +45,9 @@ impl fmt::Display for InterpolationError {
                 "query coordinate {query} lies outside [{minimum}, {maximum}]"
             ),
             Self::AllocationFailed => write!(formatter, "C++ could not allocate the interpolator"),
-            Self::UnknownError => write!(
-                formatter,
-                "C++ interpolation failed with an unknown error"
-            ),
+            Self::UnknownError => {
+                write!(formatter, "C++ interpolation failed with an unknown error")
+            }
             Self::NativeContractViolation(status) => {
                 write!(
                     formatter,
@@ -132,6 +131,7 @@ impl LinearInterpolator {
             raw::NON_FINITE_VALUE => InterpolationError::NonFiniteData,
             raw::NON_INCREASING_COORDINATES => InterpolationError::NonIncreasingCoordinates,
             raw::ALLOCATION_FAILED => InterpolationError::AllocationFailed,
+            raw::UNKNOWN_ERROR => InterpolationError::UnknownError,
             other => InterpolationError::NativeContractViolation(other),
         }
     }
@@ -200,6 +200,14 @@ mod tests {
                 minimum: 0.0,
                 maximum: 1.0,
             }
+        );
+    }
+
+    #[test]
+    fn maps_unknown_creation_errors() {
+        assert_eq!(
+            LinearInterpolator::creation_error(raw::UNKNOWN_ERROR, 2, 2),
+            InterpolationError::UnknownError
         );
     }
 }
